@@ -9,9 +9,6 @@ and version of a given binary package the API is providing::
 
     /packages/{package_name}/{distribution}/{distro_release}/{architecture}/$binary
 
-### FIXME REVISIT THIS::
-    /packages/{package_name}/distributions/{distribution}/releases/{distro_release}/archs/{architecture}/$binary
-
 So for a CentOS 7 x86_64 package for Ceph the url could look like::
 
     /packages/ceph/centos/7/x86_64/ceph-0.87.2-0.el7.centos.x86_64.rpm
