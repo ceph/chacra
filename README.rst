@@ -1,4 +1,5 @@
-$pkg
+chacra
+======
 A REST API for storing and retrieving specific versions and arquitectures of
 (binary) packages.
 
