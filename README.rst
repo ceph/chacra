@@ -105,7 +105,53 @@ top-level keys are meant to be part of the consumable url.
 
 Querying binary information
 ---------------------------
-TODO
+There are two ways for querying for binary metadata captured by the system.
+
+**specific querying**:
+If the location for the binary is known then, following our example URL the
+binary should be queried with a ``GET`` at::
+
+    /packages/ceph/centos/10/x86_64?name=ceph-0.87.2-0.el10.centos.x86_64.rpm
+
+
+HTTP Responses:
+
+* *200*: Success.
+* *400*: Invalid request. Body::
+
+    { "msg": "invalid query params: {keys}" }
+
+
+* *404*: Resource not found. When the parent URL doesn't exist and therefore
+  cannot be queried. This would also indicate that the binary doesn't exist.
+
+**search**:
+If the location of a binary is not known, a search can be performed at::
+
+    /search?name=ceph
+
+Search terms don't need to be unique and successful responses will return an
+array of items found along with metadata about locations::
+
+
+HTTP Responses:
+
+* *200*: Success. Body::
+
+  [
+    {
+      "ceph-0.87.2-0.el10.centos.x86_64.rpm": {
+          "url": "/packages/ceph/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
+      }
+    }
+  ]
+
+
+
+
+* *400*: Invalid request. Body::
+
+    { "msg": "invalid query params: {keys}" }
 
 
 Creating new items
