@@ -76,18 +76,21 @@ can be consumed to dig deeper into the URL structure:
     {
         "ceph-0.87.2-0.el7.centos.x86_64.rpm": {
             "signed": True,
-            "size": "12M"
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
+            "size": "12M",
+            "last_updated": "14 hours, 39 minutes, 19 seconds ago",
+            "built-by": "ktdreyer",
         },
         "ceph-0.87.1-0.el7.centos.x86_64.rpm": {
             "signed": True,
-            "size": "12M"
-            "last_updated": "20 days, 6 hours, 39 minutes, 19 seconds ago"
+            "size": "12M",
+            "last_updated": "20 days, 6 hours, 39 minutes, 19 seconds ago",
+            "built-by": "ktdreyer",
         },
         "ceph-0.87-0.el7.centos.x86_64.rpm": {
             "signed": True,
-            "size": "12M"
-            "last_updated": "35 days, 6 hours, 39 minutes, 19 seconds ago"
+            "size": "12M",
+            "last_updated": "35 days, 6 hours, 39 minutes, 19 seconds ago",
+            "built-by": "alfredodeza",
         }
 
     }
@@ -98,6 +101,11 @@ for the next part of the URL.
 So another ``GET`` operation on that final URL would retrieve the actual
 binary. Other metadata may be provided, but the rule would be that all
 top-level keys are meant to be part of the consumable url.
+
+
+Querying binary information
+---------------------------
+TODO
 
 
 Creating new items
@@ -131,4 +139,30 @@ The body for the POST HTTP request would still require the "name" key::
 
     { "name": "ceph-0.87.2-0.el10.centos.x86_64.rpm" }
 
+
+Optional (but recommended key) is the ``built-by``::
+
+
+    {
+        "name": "ceph-0.87.2-0.el10.centos.x86_64.rpm",
+        "built-by": "alfredodeza"
+    }
+
+
+Force a rewrite of a binary
+---------------------------
+If a POST is done to a binary URL that already exists, the API will return
+a 400 with a message indicating that the binary is already there.
+
+But sometimes, rewriting a binary is needed and the API allows that with a flag
+in the JSON object when doing a POST::
+
+    {
+        "name": "ceph-0.87.2-0.el10.centos.x86_64.rpm",
+        "force": True
+    }
+
+HTTP Responses:
+
+* *200*: Success.
 
