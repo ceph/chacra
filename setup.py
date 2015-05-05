@@ -36,6 +36,7 @@ setup(
     entry_points="""
         [pecan.command]
         populate=chacra.commands.populate:PopulateCommand
+        crawl=chacra.commands.crawl:CrawlCommand
         """
 
 )
