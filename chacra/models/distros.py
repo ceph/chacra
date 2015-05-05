@@ -9,13 +9,12 @@ class Distro(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(256), nullable=False, index=True)
 
-    version = Column(String(256), nullable=False, index=True)
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', backref=backref('distros', lazy='dynamic'))
 
-    def __init__(self, project, name):
-        self.project = project
+    def __init__(self, name, project):
         self.name = name
+        self.project = project
 
     def last_updated(self):
         # TODO
@@ -24,7 +23,7 @@ class Distro(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            versions=self.versions
+            versions=self.versions.all()
         )
 
 
@@ -48,7 +47,7 @@ class DistroVersion(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            archs=self.archs
+            archs=self.archs.all()
         )
 
 
@@ -72,6 +71,6 @@ class DistroArch(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            binaries=self.binaries
+            binaries=self.binaries.all()
         )
 
