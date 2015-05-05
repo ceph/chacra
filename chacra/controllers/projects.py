@@ -1,5 +1,5 @@
 from pecan import expose, abort, request
-from chacra.models import projects, Distro, DistroVersion, DistroArch, Binary, commit
+from chacra.models import projects, Distro, DistroVersion, DistroArch, Binary, commit, Ref
 from chacra import models
 from chacra.controllers import error
 
@@ -29,42 +29,6 @@ class BinaryController(object):
     def index(self):
         # TODO: implement downloads
         return dict(name=self.binary.name)
-
-    @index.when(method='POST', template='json')
-    def index_post(self):
-        # updates the binary
-        #return
-        try:
-            data = request.json
-            name = data.get('name')
-        except ValueError:
-            error('/errors/invalid/', 'could not decode JSON body')
-        # we allow empty data to be pushed
-        if not name:
-            error('/errors/invalid/', "could not find required key: 'name'")
-        self.ensure_objects(name)
-        return {}
-
-    def ensure_objects(self, binary_name):
-        """
-        Since we might not have everything created, ensure everything is
-        and push it to the database
-        """
-        project_id = request.context.get('project_id')
-        distro_id = request.context.get('distro_id')
-        version_id = request.context.get('version_id')
-        arch_id = request.context.get('distro_arch_id')
-        is_none = lambda x: x is None
-        if all(
-                [is_none(i) for i in [project_id, distro_id, version_id, arch_id]]):
-            project = projects.Project(request.context['project'])
-            distro = Distro(request.context['distro'], project)
-            version = DistroVersion(request.context['version'], distro)
-            arch = DistroArch(request.context['distro_arch'], version)
-            models.flush()
-            models.commit()
-            binary = Binary(binary_name, arch)
-            return binary
 
 
 class ArchController(object):
@@ -113,11 +77,13 @@ class ArchController(object):
         distro_id = request.context.get('distro_id')
         version_id = request.context.get('distro_version_id')
         arch_id = request.context.get('distro_arch_id')
+        ref_id = request.context.get('ref_id')
         is_none = lambda x: x is None
         if all(
-                [is_none(i) for i in [project_id, distro_id, version_id, arch_id]]):
+                [is_none(i) for i in [project_id, distro_id, version_id, arch_id, ref_id]]):
             project = projects.Project(request.context['project'])
-            distro = Distro(request.context['distro'], project)
+            ref = Ref(request.context['ref'], project)
+            distro = Distro(request.context['distro'], ref)
             version = DistroVersion(request.context['distro_version'], distro)
             arch = DistroArch(request.context['distro_arch'], version)
             models.flush()
@@ -141,6 +107,8 @@ class DistroVersionController(object):
 
     @expose('json')
     def index(self):
+        if request.method == 'POST':
+            error('/errors/not_allowed', 'POST requests to this url are not allowed')
         return dict(
             (d.name, d) for d in self.distro_version.archs.all()
         )
@@ -160,6 +128,8 @@ class DistroController(object):
 
     @expose('json')
     def index(self):
+        if request.method == 'POST':
+            error('/errors/not_allowed', 'POST requests to this url are not allowed')
         return dict(
             (d.name, d) for d in self.distro.versions.all()
         )
@@ -167,6 +137,28 @@ class DistroController(object):
     @expose()
     def _lookup(self, name, *remainder):
         return DistroVersionController(name), remainder
+
+
+class RefController(object):
+
+    def __init__(self, ref_name):
+        self.ref_name = ref_name
+        self.ref = Ref.query.filter_by(name=ref_name).first()
+        if not self.ref and request.method != 'POST':
+            abort(404)
+        set_id_in_context('ref_id', self.ref, ref_name)
+
+    @expose('json')
+    def index(self):
+        if request.method == 'POST':
+            error('/errors/not_allowed', 'POST requests to this url are not allowed')
+        return dict(
+            (d.name, d) for d in self.ref.distros.all()
+        )
+
+    @expose()
+    def _lookup(self, name, *remainder):
+        return DistroController(name), remainder
 
 
 class ProjectController(object):
@@ -180,13 +172,15 @@ class ProjectController(object):
 
     @expose('json')
     def index(self):
+        if request.method == 'POST':
+            error('/errors/not_allowed', 'POST requests to this url are not allowed')
         return dict(
-            (d.name, d) for d in self.project.distros.all()
+            (d.name, d) for d in self.project.refs.all()
         )
 
     @expose()
     def _lookup(self, name, *remainder):
-        return DistroController(name), remainder
+        return RefController(name), remainder
 
 
 class ProjectsController(object):
