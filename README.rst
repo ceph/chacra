@@ -22,7 +22,7 @@ can be consumed to dig deeper into the URL structure:
 
 ``GET /packages/``::
 
-    [
+    {
         "ceph": {
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         },
@@ -33,11 +33,11 @@ can be consumed to dig deeper into the URL structure:
             "last_updated": "12 hours, 56 minutes, 8 seconds ago"
         }
 
-    ]
+    }
 
 ``GET /packages/ceph/``::
 
-    [
+    {
         "centos": {
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         },
@@ -50,30 +50,30 @@ can be consumed to dig deeper into the URL structure:
         "ubuntu": {
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         }
-    ]
+    }
 
 ``GET /packages/ceph/centos/``::
 
-    [
+    {
         "7": {
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         },
         "6": {
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         }
-    ]
+    }
 
 ``GET /packages/ceph/centos/7/``::
 
-    [
+    {
         "x86_64": {
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         }
-    ]
+    }
 
 ``GET /packages/ceph/centos/7/x86_64/``::
 
-    [
+    {
         "ceph-0.87.2-0.el7.centos.x86_64.rpm": {
             "signed": True,
             "size": "12M",
@@ -93,7 +93,7 @@ can be consumed to dig deeper into the URL structure:
             "built-by": "alfredodeza",
         }
 
-    ]
+    }
 
 At this point, the keys for the JSON object represent the available binaries
 for the next part of the URL.
