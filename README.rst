@@ -143,6 +143,10 @@ HTTP Responses:
       "ceph-0.87.2-0.el10.centos.x86_64.rpm": {
           "url": "/packages/ceph/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
       }
+    },
+      "ceph-0.87.1-0.el10.centos.x86_64.rpm": {
+          "url": "/packages/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
+      },
     }
   ]
 
@@ -171,7 +175,6 @@ HTTP Responses:
 
     { "msg": "my_new_package already exists" }
 
-
 For non-existing URLs a retroactive feature will create the rest of the url
 structure. For example, a new distribution release for CentOS 10 that didn't
 exist before at this url and for the following package::
@@ -184,7 +187,6 @@ Would create all the parts that didn't exist before ('10','x86_64', and
 The body for the POST HTTP request would still require the "name" key::
 
     { "name": "ceph-0.87.2-0.el10.centos.x86_64.rpm" }
-
 
 Optional (but recommended key) is the ``built-by``::
 
