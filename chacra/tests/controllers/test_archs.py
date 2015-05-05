@@ -42,3 +42,10 @@ class TestArchController(object):
         session.commit()
         result = session.app.get('/projects/ceph/centos/el6/x86_64/')
         assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['size'] == 0
+
+    def test_single_binary_should_create_all_url(self, session):
+        session.app.post_json(
+                '/projects/ceph/centos/el6/x86_64/',
+                params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
+        result = session.app.get('/projects/ceph/centos/el6/x86_64/')
+        result.json['ceph-9.0.0-0.el6.x86_64.rpm']['name'] == 'ceph-9.0.0-0.el6.x86_64.rpm'
