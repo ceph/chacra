@@ -1,5 +1,5 @@
 from pecan import make_app
-from ayni import models
+from chacra import models
 
 
 def setup_app(config):
