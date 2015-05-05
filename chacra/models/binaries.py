@@ -20,11 +20,20 @@ class Binary(Base):
     arch_id = Column(Integer, ForeignKey('archs.id'))
     arch = relationship('DistroArch', backref=backref('binaries', lazy='dynamic'))
 
-    def __init__(self, name, arch):
+    allowed_keys = [
+        'path',
+        'built_by',
+        'byte_size',
+    ]
+
+    def __init__(self, name, arch, **kw):
         self.name = name
         self.arch = arch
         self.created = datetime.datetime.utcnow()
         self.modified = datetime.datetime.utcnow()
+        for key in self.allowed_keys:
+            if key in kw.keys():
+                setattr(self, key, kw[key])
 
     def last_updated(self):
         # TODO
