@@ -1,4 +1,4 @@
-from ayni.models import Package
+from chacra.models import Package
 
 
 class TestPackagesController(object):
