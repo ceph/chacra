@@ -18,6 +18,15 @@ class ErrorsController(object):
         return dict(message=msg)
 
     @expose('json')
+    def not_allowed(self, **kw):
+        msg = kw.get(
+            'error_message',
+            'method not allowed'
+        )
+        response.status = 405
+        return dict(message=msg)
+
+    @expose('json')
     def forbidden(self, **kw):
         msg = kw.get(
             'error_message',
