@@ -35,9 +35,14 @@ class Binary(Base):
             if key in kw.keys():
                 setattr(self, key, kw[key])
 
-    def last_updated(self):
-        # TODO
-        pass
+    def update_from_json(self, data):
+        """
+        We received a JSON blob with updated metadata information
+        that needs to update some fields
+        """
+        for key in self.allowed_keys:
+            if key in data.keys():
+                setattr(self, key, data[key])
 
     @property
     def last_changed(self):
