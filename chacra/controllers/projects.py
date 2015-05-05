@@ -35,7 +35,7 @@ class DistrosController(object):
         return DistroController(name), remainder
 
 
-class PackageController(object):
+class ProjectController(object):
 
     def __init__(self, project_name):
         self.project_name = project_name
@@ -46,14 +46,14 @@ class PackageController(object):
 
     @expose('json')
     def index(self):
-        return self.package.distros
+        return self.project.distros
 
     @expose
     def _lookup(self, name, *remainder):
         return DistrosController(name), remainder
 
 
-class PackagesController(object):
+class ProjectsController(object):
 
     @expose('json')
     def index(self):
@@ -61,4 +61,4 @@ class PackagesController(object):
 
     @expose()
     def _lookup(self, project_name, *remainder):
-        return PackageController(project_name), remainder
+        return ProjectController(project_name), remainder
