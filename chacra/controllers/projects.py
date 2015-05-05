@@ -96,7 +96,7 @@ class ArchController(object):
         self.ensure_objects(name)
         return True
 
-    def ensure_objects(self, binary_name):
+    def ensure_objects(self, binary_name, **kw):
         """
         Since we might not have everything created, ensure everything is
         and push it to the database
@@ -115,7 +115,7 @@ class ArchController(object):
             arch = DistroArch(request.context['distro_arch'], version)
             models.flush()
             models.commit()
-            binary = Binary(binary_name, arch)
+            binary = Binary(binary_name, arch, **kw)
             return binary
 
     @expose()
