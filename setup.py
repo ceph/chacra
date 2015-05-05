@@ -16,6 +16,7 @@ setup(
     install_requires=[
         "pecan",
         "sqlalchemy",
+        "psycopg2",
     ],
     test_suite='chacra',
     zip_safe=False,
