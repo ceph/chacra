@@ -93,7 +93,7 @@ class CrawlCommand(BaseCommand):
         join = os.path.join
         path = args.path
         levels_deep = 0
-
+        binaries = {}
         for root, dirs, files in walk(path):
             levels_deep += 1
 
@@ -102,9 +102,12 @@ class CrawlCommand(BaseCommand):
                 # checks
                 if self.is_valid(item, args):
                     # we have what it looks like a valid binary
-                    print absolute_path
+                    binaries[item] = absolute_path
                 else:
                     continue
+        for name, path in binaries.items():
+            print 'POST %s %s' % (base_url, str(dict(name=name, path=path)))
+            requests.post(base_url, json.dumps(dict(name=name, path=path)))
 
     def is_valid(self, filename, args):
         checkers = {
