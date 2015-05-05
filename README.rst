@@ -7,11 +7,11 @@ A REST API for storing and retrieving specific versions and arquitectures of
 The URL structure is very simple and allows to be explicit about what the type
 and version of a given binary package the API is providing::
 
-    /packages/{package_name}/{distribution}/{distro_release}/{architecture}/$binary
+    /projects/{package_name}/{distribution}/{distro_release}/{architecture}/$binary
 
 So for a CentOS 7 x86_64 package for Ceph the url could look like::
 
-    /packages/ceph/centos/7/x86_64/ceph-0.87.2-0.el7.centos.x86_64.rpm
+    /projects/ceph/centos/7/x86_64/ceph-0.87.2-0.el7.centos.x86_64.rpm
 
 
 Self-discovery
@@ -20,7 +20,7 @@ The API provides informational JSON at every step of the URL about what is
 available as a resource. The following examples show informational output that
 can be consumed to dig deeper into the URL structure:
 
-``GET /packages/``::
+``GET /projects/``::
 
     {
         "ceph": {
@@ -35,7 +35,7 @@ can be consumed to dig deeper into the URL structure:
 
     }
 
-``GET /packages/ceph/``::
+``GET /projects/ceph/``::
 
     {
         "centos": {
@@ -52,7 +52,7 @@ can be consumed to dig deeper into the URL structure:
         }
     }
 
-``GET /packages/ceph/centos/``::
+``GET /projects/ceph/centos/``::
 
     {
         "7": {
@@ -63,7 +63,7 @@ can be consumed to dig deeper into the URL structure:
         }
     }
 
-``GET /packages/ceph/centos/7/``::
+``GET /projects/ceph/centos/7/``::
 
     {
         "x86_64": {
@@ -71,7 +71,7 @@ can be consumed to dig deeper into the URL structure:
         }
     }
 
-``GET /packages/ceph/centos/7/x86_64/``::
+``GET /projects/ceph/centos/7/x86_64/``::
 
     {
         "ceph-0.87.2-0.el7.centos.x86_64.rpm": {
@@ -111,7 +111,7 @@ There are two ways for querying for binary metadata captured by the system.
 If the location for the binary is known then, following our example URL the
 binary should be queried with a ``GET`` at::
 
-    /packages/ceph/centos/10/x86_64?name=ceph-0.87.2-0.el10.centos.x86_64.rpm
+    /projects/ceph/centos/10/x86_64?name=ceph-0.87.2-0.el10.centos.x86_64.rpm
 
 
 HTTP Responses:
@@ -141,11 +141,11 @@ HTTP Responses:
   [
     {
       "ceph-0.87.2-0.el10.centos.x86_64.rpm": {
-          "url": "/packages/ceph/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
+          "url": "/projects/ceph/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
       }
     },
       "ceph-0.87.1-0.el10.centos.x86_64.rpm": {
-          "url": "/packages/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
+          "url": "/projects/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
       },
     }
   ]
@@ -161,7 +161,7 @@ HTTP Responses:
 Creating new items
 ------------------
 ``POST`` will create new items at given parts of the URL. For example, to
-create a new package, a ``POST`` to ``/packages/`` with an HTTP body that
+create a new package, a ``POST`` to ``/projects/`` with an HTTP body that
 should look like::
 
     { "name": "my_new_package" }
@@ -179,7 +179,7 @@ For non-existing URLs a retroactive feature will create the rest of the url
 structure. For example, a new distribution release for CentOS 10 that didn't
 exist before at this url and for the following package::
 
-    /packages/ceph/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm
+    /projects/ceph/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm
 
 Would create all the parts that didn't exist before ('10','x86_64', and
 'ceph-0.87.2-0.el10.centos.x86_64.rpm' from our previous examples).
