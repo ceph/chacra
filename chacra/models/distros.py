@@ -9,8 +9,8 @@ class Distro(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(256), nullable=False, index=True)
 
-    project_id = Column(Integer, ForeignKey('projects.id'))
-    project = relationship('Project', backref=backref('distros', lazy='dynamic'))
+    ref_id = Column(Integer, ForeignKey('refs.id'))
+    ref = relationship('Ref', backref=backref('distros', lazy='dynamic'))
 
     def __init__(self, name, project):
         self.name = name

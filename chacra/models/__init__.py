@@ -91,6 +91,7 @@ def clear():
 def flush():
     Session.flush()
 
-from projects import Project
+from projects import Project  # noqa
 from binaries import Binary  # noqa
 from distros import Distro, DistroVersion, DistroArch  # noqa
+from refs import Ref  # noqa
