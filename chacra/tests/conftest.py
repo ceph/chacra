@@ -134,11 +134,19 @@ class TestApp(object):
         methods = {
             'GET': self.app.get,
             'POST': self.app.post,
+            'POSTJ': self.app.post_json,
             'PUT': self.app.put,
             'DELETE': self.app.delete
         }
         kwargs.setdefault('headers', {}).update(self.__headers__)
         return methods.get(method, self.app.get)(str(url), **kwargs)
+
+    def post_json(self, url, **kwargs):
+        """
+        @param (string) url - The URL to emulate a POST request to
+        @returns (paste.fixture.TestResponse)
+        """
+        return self._do_request(url, 'POSTJ', **kwargs)
 
     def post(self, url, **kwargs):
         """
