@@ -33,7 +33,7 @@ class BinaryController(object):
     @index.when(method='POST', template='json')
     def index_post(self):
         # updates the binary
-        return
+        #return
         try:
             data = request.json
             name = data.get('name')
@@ -43,7 +43,7 @@ class BinaryController(object):
         if not name:
             error('/errors/invalid/', "could not find required key: 'name'")
         self.ensure_objects(name)
-        return True
+        return {}
 
     def ensure_objects(self, binary_name):
         """
@@ -84,17 +84,25 @@ class ArchController(object):
 
     @index.when(method='POST', template='json')
     def index_post(self):
-        # updates the binary
         try:
             data = request.json
             name = data.get('name')
         except ValueError:
             error('/errors/invalid/', 'could not decode JSON body')
+
+        # updates the binary only if explicitly told to do so
+        binary = Binary.query.filter_by(name=name).first()
+        if binary and not data.get('force'):
+            error('/errors/invalid/', 'file already exists and "force" flag was not used')
+        if binary and data.get('force'):
+            binary.update_from_json(data)
+            return {}
+
         # we allow empty data to be pushed
         if not name:
             error('/errors/invalid/', "could not find required key: 'name'")
         self.ensure_objects(name)
-        return True
+        return {}
 
     def ensure_objects(self, binary_name, **kw):
         """
@@ -106,7 +114,6 @@ class ArchController(object):
         version_id = request.context.get('distro_version_id')
         arch_id = request.context.get('distro_arch_id')
         is_none = lambda x: x is None
-        print request.context
         if all(
                 [is_none(i) for i in [project_id, distro_id, version_id, arch_id]]):
             project = projects.Project(request.context['project'])
