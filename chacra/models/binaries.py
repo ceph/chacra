@@ -11,6 +11,7 @@ class Binary(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(256), nullable=False, unique=True, index=True)
     path = Column(String(256))
+    built_by = Column(String(256))
     created = Column(DateTime, index=True)
     modified = Column(DateTime, index=True)
     signed = Column(Boolean(), default=False)
@@ -45,6 +46,7 @@ class Binary(Base):
             signed=self.signed,
             size=self.byte_size,
             path=self.path,
-            last_changed=self.last_changed
+            last_changed=self.last_changed,
+            built_by=self.built_by,
         )
 
