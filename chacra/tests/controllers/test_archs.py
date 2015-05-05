@@ -49,3 +49,13 @@ class TestArchController(object):
                 params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
         result = session.app.get('/projects/ceph/centos/el6/x86_64/')
         result.json['ceph-9.0.0-0.el6.x86_64.rpm']['name'] == 'ceph-9.0.0-0.el6.x86_64.rpm'
+
+    def test_set_the_path_on_binary(self, session):
+        session.app.post_json(
+                '/projects/ceph/centos/el6/x86_64/',
+                params=dict(
+                    name='ceph-9.0.0-0.el6.x86_64.rpm',
+                    path='/'))
+        result = session.app.get('/projects/ceph/centos/el6/x86_64/')
+        result.json['ceph-9.0.0-0.el6.x86_64.rpm']['path'] == '/'
+
