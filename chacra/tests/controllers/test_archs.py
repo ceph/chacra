@@ -54,6 +54,20 @@ class TestArchController(object):
         result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
         result.json['ceph-9.0.0-0.el6.x86_64.rpm']['name'] == 'ceph-9.0.0-0.el6.x86_64.rpm'
 
+    def test_multiple_binaries(self, session):
+        session.app.post_json(
+                '/projects/ceph/giant/ceph/el6/x86_64/',
+                params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
+        session.app.post_json(
+                '/projects/ceph/giant/ceph/el6/x86_64/',
+                params=dict(name='ceph-9.1.0-0.el6.x86_64.rpm'))
+        session.app.post_json(
+                '/projects/ceph/giant/ceph/el6/x86_64/',
+                params=dict(name='ceph-9.0.2-0.el6.x86_64.rpm'))
+        result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
+        assert len(result.json.keys()) == 3
+        result.json['ceph-9.0.0-0.el6.x86_64.rpm']['name'] == 'ceph-9.0.0-0.el6.x86_64.rpm'
+
     def test_set_the_path_on_binary(self, session):
         session.app.post_json(
                 '/projects/ceph/giant/ceph/el6/x86_64/',
