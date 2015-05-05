@@ -59,3 +59,34 @@ class TestArchController(object):
         result = session.app.get('/projects/ceph/centos/el6/x86_64/')
         result.json['ceph-9.0.0-0.el6.x86_64.rpm']['path'] == '/'
 
+    def test_do_not_allow_overwriting(self, session):
+        session.app.post_json(
+                '/projects/ceph/centos/el6/x86_64/',
+                params=dict(
+                    name='ceph-9.0.0-0.el6.x86_64.rpm',
+                    path='/'))
+        result = session.app.post_json(
+                '/projects/ceph/centos/el6/x86_64/',
+                params=dict(
+                    name='ceph-9.0.0-0.el6.x86_64.rpm',
+                    path='/'),
+                expect_errors=True)
+
+        assert result.status_int == 400
+        assert result.json['message'] == 'file already exists and "force" flag was not used'
+
+    def test_allow_overwriting_with_flag(self, session):
+        session.app.post_json(
+                '/projects/ceph/centos/el6/x86_64/',
+                params=dict(
+                    name='ceph-9.0.0-0.el6.x86_64.rpm',
+                    path='/'))
+        session.app.post_json(
+                '/projects/ceph/centos/el6/x86_64/',
+                params=dict(
+                    name='ceph-9.0.0-0.el6.x86_64.rpm',
+                    path='/other',
+                    force=True),
+                )
+        result = session.app.get('/projects/ceph/centos/el6/x86_64/')
+        assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['path'] == '/other'
