@@ -89,7 +89,10 @@ class ArchController(object):
             models.flush()
             models.commit()
             binary = Binary(binary_name, arch, **kw)
-            return binary
+        else: # we have some id's
+            arch = DistroArch.get(request.context['distro_arch_id'])
+            binary = Binary(binary_name, arch, **kw)
+        return binary
 
     @expose()
     def _lookup(self, name, *remainder):
