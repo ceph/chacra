@@ -9,7 +9,7 @@ class Binary(Base):
 
     __tablename__ = 'binaries'
     id = Column(Integer, primary_key=True)
-    name = Column(String(256), nullable=False, unique=True, index=True)
+    name = Column(String(256), nullable=False, index=True)
     path = Column(String(256))
     built_by = Column(String(256))
     created = Column(DateTime, index=True)
