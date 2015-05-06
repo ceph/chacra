@@ -12,9 +12,9 @@ class Distro(Base):
     ref_id = Column(Integer, ForeignKey('refs.id'))
     ref = relationship('Ref', backref=backref('distros', lazy='dynamic'))
 
-    def __init__(self, name, project):
+    def __init__(self, name, ref):
         self.name = name
-        self.project = project
+        self.ref = ref
 
     def last_updated(self):
         # TODO

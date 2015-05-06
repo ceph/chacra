@@ -155,6 +155,7 @@ class RefController(object):
     def index(self):
         if request.method == 'POST':
             error('/errors/not_allowed', 'POST requests to this url are not allowed')
+
         return dict(
             (d.name, d) for d in self.ref.distros.all()
         )
