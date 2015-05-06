@@ -64,9 +64,10 @@ class DistroArch(Base):
         self.name = name
         self.version = version
 
-    def last_updated(self):
-        # TODO
-        pass
+    def get_binary(self, name):
+        for i in self.binaries:
+            if i.name == name:
+                return i
 
     def __json__(self):
         return dict(
