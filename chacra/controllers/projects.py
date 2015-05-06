@@ -80,7 +80,7 @@ class ArchController(object):
         # we allow empty data to be pushed
         if not name:
             error('/errors/invalid/', "could not find required key: 'name'")
-        self.ensure_objects(name)
+        self.ensure_objects(name, **data)
         return {}
 
     def ensure_objects(self, binary_name, **kw):
