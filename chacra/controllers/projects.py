@@ -1,3 +1,4 @@
+from sqlalchemy import and_
 from pecan import expose, abort, request
 from chacra.models import projects, Distro, DistroVersion, DistroArch, Binary, commit, Ref
 from chacra import models
@@ -34,10 +35,23 @@ class BinaryController(object):
 class ArchController(object):
 
     def __init__(self, arch_name):
+        # archs are *not* unique, so we need to go by the distro version *and*
+        # distro to ensure a level of uniqueness.
         self.arch_name = arch_name
-        self.distro_arch = DistroArch.query.filter_by(name=arch_name).first()
-        if not self.distro_arch and request.method != 'POST':
-            abort(404)
+        # if we have a distro already we can filter by that, otherwise we can just
+        # create it later
+        version = request.context.get('distro_version')
+        self.distro_arch = DistroArch.filter_by(name=arch_name).join(
+                    DistroArch.version).filter(
+                        DistroVersion.name == version).first()
+
+        if not self.distro_arch:
+            if request.method != 'POST':
+                abort(404)
+            elif request.method == 'POST':
+                version = DistroVersion.get(request.context['distro_version_id'])
+                self.distro_arch = get_or_create(DistroArch, name=arch_name, version=version)
+
         set_id_in_context('distro_arch_id', self.distro_arch, arch_name)
 
     @expose(generic=True, template='json')
@@ -55,12 +69,13 @@ class ArchController(object):
             error('/errors/invalid/', 'could not decode JSON body')
 
         # updates the binary only if explicitly told to do so
-        binary = Binary.query.filter_by(name=name).first()
-        if binary and not data.get('force'):
-            error('/errors/invalid/', 'file already exists and "force" flag was not used')
-        if binary and data.get('force'):
-            binary.update_from_json(data)
-            return {}
+        binary = self.distro_arch.get_binary(name)
+        if binary:
+            if not data.get('force'):
+                error('/errors/invalid/', 'file already exists and "force" flag was not used')
+            else:
+                binary.update_from_json(data)
+                return {}
 
         # we allow empty data to be pushed
         if not name:
@@ -90,7 +105,7 @@ class ArchController(object):
             models.commit()
             binary = Binary(binary_name, arch, **kw)
         else: # we have some id's
-            arch = DistroArch.get(request.context['distro_arch_id'])
+            arch = self.distro_arch or DistroArch.get(request.context['distro_arch_id'])
             binary = Binary(binary_name, arch, **kw)
         return binary
 
@@ -104,8 +119,13 @@ class DistroVersionController(object):
     def __init__(self, version_name):
         self.version_name = version_name
         self.distro_version = DistroVersion.query.filter_by(name=version_name).first()
-        if not self.distro_version and request.method != 'POST':
-            abort(404)
+        if not self.distro_version:
+            if request.method != 'POST':
+                abort(404)
+            elif request.method == 'POST':
+                distro = Distro.get(request.context['distro_id'])
+                self.distro_version = get_or_create(
+                        DistroVersion, name=version_name, distro=distro)
         set_id_in_context('distro_version_id', self.distro_version, version_name)
 
     @expose('json')
@@ -125,8 +145,12 @@ class DistroController(object):
     def __init__(self, distro_name):
         self.distro_name = distro_name
         self.distro = Distro.query.filter_by(name=distro_name).first()
-        if not self.distro and request.method != 'POST':
-            abort(404)
+        if not self.distro:
+            if request.method != 'POST':
+                abort(404)
+            elif request.method == 'POST':
+                ref = Ref.get(request.context['ref_id'])
+                self.distro = get_or_create(Distro, name=distro_name, ref=ref)
         set_id_in_context('distro_id', self.distro, distro_name)
 
     @expose('json')
@@ -147,8 +171,12 @@ class RefController(object):
     def __init__(self, ref_name):
         self.ref_name = ref_name
         self.ref = Ref.query.filter_by(name=ref_name).first()
-        if not self.ref and request.method != 'POST':
-            abort(404)
+        if not self.ref:
+            if request.method != 'POST':
+                abort(404)
+            elif request.method == 'POST':
+                project = projects.Project.get(request.context['project_id'])
+                self.ref = get_or_create(Ref, name=ref_name, project=project)
         set_id_in_context('ref_id', self.ref, ref_name)
 
     @expose('json')
@@ -165,13 +193,25 @@ class RefController(object):
         return DistroController(name), remainder
 
 
+def get_or_create(model, **kwargs):
+    instance = model.filter_by(**kwargs).first()
+    if instance:
+        return instance
+    else:
+        instance = model(**kwargs)
+        models.commit()
+        return instance
+
 class ProjectController(object):
 
     def __init__(self, project_name):
         self.project_name = project_name
         self.project = projects.Project.query.filter_by(name=project_name).first()
-        if not self.project and request.method != 'POST':
-            abort(404)
+        if not self.project:
+            if request.method != 'POST':
+                abort(404)
+            elif request.method == 'POST':
+                self.project = get_or_create(projects.Project, name=project_name)
         set_id_in_context('project_id', self.project, project_name)
 
     @expose('json')
