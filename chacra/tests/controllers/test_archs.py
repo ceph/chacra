@@ -68,6 +68,31 @@ class TestArchController(object):
         assert len(result.json.keys()) == 3
         result.json['ceph-9.0.0-0.el6.x86_64.rpm']['name'] == 'ceph-9.0.0-0.el6.x86_64.rpm'
 
+    def test_multiple_binaries_in_same_arch_different_versions(self, session):
+        # post same binary to el6 and el7 and same x86_64 arch
+        session.app.post_json(
+                '/projects/ceph/giant/ceph/el6/x86_64/',
+                params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
+        session.app.post_json(
+                '/projects/ceph/giant/ceph/el7/x86_64/',
+                params=dict(name='ceph-9.1.0-0.el6.x86_64.rpm'))
+        el6 = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
+        el7 = session.app.get('/projects/ceph/giant/ceph/el7/x86_64/')
+        assert len(el6.json.keys()) == 1
+        assert len(el7.json.keys()) == 1
+
+    def test_multiple_same_binaries_in_same_arch_different_versions(self, session):
+        # post same binary to el6 and el7 and same x86_64 arch
+        session.app.post_json(
+                '/projects/ceph/giant/ceph/el6/x86_64/',
+                params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
+        session.app.post_json(
+                '/projects/ceph/giant/ceph/el7/x86_64/',
+                params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
+        result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
+        assert len(result.json.keys()) == 1
+        result.json['ceph-9.0.0-0.el6.x86_64.rpm']['name'] == 'ceph-9.0.0-0.el6.x86_64.rpm'
+
     def test_set_the_path_on_binary(self, session):
         session.app.post_json(
                 '/projects/ceph/giant/ceph/el6/x86_64/',
