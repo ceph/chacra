@@ -85,6 +85,8 @@ class CrawlCommand(BaseCommand):
 
         if not all((args.distro, args.version, args.arch, args.project, args.ref)):
             raise SystemExit('--project, --ref, --distro, --version, and --arch are required')
+        # FIXME: we aren't always localhost and we might need a port. Pecan
+        # knows all of this already, ask Pecan?
         base_url = 'http://localhost/projects/%s/%s/%s/%s/%s/' % (args.project, args.ref, args.distro, args.version, args.arch)
         print base_url
 
