@@ -1,4 +1,4 @@
-from chacra.models import Project
+from chacra.models import Project, Ref
 
 
 class TestProjectsController(object):
@@ -58,3 +58,10 @@ class TestProjectController(object):
         session.commit()
         result = session.app.get('/projects/foobar/')
         assert result.json == {}
+
+    def test_get_project_refs(self, session):
+        p = Project('foobar')
+        Ref('master', p)
+        session.commit()
+        result = session.app.get('/projects/foobar/')
+        assert result.json == {'master': {'name': 'master', 'distros': []}}
