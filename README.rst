@@ -24,35 +24,53 @@ can be consumed to dig deeper into the URL structure:
 
     {
         "ceph": {
+            "name": "ceph",
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         },
         "ceph-deploy": {
+            "name": "ceph-deploy",
             "last_updated": "15 hours, 42 minutes, 28 seconds ago"
-        },
-        "radosgw-agent": {
-            "last_updated": "12 hours, 56 minutes, 8 seconds ago"
         }
-
     }
+
 
 ``GET /projects/ceph/``::
 
     {
+        "firefly": {
+            "name": "firefly",
+            "distros": ["centos", "redhat", "debian", "ubuntu"],
+            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
+        },
+    }
+
+
+``GET /projects/ceph/firefly``::
+
+    {
         "centos": {
+            "name": "centos",
+            "versions": ["7", "6"],
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         },
         "redhat": {
+            "name": "redhat",
+            "versions": [],
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         },
         "debian": {
+            "name": "debian",
+            "versions": [],
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         },
         "ubuntu": {
+            "name": "ubuntu",
+            "versions": [],
             "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         }
     }
 
-``GET /projects/ceph/centos/``::
+``GET /projects/ceph/firefly/centos/``::
 
     {
         "7": {
