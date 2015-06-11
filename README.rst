@@ -45,7 +45,7 @@ can be consumed to dig deeper into the URL structure:
     }
 
 
-``GET /projects/ceph/firefly``::
+``GET /projects/ceph/firefly/``::
 
     {
         "centos": {
