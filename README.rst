@@ -176,8 +176,8 @@ HTTP Responses:
     { "msg": "invalid query params: {keys}" }
 
 
-Creating new resources
-----------------------
+File resources
+--------------
 ``POST`` requests will create new resources when using the full url with all
 the metadata parts including the filename *when uploading files*. For example::
 
@@ -235,14 +235,18 @@ HTTP Responses:
 
     { "msg": "my_new_package already exists" }
 
+
+Binary metadata updates
+-----------------------
 For non-existing URLs a retroactive feature will create the rest of the url
 structure. For example, a new distribution release for CentOS 10 that didn't
 exist before at this url and for the following package::
 
-    /projects/ceph/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm
+    /projects/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm
 
 Would create all the parts that didn't exist before ('10','x86_64', and
-'ceph-0.87.2-0.el10.centos.x86_64.rpm' from our previous examples).
+'ceph-0.87.2-0.el10.centos.x86_64.rpm' from our previous examples). This would
+happen with file uploads too.
 
 The body for the POST HTTP request would still require the "name" key::
 
@@ -256,9 +260,16 @@ Optional (but recommended key) is the ``built-by``::
         "built-by": "alfredodeza"
     }
 
+These requests need to go to the parent url part, so for the example above the
+HTTP request would go to::
 
-Force a rewrite of a binary
----------------------------
+    /projects/ceph/firefly/centos/10/x86_64/
+
+Note the need for a trailing slash.
+
+
+Force a rewrite of a binary metadata
+------------------------------------
 If a POST is done to a binary URL that already exists, the API will return
 a 400 with a message indicating that the binary is already there.
 
@@ -269,6 +280,15 @@ in the JSON object when doing a POST::
         "name": "ceph-0.87.2-0.el10.centos.x86_64.rpm",
         "force": True
     }
+
+Again, note that this ``POST`` would need to go to the root of the url, following
+the examples above that would mean::
+
+
+    /projects/ceph/firefly/centos/10/x86_64/
+
+Note the need for a trailing slash.
+
 
 HTTP Responses:
 
