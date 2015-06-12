@@ -1,6 +1,8 @@
-from sqlalchemy import and_
-from pecan import expose, abort, request
-from chacra.models import projects, Distro, DistroVersion, DistroArch, Binary, commit, Ref
+import os
+
+import pecan
+from pecan import expose, abort, request, response
+from chacra.models import projects, Distro, DistroVersion, DistroArch, Binary, Ref
 from chacra import models
 from chacra.controllers import error
 
@@ -23,6 +25,7 @@ class BinaryController(object):
     def __init__(self, binary_name):
         self.binary_name = binary_name
         self.binary = Binary.query.filter_by(name=binary_name).first()
+        self.arch = DistroArch.get(request.context['distro_arch_id'])
         if not self.binary and request.method != 'POST':
                 abort(404)
 
@@ -30,6 +33,46 @@ class BinaryController(object):
     def index(self):
         # TODO: implement downloads
         return dict(name=self.binary.name)
+
+    @index.when(method='POST')
+    def index_post(self):
+        uploaded = request.POST.get('file', False)
+        if uploaded is False:
+            error('/errors/invalid/', 'no file object found in "file" param in POST request')
+        file_obj = uploaded.file
+        full_path = self.save_file(file_obj)
+        if self.binary is None:
+            Binary(self.binary_name, self.arch, path=full_path)
+        else:
+            self.binary.path = full_path
+        return dict()
+
+    def create_directory(self):
+        end_part = request.url.split('projects/')[-1]
+        # take out the binary name
+        end_part = end_part.split(self.binary_name)[-1]
+        path = os.path.join(pecan.conf.binary_root, end_part.lstrip('/'))
+        if not os.path.isdir(path):
+            os.makedirs(path)
+        return path
+
+    def save_file(self, file_obj):
+        dir_path = self.create_directory()
+        if self.binary_name in os.listdir(dir_path):
+            # resource exists so we will update it
+            response.status = 200
+        else:
+            # we will create a resource
+            response.status = 201
+
+        destination = os.path.join(dir_path, self.binary_name)
+        with open(destination, 'wb') as f:
+            try:
+                f.write(file_obj.getvalue())
+            except AttributeError:
+                f.write(file_obj.read())
+        # return the full path to the saved object:
+        return destination
 
 
 class ArchController(object):
@@ -42,8 +85,8 @@ class ArchController(object):
         # create it later
         version = request.context.get('distro_version')
         self.distro_arch = DistroArch.filter_by(name=arch_name).join(
-                    DistroArch.version).filter(
-                        DistroVersion.name == version).first()
+            DistroArch.version).filter(
+                DistroVersion.name == version).first()
 
         if not self.distro_arch:
             if request.method != 'POST':
@@ -105,7 +148,7 @@ class ArchController(object):
             models.flush()
             models.commit()
             binary = Binary(binary_name, arch, **kw)
-        else: # we have some id's
+        else:  # we have some id's
             arch = self.distro_arch or DistroArch.get(request.context['distro_arch_id'])
             binary = Binary(binary_name, arch, **kw)
         return binary
@@ -126,7 +169,7 @@ class DistroVersionController(object):
             elif request.method == 'POST':
                 distro = Distro.get(request.context['distro_id'])
                 self.distro_version = get_or_create(
-                        DistroVersion, name=version_name, distro=distro)
+                    DistroVersion, name=version_name, distro=distro)
         set_id_in_context('distro_version_id', self.distro_version, version_name)
 
     @expose('json')
