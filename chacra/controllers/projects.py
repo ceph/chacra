@@ -37,6 +37,10 @@ class BinaryController(object):
     @index.when(method='POST')
     def index_post(self):
         uploaded = request.POST.get('file', False)
+        if self.binary is not None:
+            if os.path.exists(self.binary.path):
+                if request.POST.get('force', False) is False:
+                    error('/errors/invalid', "resource already exists and 'force' flag was not set")
         if uploaded is False:
             error('/errors/invalid/', 'no file object found in "file" param in POST request')
         file_obj = uploaded.file
