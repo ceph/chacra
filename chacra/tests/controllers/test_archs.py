@@ -1,3 +1,5 @@
+import os
+import pecan
 from chacra.models import Project, Distro, DistroVersion, DistroArch, Binary, Ref
 
 
@@ -133,3 +135,64 @@ class TestArchController(object):
             )
         result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
         assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['path'] == '/other'
+
+    def test_single_binary_file_creates_resource(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        result = session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        assert result.status_int == 201
+
+    def test_new_binary_upload_creates_model_with_path(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+
+        #  this works, why here and not further down?
+        binary = Binary.get(1)
+        assert binary is None
+
+        # we do a bunch of requests that do talk to the database
+        session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+
+        # and here we implode
+        # unless we do a session.start()
+        # session.start()
+        binary = Binary.get(1)
+        assert binary.path
+
+
+    def test_single_binary_file_uploaded_twice_gets_updated(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        result = session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        result = session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        assert result.status_int == 200
+
+    def test_single_binary_file_should_create_all_url(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'something changed')]
+        )
+        contents = open(os.path.join(pecan.conf.binary_root, 'ceph-9.0.0-0.el6.x86_64.rpm')).read()
+        assert contents == 'something changed'
