@@ -191,6 +191,25 @@ is set. Otherwise a 400 is returned.
 If the ``force`` flag is set and the binary is overwritten a 200 is returned.
 If the resource does not exist, a 201 is returned.
 
+File uploads **cannot** create metadata other than the file path where the
+binary is stored at.
+
+User must configure the location of binary uploads in the config file, for
+a location relative to where the config file lives::
+
+    binary_root = '%(confdir)s/public'
+
+Or any other absolute path is allowed too::
+
+    binary_root = '/opt/binaries'
+
+
+Directory paths will follow the same structure as in URLs. For example, with
+a ``binary_root`` key that points to ``/opt/binaries/`` the final location for
+a resource that lives in
+``/projects/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/`` would
+be
+``/opt/binaries/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/``
 
 HTTP Responses:
 
