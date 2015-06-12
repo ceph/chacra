@@ -48,9 +48,9 @@ class BinaryController(object):
         return dict()
 
     def create_directory(self):
-        end_part = request.url.split('projects/')[-1]
+        end_part = request.url.split('projects/')[-1].rstrip('/')
         # take out the binary name
-        end_part = end_part.split(self.binary_name)[-1]
+        end_part = end_part.split(self.binary_name)[0]
         path = os.path.join(pecan.conf.binary_root, end_part.lstrip('/'))
         if not os.path.isdir(path):
             os.makedirs(path)
