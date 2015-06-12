@@ -69,3 +69,5 @@ sqlalchemy = {
     'pool_recycle':  3600,
     'encoding':      'utf-8'
 }
+
+binary_root = '/tmp/'
