@@ -165,12 +165,8 @@ class TestArchController(object):
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
 
-        # and here we implode
-        # unless we do a session.start()
-        # session.start()
         binary = Binary.get(1)
-        assert binary.path
-
+        assert binary.path.endswith('ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm')
 
     def test_single_binary_file_uploaded_twice_gets_updated(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
