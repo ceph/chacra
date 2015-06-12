@@ -176,8 +176,31 @@ HTTP Responses:
     { "msg": "invalid query params: {keys}" }
 
 
-Creating new items
-------------------
+Creating new resources
+----------------------
+``POST`` requests will create new resources when using the full url with all
+the metadata parts including the filename *when uploading files*. For example::
+
+    curl -F "image=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" chacra.ceph.com/projects/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/
+
+Note how a trailing slash is required as well as the full name of the binary.
+
+If the binary exists **it will not get overwritten** unless the ``force`` value
+is set. Otherwise a 400 is returned.
+
+If the ``force`` flag is set and the binary is overwritten a 200 is returned.
+If the resource does not exist, a 201 is returned.
+
+
+HTTP Responses:
+
+* *200*: Resource was updated
+* *201*: Resource was created
+* *400*: Invalid request. Body::
+
+    { "msg": "resource already exists and 'force' flag was not set" }
+
+
 ``POST`` will create new items at given parts of the URL. For example, to
 create a new package, a ``POST`` to ``/projects/`` with an HTTP body that
 should look like::
@@ -231,4 +254,7 @@ in the JSON object when doing a POST::
 HTTP Responses:
 
 * *200*: Success.
+* *400*: Invalid request. Body::
+
+    { "msg": "resource already exists and 'force' flag was not set" }
 
