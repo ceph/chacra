@@ -58,6 +58,7 @@ def init_model():
 
     """
     conf.sqlalchemy.engine = _engine_from_config(conf.sqlalchemy)
+    Session.configure(bind=conf.sqlalchemy.engine)
 
 
 def _engine_from_config(configuration):
@@ -67,13 +68,12 @@ def _engine_from_config(configuration):
 
 
 def start():
-    Session.bind = conf.sqlalchemy.engine
-    metadata.bind = Session.bind
+    Session()
+    metadata.bind = conf.sqlalchemy.engine
 
 
 def start_read_only():
-    Session.bind = conf.sqlalchemy.engine
-    metadata.bind = Session.bind
+    start()
 
 
 def commit():
@@ -86,6 +86,7 @@ def rollback():
 
 def clear():
     Session.remove()
+    Session.close()
 
 
 def flush():
