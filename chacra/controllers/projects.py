@@ -1,7 +1,8 @@
 import os
 
 import pecan
-from pecan import expose, abort, request, response
+from pecan import expose, abort, request, response, conf
+from webob.static import FileIter
 from chacra.models import projects, Distro, DistroVersion, DistroArch, Binary, Ref
 from chacra import models
 from chacra.controllers import error
@@ -29,7 +30,7 @@ class BinaryController(object):
         if not self.binary and request.method != 'POST':
                 abort(404)
 
-    @expose('json', generic=True)
+    @expose(content_type='application/octet-stream', generic=True)
     def index(self):
         """
         Special method for internal redirect URI's so that webservers (like
@@ -58,8 +59,12 @@ class BinaryController(object):
         """
         # we need to slap some headers so Nginx can serve this
         # TODO: maybe disable this for testing?
+        # XXX Maybe we don't need to set Content-Disposition here?
+        response.headers['Content-Disposition'] = 'attachment; filename=%s' % str(self.binary.name)
         response.headers['X-Accel-Redirect'] = self.binary.path
-        return dict()
+        if conf.delegate_downloads is False:
+            f = open(self.binary.path, 'rb')
+            response.app_iter = FileIter(f)
 
     @index.when(method='POST')
     def index_post(self):
