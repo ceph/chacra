@@ -23,7 +23,7 @@ class Distro(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            versions=self.versions.all()
+            versions=[v.name for v in self.versions.all()]
         )
 
 
@@ -47,7 +47,7 @@ class DistroVersion(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            archs=self.archs.all()
+            archs=[a.name for a in self.archs.all()]
         )
 
 
@@ -72,6 +72,6 @@ class DistroArch(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            binaries=self.binaries.all()
+            binaries=[b.name for b in self.binaries.all()]
         )
 
