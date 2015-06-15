@@ -31,8 +31,35 @@ class BinaryController(object):
 
     @expose('json', generic=True)
     def index(self):
-        # TODO: implement downloads
-        return dict(name=self.binary.name)
+        """
+        Special method for internal redirect URI's so that webservers (like
+        Nginx) can serve downloads to clients while the app just delegates.
+        This method will require an Nginx configuration that points to
+        resources and match `binary_root` URIs::
+
+            location /home/ubuntu/repos/ {
+              internal;
+              alias   /files/;
+            }
+
+        `alias` can be anything, it would probably make sense to have a set of rules that allow
+        distinct URIs, like::
+
+            location /home/ubuntu/repos/rpm-firefly/ {
+              internal;
+              alias   /files/rpm-firefly/;
+            }
+
+
+        There are two ways to get binaries into this app: via existing files in
+        certain paths POSTing JSON to the arch/ endpoint, or via actual upload
+        of the binary. So if many locations need to be supported, they each
+        need to have a corresponding section in Nginx to be configured.
+        """
+        # we need to slap some headers so Nginx can serve this
+        # TODO: maybe disable this for testing?
+        response.headers['X-Accel-Redirect'] = self.binary.path
+        return dict()
 
     @index.when(method='POST')
     def index_post(self):
