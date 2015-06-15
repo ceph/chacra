@@ -19,6 +19,6 @@ class Ref(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            distros=self.distros.all()
+            distros=[d.name for d in self.distros.all()]
         )
 
