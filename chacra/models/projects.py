@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from chacra.models import Base
 
 
@@ -12,9 +12,9 @@ class Project(Base):
     def __init__(self, name):
         self.name = name
 
-
     def __json__(self):
         return dict(
             name=self.name,
+            refs=[r.name for r in self.refs.all()]
         )
 
