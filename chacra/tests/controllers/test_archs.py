@@ -183,7 +183,7 @@ class TestArchController(object):
 
         assert result.status_int == 400
 
-    def test_single_binary_file_uploaded_twice_gets_updated(self, session, tmpdir):
+    def test_posting_twice_requires_force_flag(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
             '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
@@ -191,11 +191,12 @@ class TestArchController(object):
         )
         result = session.app.post(
             '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            params={'force': True},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         assert result.status_int == 200
 
-    def test_single_binary_file_should_create_all_url(self, session, tmpdir):
+    def test_posting_twice_updates_the_binary(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
             '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
@@ -203,7 +204,14 @@ class TestArchController(object):
         )
         session.app.post(
             '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            params={'force': True},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'something changed')]
         )
-        contents = open(os.path.join(pecan.conf.binary_root, 'ceph-9.0.0-0.el6.x86_64.rpm')).read()
+
+        destination = os.path.join(
+            pecan.conf.binary_root,
+            'ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm'
+        )
+
+        contents = open(destination).read()
         assert contents == 'something changed'
