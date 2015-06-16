@@ -27,8 +27,6 @@ class BinaryController(object):
         self.binary_name = binary_name
         self.binary = Binary.query.filter_by(name=binary_name).first()
         self.arch = DistroArch.get(request.context['distro_arch_id'])
-        if not self.binary and request.method != 'POST':
-                abort(404)
 
     @expose(content_type='application/octet-stream', generic=True)
     def index(self):
@@ -57,6 +55,8 @@ class BinaryController(object):
         of the binary. So if many locations need to be supported, they each
         need to have a corresponding section in Nginx to be configured.
         """
+        if not self.binary:
+            abort(404)
         # we need to slap some headers so Nginx can serve this
         # TODO: maybe disable this for testing?
         # XXX Maybe we don't need to set Content-Disposition here?
