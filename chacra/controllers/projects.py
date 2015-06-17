@@ -1,21 +1,8 @@
 from pecan import expose, abort, request
 from chacra.models import projects
 from chacra import models
-from chacra.controllers import error
+from chacra.controllers import error, set_id_in_context
 from chacra.controllers.refs import RefController
-
-
-# TODO: move this out of here
-def set_id_in_context(name, object_model, value):
-    # if the object_model is None, then it will save it as None
-    # saving us from having to do this everywhere
-    object_name = name.split('_id')[0]
-    if object_model is not None:
-        request.context[name] = object_model.id
-        request.context[object_name] = object_model.name
-    else:
-        request.context[name] = None
-        request.context[object_name] = value
 
 
 class ProjectController(object):
