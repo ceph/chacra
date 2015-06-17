@@ -41,6 +41,18 @@ def auto_add(target, args, kwargs):
     Session.add(target)
 
 
+# Utilities:
+
+def get_or_create(model, **kwargs):
+    instance = model.filter_by(**kwargs).first()
+    if instance:
+        return instance
+    else:
+        instance = model(**kwargs)
+        commit()
+        return instance
+
+
 def init_model():
     """
     This is a stub method which is called at application startup time.

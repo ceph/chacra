@@ -30,6 +30,3 @@ class RefController(object):
     @expose()
     def _lookup(self, name, *remainder):
         return DistroController(name), remainder
-
-
-
