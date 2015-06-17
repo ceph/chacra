@@ -2,7 +2,7 @@ from pecan import expose, abort, request
 from chacra.models import projects, Distro, DistroVersion, DistroArch, Binary, Ref
 from chacra import models
 from chacra.controllers import error, set_id_in_context
-from charcra.models import get_or_create
+from chacra.models import get_or_create
 from chacra.controllers.binaries import BinaryController
 
 
