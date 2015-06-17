@@ -25,11 +25,9 @@ can be consumed to dig deeper into the URL structure:
     {
         "ceph": {
             "name": "ceph",
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
         },
         "ceph-deploy": {
             "name": "ceph-deploy",
-            "last_updated": "15 hours, 42 minutes, 28 seconds ago"
         }
     }
 
@@ -39,8 +37,7 @@ can be consumed to dig deeper into the URL structure:
     {
         "firefly": {
             "name": "firefly",
-            "distros": ["centos", "redhat", "debian", "ubuntu"],
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
+            "distros": ["centos", "redhat", "debian", "ubuntu"]
         },
     }
 
@@ -50,23 +47,19 @@ can be consumed to dig deeper into the URL structure:
     {
         "centos": {
             "name": "centos",
-            "versions": ["7", "6"],
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
+            "versions": ["7", "6"]
         },
         "redhat": {
             "name": "redhat",
-            "versions": [],
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
+            "versions": []
         },
         "debian": {
             "name": "debian",
-            "versions": [],
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
+            "versions": []
         },
         "ubuntu": {
             "name": "ubuntu",
-            "versions": [],
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
+            "versions": []
         }
     }
 
@@ -81,7 +74,7 @@ can be consumed to dig deeper into the URL structure:
         }
     }
 
-``GET /projects/ceph/centos/7/``::
+``GET /projects/ceph/firefly/centos/7/``::
 
     {
         "x86_64": {
@@ -89,7 +82,7 @@ can be consumed to dig deeper into the URL structure:
         }
     }
 
-``GET /projects/ceph/centos/7/x86_64/``::
+``GET /projects/ceph/firefly/centos/7/x86_64/``::
 
     {
         "ceph-0.87.2-0.el7.centos.x86_64.rpm": {
@@ -129,7 +122,7 @@ There are two ways for querying for binary metadata captured by the system.
 If the location for the binary is known then, following our example URL the
 binary should be queried with a ``GET`` at::
 
-    /projects/ceph/centos/10/x86_64?name=ceph-0.87.2-0.el10.centos.x86_64.rpm
+    /projects/ceph/firefly/centos/10/x86_64?name=ceph-0.87.2-0.el10.centos.x86_64.rpm
 
 
 HTTP Responses:
@@ -159,11 +152,11 @@ HTTP Responses:
   [
     {
       "ceph-0.87.2-0.el10.centos.x86_64.rpm": {
-          "url": "/projects/ceph/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
+          "url": "/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
       }
     },
       "ceph-0.87.1-0.el10.centos.x86_64.rpm": {
-          "url": "/projects/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
+          "url": "/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
       },
     }
   ]
@@ -181,7 +174,7 @@ File resources
 ``POST`` requests will create new resources when using the full url with all
 the metadata parts including the filename *when uploading files*. For example::
 
-    curl -F "image=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" chacra.ceph.com/projects/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/
+    curl -F "image=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" chacra.ceph.com/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/
 
 Note how a trailing slash is required as well as the full name of the binary.
 
@@ -207,9 +200,9 @@ Or any other absolute path is allowed too::
 Directory paths will follow the same structure as in URLs. For example, with
 a ``binary_root`` key that points to ``/opt/binaries/`` the final location for
 a resource that lives in
-``/projects/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/`` would
+``/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/`` would
 be
-``/opt/binaries/ceph/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/``
+``/opt/binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/``
 
 HTTP Responses:
 
