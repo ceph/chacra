@@ -15,6 +15,6 @@ class Project(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            refs=[r.name for r in self.refs.all()]
+            refs=list(set([b.ref for b in self.binaries.all()]))
         )
 
