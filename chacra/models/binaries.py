@@ -1,6 +1,7 @@
 import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm.exc import DetachedInstanceError
 from chacra.models import Base
 from chacra.controllers import util
 
@@ -11,29 +12,43 @@ class Binary(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(256), nullable=False, index=True)
     path = Column(String(256))
+    ref = Column(String(256), index=True)
+    distro = Column(String(256), nullable=False, index=True)
+    distro_version = Column(String(256), nullable=False, index=True)
+    arch = Column(String(256), nullable=False, index=True)
     built_by = Column(String(256))
     created = Column(DateTime, index=True)
     modified = Column(DateTime, index=True)
     signed = Column(Boolean(), default=False)
     byte_size = Column(Integer, default=0)
 
-    arch_id = Column(Integer, ForeignKey('archs.id'))
-    arch = relationship('DistroArch', backref=backref('binaries', lazy='dynamic'))
+    project_id = Column(Integer, ForeignKey('projects.id'))
+    project = relationship('Project', backref=backref('binaries', lazy='dynamic'))
 
     allowed_keys = [
         'path',
+        'distro',
+        'distro_version',
+        'arch',
+        'ref',
         'built_by',
         'byte_size',
     ]
 
-    def __init__(self, name, arch, **kw):
+    def __init__(self, name, project, **kw):
         self.name = name
-        self.arch = arch
+        self.project = project
         self.created = datetime.datetime.utcnow()
         self.modified = datetime.datetime.utcnow()
         for key in self.allowed_keys:
             if key in kw.keys():
                 setattr(self, key, kw[key])
+
+    def __repr__(self):
+        try:
+            return '<Binary %r>' % self.name
+        except DetachedInstanceError:
+            return '<Binary detached>'
 
     def update_from_json(self, data):
         """
