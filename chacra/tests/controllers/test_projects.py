@@ -1,4 +1,4 @@
-from chacra.models import Project, Ref
+from chacra.models import Project, Binary
 
 
 class TestProjectsController(object):
@@ -57,11 +57,12 @@ class TestProjectController(object):
         Project('foobar')
         session.commit()
         result = session.app.get('/projects/foobar/')
-        assert result.json == {}
+        assert result.json == {'name': 'foobar', 'refs': []}
 
     def test_get_project_refs(self, session):
         p = Project('foobar')
-        Ref('master', p)
+        Binary('ceph-1.0.0.rpm', p, ref='master', distro='centos', distro_version='el6', arch='i386')
+        Binary('ceph-1.0.0.rpm', p, ref='firefly', distro='centos', distro_version='el6', arch='i386')
         session.commit()
         result = session.app.get('/projects/foobar/')
-        assert result.json == {'master': {'name': 'master', 'distros': []}}
+        assert result.json == {'name': 'foobar', 'refs': ['firefly', 'master']}
