@@ -1,3 +1,4 @@
+from sqlalchemy.orm import subqueryload_all
 from pecan import expose, abort, request
 from chacra.models import projects
 from chacra import models
@@ -9,23 +10,20 @@ class RefController(object):
 
     def __init__(self, ref_name):
         self.ref_name = ref_name
-        self.ref = models.Ref.query.filter_by(name=ref_name).first()
-        if not self.ref:
-            if request.method != 'POST':
-                abort(404)
-            elif request.method == 'POST':
-                project = projects.Project.get(request.context['project_id'])
-                self.ref = models.get_or_create(models.Ref, name=ref_name, project=project)
-        set_id_in_context('ref_id', self.ref, ref_name)
+        self.project = models.Project.get(request.context['project_id'])
 
-    @expose('json')
+    @expose('json', generic=True)
     def index(self):
-        if request.method == 'POST':
-            error('/errors/not_allowed', 'POST requests to this url are not allowed')
+        if self.ref_name not in self.project.refs:
+            abort(404)
+        resp = {}
+        for distro in self.project.distros:
+            resp[distro] = [b.distro_version for b in models.Binary.filter_by(project=self.project, distro=distro).all()]
+        return resp
 
-        return dict(
-            (d.name, d) for d in self.ref.distros.all()
-        )
+    @index.when(method='POST')
+    def index_post(self):
+        error('/errors/not_allowed', 'POST requests to this url are not allowed')
 
     @expose()
     def _lookup(self, name, *remainder):
