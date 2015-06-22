@@ -1,14 +1,14 @@
-from chacra.models import Project, Ref, Distro
+from chacra.models import Project, Binary
 
 
 class TestRefController(object):
 
     def test_get_index_single_ref(self, session):
         p = Project('ceph')
-        Ref('master', p)
+        Binary('ceph-1.0.0.rpm', p, ref='master', distro='centos', distro_version='el6', arch='i386')
         session.commit()
         result = session.app.get('/projects/ceph/master/')
-        assert result.json == {}
+        assert result.json == {'centos': ['el6']}
 
     def test_get_index_no_ref(self, session):
         Project('ceph')
@@ -18,17 +18,15 @@ class TestRefController(object):
 
     def test_get_index_ref_with_distro(self, session):
         p = Project('ceph')
-        r = Ref('master', p)
-        Distro('centos', r)
+        Binary('ceph-1.0.0.rpm', p, ref='master', distro='centos', distro_version='el6', arch='i386')
         session.commit()
         result = session.app.get('/projects/ceph/master/')
-        assert result.json['centos'] == {'name': 'centos', 'versions': []}
+        assert result.json['centos'] == ['el6']
 
     def test_get_index_ref_with_distros(self, session):
         p = Project('ceph')
-        r = Ref('master', p)
-        Distro('ubuntu', r)
-        Distro('centos', r)
+        Binary('ceph-1.0.0.rpm', p, ref='master', distro='centos', distro_version='el6', arch='i386')
+        Binary('ceph-1.0.0.deb', p, ref='master', distro='ubuntu', distro_version='trusty', arch='i386')
         session.commit()
         result = session.app.get('/projects/ceph/master/')
         assert result.json.keys() == ['centos', 'ubuntu']
