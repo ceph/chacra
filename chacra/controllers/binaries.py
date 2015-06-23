@@ -2,7 +2,7 @@ import os
 import pecan
 from pecan import expose, abort, request, response, conf
 from webob.static import FileIter
-from chacra.models import Binary, DistroArch
+from chacra.models import Binary, Project
 from chacra.controllers import error
 
 
@@ -10,8 +10,8 @@ class BinaryController(object):
 
     def __init__(self, binary_name):
         self.binary_name = binary_name
-        self.binary = Binary.query.filter_by(name=binary_name).first()
-        self.arch = DistroArch.get(request.context['distro_arch_id'])
+        self.project = Project.get(request.context['project_id'])
+        self.binary = Binary.query.filter_by(name=binary_name, project=self.project).first()
 
     @expose(content_type='application/octet-stream', generic=True)
     def index(self):
@@ -53,17 +53,27 @@ class BinaryController(object):
 
     @index.when(method='POST')
     def index_post(self):
-        uploaded = request.POST.get('file', False)
+        contents = request.POST.get('file', False)
         if self.binary is not None:
             if os.path.exists(self.binary.path):
                 if request.POST.get('force', False) is False:
                     error('/errors/invalid', "resource already exists and 'force' flag was not set")
-        if uploaded is False:
+        if contents is False:
             error('/errors/invalid/', 'no file object found in "file" param in POST request')
-        file_obj = uploaded.file
+        file_obj = contents.file
         full_path = self.save_file(file_obj)
         if self.binary is None:
-            Binary(self.binary_name, self.arch, path=full_path)
+            path = full_path
+            distro = request.context['distro']
+            distro_version = request.context['distro_version']
+            arch = request.context['arch']
+            ref = request.context['ref']
+
+            Binary(
+                self.binary_name, self.project, arch=arch,
+                distro=distro, distro_version=distro_version,
+                ref=ref, path=path
+            )
         else:
             self.binary.path = full_path
         return dict()
