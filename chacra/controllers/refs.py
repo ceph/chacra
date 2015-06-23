@@ -11,6 +11,7 @@ class RefController(object):
     def __init__(self, ref_name):
         self.ref_name = ref_name
         self.project = models.Project.get(request.context['project_id'])
+        request.context['ref'] = self.ref_name
 
     @expose('json', generic=True)
     def index(self):
