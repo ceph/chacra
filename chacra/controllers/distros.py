@@ -21,7 +21,7 @@ class DistroVersionController(object):
         for version in self.project.distro_versions:
             archs = [b.arch for b in models.Binary.filter_by(project=self.project, distro_version=version, distro=self.distro_name).all()]
             if archs:
-                resp[version] = archs
+                resp[version] = list(set(archs))
         return resp
 
     @index.when(method='POST')
@@ -47,7 +47,7 @@ class DistroController(object):
         for version in self.project.distro_versions:
             archs = [b.arch for b in models.Binary.filter_by(project=self.project, distro_version=version, distro=self.distro_name).all()]
             if archs:
-                resp[version] = archs
+                resp[version] = list(set(archs))
         return resp
 
     @index.when(method='POST')
