@@ -1,5 +1,5 @@
 from pecan import expose, abort, request
-from chacra.models import projects, Distro, DistroVersion, DistroArch, Binary, Ref
+from chacra.models import Binary, Project
 from chacra import models
 from chacra.controllers import error, set_id_in_context
 from chacra.models import get_or_create
@@ -8,31 +8,35 @@ from chacra.controllers.binaries import BinaryController
 
 class ArchController(object):
 
-    def __init__(self, arch_name):
-        # archs are *not* unique, so we need to go by the distro version *and*
-        # distro to ensure a level of uniqueness.
-        self.arch_name = arch_name
-        # if we have a distro already we can filter by that, otherwise we can just
-        # create it later
-        version = request.context.get('distro_version')
-        self.distro_arch = DistroArch.filter_by(name=arch_name).join(
-            DistroArch.version).filter(
-                DistroVersion.name == version).first()
-
-        if not self.distro_arch:
-            if request.method != 'POST':
-                abort(404)
-            elif request.method == 'POST':
-                version = DistroVersion.get(request.context['distro_version_id'])
-                self.distro_arch = get_or_create(DistroArch, name=arch_name, version=version)
-
-        set_id_in_context('distro_arch_id', self.distro_arch, arch_name)
+    def __init__(self, arch):
+        self.arch = arch
+        self.project = models.Project.get(request.context['project_id'])
+        request.context['arch'] = self.arch
+        self.distro = request.context['distro']
+        self.distro_version = request.context['distro_version']
+        self.arch = request.context['arch']
+        self.ref = request.context['ref']
 
     @expose(generic=True, template='json')
     def index(self):
-        return dict(
-            (d.name, d) for d in self.distro_arch.binaries.all()
-        )
+        if self.arch not in self.project.archs:
+            abort(404)
+
+        resp = {}
+        for b in self.project.binaries.filter_by(
+                distro=self.distro,
+                distro_version=self.distro_version,
+                ref=self.ref,
+                arch=self.arch).all():
+            resp[b.name] = b
+        return resp
+
+    def get_binary(self, name):
+        return Binary.filter_by(
+            name=name, project=self.project, arch=self.arch,
+            distro=self.distro, distro_version=self.distro_version,
+            ref=self.ref
+        ).first()
 
     @index.when(method='POST', template='json')
     def index_post(self):
@@ -43,7 +47,7 @@ class ArchController(object):
             error('/errors/invalid/', 'could not decode JSON body')
 
         # updates the binary only if explicitly told to do so
-        binary = self.distro_arch.get_binary(name)
+        binary = self.get_binary(name)
         if binary:
             if not data.get('force'):
                 error('/errors/invalid/', 'file already exists and "force" flag was not used')
@@ -55,7 +59,14 @@ class ArchController(object):
         if not name:
             error('/errors/invalid/', "could not find required key: 'name'")
         name = data.pop('name')
-        self.ensure_objects(name, **data)
+        Binary(
+            name=name, project=self.project, arch=self.arch,
+            distro=self.distro, distro_version=self.distro_version,
+            ref=self.ref
+        )
+
+
+        #self.ensure_objects(name, **data)
         return {}
 
     def ensure_objects(self, binary_name, **kw):
@@ -71,17 +82,18 @@ class ArchController(object):
         is_none = lambda x: x is None
         if all(
                 [is_none(i) for i in [project_id, distro_id, version_id, arch_id, ref_id]]):
-            project = projects.Project(request.context['project'])
+            project = Project(request.context['project'])
             ref = Ref(request.context['ref'], project)
-            distro = Distro(request.context['distro'], ref)
-            version = DistroVersion(request.context['distro_version'], distro)
-            arch = DistroArch(request.context['distro_arch'], version)
+            distro = Distro(request.context['distro'], ref, project)
+            version = DistroVersion(request.context['distro_version'], distro, project)
+            arch = DistroArch(request.context['distro_arch'], version, project)
             models.flush()
             models.commit()
             binary = Binary(binary_name, arch, **kw)
         else:  # we have some id's
+            project = Project.get(request.context['project_id'])
             arch = self.distro_arch or DistroArch.get(request.context['distro_arch_id'])
-            binary = Binary(binary_name, arch, **kw)
+            binary = Binary(binary_name, arch, project, **kw)
         return binary
 
     @expose()
