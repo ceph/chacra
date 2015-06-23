@@ -19,7 +19,7 @@ class RefController(object):
             abort(404)
         resp = {}
         for distro in self.project.distros:
-            resp[distro] = [b.distro_version for b in models.Binary.filter_by(project=self.project, distro=distro).all()]
+            resp[distro] = list(set([b.distro_version for b in models.Binary.filter_by(project=self.project, distro=distro).all()]))
         return resp
 
     @index.when(method='POST')
