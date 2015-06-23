@@ -12,6 +12,22 @@ class Project(Base):
     def __init__(self, name):
         self.name = name
 
+    @property
+    def archs(self):
+        return list(set([b.arch for b in self.binaries.all()]))
+
+    @property
+    def distro_versions(self):
+        return list(set([b.distro_version for b in self.binaries.all()]))
+
+    @property
+    def distros(self):
+        return list(set([b.distro for b in self.binaries.all()]))
+
+    @property
+    def refs(self):
+        return list(set([b.ref for b in self.binaries.all()]))
+
     def __repr__(self):
         try:
             return '<Project %r>' % self.name
@@ -21,6 +37,6 @@ class Project(Base):
     def __json__(self):
         return dict(
             name=self.name,
-            refs=list(set([b.ref for b in self.binaries.all()]))
+            refs=self.refs
         )
 
