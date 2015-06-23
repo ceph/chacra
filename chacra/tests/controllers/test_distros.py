@@ -10,6 +10,14 @@ class TestDistroController(object):
         result = session.app.get('/projects/ceph/master/ubuntu/')
         assert result.json == {'trusty': ['i386']}
 
+    def test_distro_should_list_unique_versions(self, session):
+        p = Project('ceph')
+        Binary('ceph-1.0.0.deb', p, ref='master', distro='ubuntu', distro_version='trusty', arch='i386')
+        Binary('ceph-1.0.1.deb', p, ref='master', distro='ubuntu', distro_version='trusty', arch='i386')
+        session.commit()
+        result = session.app.get('/projects/ceph/master/ubuntu/')
+        assert result.json == {'trusty': ['i386']}
+
     def test_list_a_distro_version_not_found(self, session):
         p = Project('ceph')
         Binary('ceph-1.0.0.rpm', p, ref='master', distro='centos', distro_version='el6', arch='i386')
