@@ -11,8 +11,8 @@ class TestProjectsController(object):
     def test_list_a_project(self, session):
         Project('foobar')
         session.commit()
-        result = session.app.get('/projects/')
-        assert result.json['foobar']['name'] == 'foobar'
+        result = session.app.get('/projects/').json
+        assert result == {'foobar': []}
 
     def test_single_project_should_have_one_item(self, session):
         Project('foobar')
@@ -31,15 +31,6 @@ class TestProjectsController(object):
         assert result.status_int == 200
         assert len(json) == 20
 
-# TODO
-#    def test_get_extra_metadata_for_package(self, session):
-#        Project('foobar')
-#        session.commit()
-#
-#        result = session.app.get('/projects/')
-#        last_updated = result.json['foobar']['last_updated']
-#        assert last_updated.endswith('seconds ago')
-
 
 class TestProjectController(object):
 
@@ -57,7 +48,7 @@ class TestProjectController(object):
         Project('foobar')
         session.commit()
         result = session.app.get('/projects/foobar/')
-        assert result.json == {'name': 'foobar', 'refs': []}
+        assert result.json == {}
 
     def test_get_project_refs(self, session):
         p = Project('foobar')
@@ -65,4 +56,4 @@ class TestProjectController(object):
         Binary('ceph-1.0.0.rpm', p, ref='firefly', distro='centos', distro_version='el6', arch='i386')
         session.commit()
         result = session.app.get('/projects/foobar/')
-        assert result.json == {'name': 'foobar', 'refs': ['firefly', 'master']}
+        assert result.json == {'firefly': ['centos'], 'master': ['centos']}
