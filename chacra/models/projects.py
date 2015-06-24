@@ -35,7 +35,11 @@ class Project(Base):
             return '<Project detached>'
 
     def __json__(self):
-        return dict(
-            refs=self.refs
-        )
-
+        json_ = {}
+        for ref in self.refs:
+            json_[ref] = list(
+                set(
+                    [b.distro for b in self.binaries.filter_by(ref=ref).all()]
+                )
+            )
+        return json_
