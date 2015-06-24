@@ -18,10 +18,10 @@ class DistroVersionController(object):
             abort(404)
 
         resp = {}
-        for version in self.project.distro_versions:
-            archs = [b.arch for b in models.Binary.filter_by(project=self.project, distro_version=version, distro=self.distro_name).all()]
-            if archs:
-                resp[version] = list(set(archs))
+        for arch in self.project.archs:
+            binaries = [b.name for b in models.Binary.filter_by(project=self.project, distro_version=self.version_name, distro=self.distro_name).all()]
+            if binaries:
+                resp[arch] = list(set(binaries))
         return resp
 
     @index.when(method='POST')
