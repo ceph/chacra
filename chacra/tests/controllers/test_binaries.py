@@ -23,7 +23,7 @@ class TestBinaryUniqueness(object):
             '/projects/ceph-deploy/master/centos/el6/',
         )
 
-        assert result.json['el6'] == ['i386']
+        assert result.json['i386'] == ['ceph-deploy-1.0.0-0.el6.i386.rpm']
 
 
 class TestBinaryController(object):
