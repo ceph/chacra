@@ -36,7 +36,6 @@ class Project(Base):
 
     def __json__(self):
         return dict(
-            name=self.name,
             refs=self.refs
         )
 
