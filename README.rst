@@ -23,63 +23,37 @@ can be consumed to dig deeper into the URL structure:
 ``GET /projects/``::
 
     {
-        "ceph": {
-            "name": "ceph",
-        },
-        "ceph-deploy": {
-            "name": "ceph-deploy",
-        }
+        "ceph": ["firefly", "giant", "hammer"],
+        "ceph-deploy": ["master"]
     }
 
 
 ``GET /projects/ceph/``::
 
     {
-        "firefly": {
-            "name": "firefly",
-            "distros": ["centos", "redhat", "debian", "ubuntu"]
-        },
+        "firefly": ["centos", "redhat", "debian", "ubuntu"]
     }
 
 
 ``GET /projects/ceph/firefly/``::
 
     {
-        "centos": {
-            "name": "centos",
-            "versions": ["7", "6"]
-        },
-        "redhat": {
-            "name": "redhat",
-            "versions": []
-        },
-        "debian": {
-            "name": "debian",
-            "versions": []
-        },
-        "ubuntu": {
-            "name": "ubuntu",
-            "versions": []
-        }
+        "centos": ["7", "6"],
+        "debian": ["wheezy"],
+        "ubuntu": ["trusty"],
     }
 
 ``GET /projects/ceph/firefly/centos/``::
 
     {
-        "7": {
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
-        },
-        "6": {
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
-        }
+        "7": ["x86_64"],
+        "6": ["x86_64"]
     }
 
 ``GET /projects/ceph/firefly/centos/7/``::
 
     {
-        "x86_64": {
-            "last_updated": "14 hours, 39 minutes, 19 seconds ago"
-        }
+        "x86_64": ["ceph-0.87.2-0.el7.centos.x86_64.rpm"]
     }
 
 ``GET /projects/ceph/firefly/centos/7/x86_64/``::
