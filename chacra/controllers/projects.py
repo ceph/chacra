@@ -1,5 +1,5 @@
 from pecan import expose, abort, request
-from chacra.models import projects
+from chacra.models import Project
 from chacra import models
 from chacra.controllers import error
 from chacra.controllers.refs import RefController
@@ -9,12 +9,12 @@ class ProjectController(object):
 
     def __init__(self, project_name):
         self.project_name = project_name
-        self.project = projects.Project.query.filter_by(name=project_name).first()
+        self.project = Project.query.filter_by(name=project_name).first()
         if not self.project:
             if request.method != 'POST':
                 abort(404)
             elif request.method == 'POST':
-                self.project = models.get_or_create(projects.Project, name=project_name)
+                self.project = models.get_or_create(Project, name=project_name)
         request.context['project_id'] = self.project.id
 
     @expose('json')
@@ -32,10 +32,10 @@ class ProjectsController(object):
 
     @expose('json')
     def index(self):
-        return dict(
-            (p.name, p) for p in
-            projects.Project.query.all()
-        )
+        resp = {}
+        for project in Project.query.all():
+            resp[project.name] = project.refs
+        return resp
 
     @expose()
     def _lookup(self, project_name, *remainder):
