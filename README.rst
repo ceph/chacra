@@ -148,7 +148,7 @@ File resources
 ``POST`` requests will create new resources when using the full url with all
 the metadata parts including the filename *when uploading files*. For example::
 
-    curl -F "image=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" chacra.ceph.com/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/
+    curl -F "file=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" chacra.ceph.com/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/
 
 Note how a trailing slash is required as well as the full name of the binary.
 
