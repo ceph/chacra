@@ -53,6 +53,9 @@ class ArchController(object):
                 error('/errors/invalid/', 'file already exists and "force" flag was not used')
             else:
                 # FIXME this looks like we need to implement PUT
+                path = data.get('path')
+                if path:
+                    data['byte_size'] = os.path.getsize(path)
                 binary.update_from_json(data)
                 return {}
 
@@ -61,7 +64,7 @@ class ArchController(object):
             error('/errors/invalid/', "could not find required key: 'name'")
         name = data.pop('name')
         path = data.get('path')
-        
+
         if path:
             byte_size = os.path.getsize(path)
         else:
