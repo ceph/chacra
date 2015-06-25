@@ -10,6 +10,7 @@ class DistroVersionController(object):
         self.distro_version = distro_version
         self.project = models.Project.get(request.context['project_id'])
         self.distro_name = request.context['distro']
+        self.ref = request.context['ref']
         request.context['distro_version'] = self.distro_version
 
     @expose('json', generic=True)
@@ -19,7 +20,13 @@ class DistroVersionController(object):
 
         resp = {}
         for arch in self.project.archs:
-            binaries = [b.name for b in models.Binary.filter_by(project=self.project, distro_version=self.distro_version, distro=self.distro_name, arch=arch).all()]
+            binaries = [
+                b.name for b in models.Binary.filter_by(
+                    project=self.project,
+                    distro_version=self.distro_version,
+                    distro=self.distro_name,
+                    ref=self.ref,
+                    arch=arch).all()]
             if binaries:
                 resp[arch] = list(set(binaries))
         return resp
