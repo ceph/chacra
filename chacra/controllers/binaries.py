@@ -62,6 +62,7 @@ class BinaryController(object):
             error('/errors/invalid/', 'no file object found in "file" param in POST request')
         file_obj = contents.file
         full_path = self.save_file(file_obj)
+
         if self.binary is None:
             path = full_path
             distro = request.context['distro']
@@ -72,7 +73,7 @@ class BinaryController(object):
             Binary(
                 self.binary_name, self.project, arch=arch,
                 distro=distro, distro_version=distro_version,
-                ref=ref, path=path
+                ref=ref, path=path, byte_size=os.path.getsize(path)
             )
         else:
             self.binary.path = full_path
