@@ -123,17 +123,17 @@ HTTP Responses:
 
 * *200*: Success. Body::
 
-  [
-    {
-      "ceph-0.87.2-0.el10.centos.x86_64.rpm": {
-          "url": "/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
-      }
-    },
-      "ceph-0.87.1-0.el10.centos.x86_64.rpm": {
-          "url": "/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
+    [
+      {
+        "ceph-0.87.2-0.el10.centos.x86_64.rpm": {
+            "url": "/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
+        }
       },
-    }
-  ]
+        "ceph-0.87.1-0.el10.centos.x86_64.rpm": {
+            "url": "/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
+        },
+      }
+    ]
 
 
 
