@@ -116,7 +116,7 @@ If the location of a binary is not known, a search can be performed at::
     /search?name=ceph
 
 Search terms don't need to be unique and successful responses will return an
-array of items found along with metadata about locations::
+array of items found along with metadata about locations.
 
 
 HTTP Responses:
