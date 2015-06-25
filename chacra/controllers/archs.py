@@ -1,8 +1,8 @@
+import os
 from pecan import expose, abort, request
-from chacra.models import Binary, Project
+from chacra.models import Binary
 from chacra import models
-from chacra.controllers import error, set_id_in_context
-from chacra.models import get_or_create
+from chacra.controllers import error
 from chacra.controllers.binaries import BinaryController
 
 
@@ -52,6 +52,7 @@ class ArchController(object):
             if not data.get('force'):
                 error('/errors/invalid/', 'file already exists and "force" flag was not used')
             else:
+                # FIXME this looks like we need to implement PUT
                 binary.update_from_json(data)
                 return {}
 
@@ -59,42 +60,19 @@ class ArchController(object):
         if not name:
             error('/errors/invalid/', "could not find required key: 'name'")
         name = data.pop('name')
+        path = data.get('path')
+        
+        if path:
+            byte_size = os.path.getsize(path)
+        else:
+            byte_size = 0
         Binary(
             name=name, project=self.project, arch=self.arch,
             distro=self.distro, distro_version=self.distro_version,
-            ref=self.ref
+            ref=self.ref, byte_size=byte_size
         )
 
-
-        #self.ensure_objects(name, **data)
         return {}
-
-    def ensure_objects(self, binary_name, **kw):
-        """
-        Since we might not have everything created, ensure everything is
-        and push it to the database
-        """
-        project_id = request.context.get('project_id')
-        distro_id = request.context.get('distro_id')
-        version_id = request.context.get('distro_version_id')
-        arch_id = request.context.get('distro_arch_id')
-        ref_id = request.context.get('ref_id')
-        is_none = lambda x: x is None
-        if all(
-                [is_none(i) for i in [project_id, distro_id, version_id, arch_id, ref_id]]):
-            project = Project(request.context['project'])
-            ref = Ref(request.context['ref'], project)
-            distro = Distro(request.context['distro'], ref, project)
-            version = DistroVersion(request.context['distro_version'], distro, project)
-            arch = DistroArch(request.context['distro_arch'], version, project)
-            models.flush()
-            models.commit()
-            binary = Binary(binary_name, arch, **kw)
-        else:  # we have some id's
-            project = Project.get(request.context['project_id'])
-            arch = self.distro_arch or DistroArch.get(request.context['distro_arch_id'])
-            binary = Binary(binary_name, arch, project, **kw)
-        return binary
 
     @expose()
     def _lookup(self, name, *remainder):
