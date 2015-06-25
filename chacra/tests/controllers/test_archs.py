@@ -124,3 +124,17 @@ class TestArchController(object):
             )
         result = session.app.get('/projects/ceph/giant/centos/el6/x86_64/')
         assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['path'] == '/other'
+
+    def test_binary_with_path_should_get_size_computed(self, session, tmpdir):
+        import pecan, os
+        pecan.conf.binary_root = str(tmpdir)
+        path = os.path.join(pecan.conf.binary_root, 'ceph-9.0.0-0.el6.x86_64.rpm')
+        # fake the file contents, because we assume it already exists:
+        with open(path, 'w') as f:
+            f.write('existing binary')
+        session.app.post_json(
+            '/projects/ceph/giant/ceph/el6/x86_64/',
+            params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm', path=path))
+        result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
+        assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['size'] == 15
+

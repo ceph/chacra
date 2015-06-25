@@ -116,6 +116,4 @@ class TestBinaryController(object):
         )
         response = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/').json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['size']
-        print response
         assert result == 13
-
