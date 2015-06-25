@@ -6,20 +6,20 @@ from chacra.controllers.archs import ArchController
 
 class DistroVersionController(object):
 
-    def __init__(self, version_name):
-        self.version_name = version_name
+    def __init__(self, distro_version):
+        self.distro_version = distro_version
         self.project = models.Project.get(request.context['project_id'])
         self.distro_name = request.context['distro']
-        request.context['distro_version'] = self.version_name
+        request.context['distro_version'] = self.distro_version
 
     @expose('json', generic=True)
     def index(self):
-        if self.version_name not in self.project.distro_versions:
+        if self.distro_version not in self.project.distro_versions:
             abort(404)
 
         resp = {}
         for arch in self.project.archs:
-            binaries = [b.name for b in models.Binary.filter_by(project=self.project, distro_version=self.version_name, distro=self.distro_name).all()]
+            binaries = [b.name for b in models.Binary.filter_by(project=self.project, distro_version=self.distro_version, distro=self.distro_name, arch=arch).all()]
             if binaries:
                 resp[arch] = list(set(binaries))
         return resp
