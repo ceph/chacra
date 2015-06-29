@@ -55,7 +55,7 @@ class ArchController(object):
                 # FIXME this looks like we need to implement PUT
                 path = data.get('path')
                 if path:
-                    data['byte_size'] = os.path.getsize(path)
+                    data['size'] = os.path.getsize(path)
                 binary.update_from_json(data)
                 return {}
 
@@ -66,13 +66,13 @@ class ArchController(object):
         path = data.get('path')
 
         if path:
-            byte_size = os.path.getsize(path)
+            size = os.path.getsize(path)
         else:
-            byte_size = 0
+            size = 0
         Binary(
             name=name, project=self.project, arch=self.arch,
             distro=self.distro, distro_version=self.distro_version,
-            ref=self.ref, byte_size=byte_size
+            ref=self.ref, size=size
         )
 
         return {}

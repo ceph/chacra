@@ -20,7 +20,7 @@ class Binary(Base):
     created = Column(DateTime, index=True)
     modified = Column(DateTime, index=True)
     signed = Column(Boolean(), default=False)
-    byte_size = Column(Integer, default=0)
+    size = Column(Integer, default=0)
 
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', backref=backref('binaries', lazy='dynamic'))
@@ -32,7 +32,7 @@ class Binary(Base):
         'arch',
         'ref',
         'built_by',
-        'byte_size',
+        'size',
     ]
 
     def __init__(self, name, project, **kw):
@@ -73,7 +73,7 @@ class Binary(Base):
             created=self.created,
             modified=self.modified,
             signed=self.signed,
-            size=self.byte_size,
+            size=self.size,
             path=self.path,
             last_changed=self.last_changed,
             built_by=self.built_by,

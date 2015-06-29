@@ -73,7 +73,7 @@ class BinaryController(object):
             Binary(
                 self.binary_name, self.project, arch=arch,
                 distro=distro, distro_version=distro_version,
-                ref=ref, path=path, byte_size=os.path.getsize(path)
+                ref=ref, path=path, size=os.path.getsize(path)
             )
         else:
             self.binary.path = full_path
