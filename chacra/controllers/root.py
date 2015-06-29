@@ -1,6 +1,7 @@
 from pecan import expose
 from chacra.controllers.projects import ProjectsController
 from chacra.controllers.errors import ErrorsController
+from chacra.controllers.search import SearchController
 
 
 class RootController(object):
@@ -11,3 +12,4 @@ class RootController(object):
 
     projects = ProjectsController()
     errors = ErrorsController()
+    search = SearchController()
