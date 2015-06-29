@@ -1,5 +1,6 @@
 from pecan import expose
 from chacra.models import Binary
+from chacra.controllers import error
 
 
 class SearchController(object):
@@ -25,6 +26,8 @@ class SearchController(object):
         # TODO: allow operators
         query = None
         for k, v in filters.items():
+            if k not in self.filters:
+                return error('/errors/not_allowed', 'invalid query params: %s' % k)
             if k in self.filters:
                 query = self.filter_binary(self.filters[k], v, query)
         return query
