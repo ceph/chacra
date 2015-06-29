@@ -77,5 +77,9 @@ class Binary(Base):
             path=self.path,
             last_changed=self.last_changed,
             built_by=self.built_by,
+            distro=self.distro,
+            distro_version=self.distro_version,
+            arch=self.arch,
+            ref=self.ref,
         )
 
