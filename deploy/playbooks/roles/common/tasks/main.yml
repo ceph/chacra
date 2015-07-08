@@ -35,3 +35,5 @@
   pip: name='git+https://github.com/alfredodeza/chacra#egg=chacra' virtualenv={{ app_home }}
 
 - include: circus.yml
+
+- include: nginx.yml
