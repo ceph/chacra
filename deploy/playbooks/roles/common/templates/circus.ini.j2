@@ -2,15 +2,15 @@
 cmd = {{ app_home }}/bin/uwsgi
   --socket /tmp/{{ app_name }}.sock
   --logto {{ app_home }}/log/application.log
-  --home {{ app_home }}/venv
-  --pythonpath {{ app_home }}/{{ app_name }}
-  --wsgi-file {{ app_home }}/{{ app_name }}/{{ wsgi_file }}
+  --home {{ app_home }}
+  --pythonpath {{ app_home }}/src/{{ app_name }}
+  --wsgi-file {{ app_home }}/src/{{ app_name }}/{{ wsgi_file }}
   --callable {{ wsgi_callable }}
   --max-requests 1000
   --master
   --processes 4
   --chmod
-working_dir={{ app_home }}/{{ app_name }}
+working_dir={{ app_home }}/src/{{ app_name }}
 
 stdout_stream.class = FileStream
 stdout_stream.filename=/var/log/circus/{{ app_name }}-stdout.log
