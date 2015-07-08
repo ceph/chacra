@@ -1,5 +1,4 @@
 from pecan.hooks import TransactionHook, RequestViewerHook
-from chacra.hooks.cors import CorsHook
 from chacra import models
 
 
@@ -22,7 +21,6 @@ app = {
             models.rollback,
             models.clear
         ),
-        CorsHook(),
     ],
     'debug': True,
 }
