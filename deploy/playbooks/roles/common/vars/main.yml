@@ -1,0 +1,16 @@
+---
+
+system_packages:
+  - python-devel
+  - git
+  - python-virtualenv
+  - mongodb-server
+  - gcc-c++
+
+ssl_requirements:
+  - openssl
+  - openssl-devel
+
+circus_system_packages:
+  - libzmq-dev
+  - libevent-dev

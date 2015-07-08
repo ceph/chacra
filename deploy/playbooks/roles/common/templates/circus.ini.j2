@@ -1,0 +1,19 @@
+[watcher:{{ app_name }}]
+cmd = {{ app_home }}/bin/uwsgi
+  --socket /tmp/{{ app_name }}.sock
+  --logto {{ app_home }}/log/application.log
+  --home {{ app_home }}/venv
+  --pythonpath {{ app_home }}/{{ app_name }}
+  --wsgi-file {{ app_home }}/{{ app_name }}/{{ wsgi_file }}
+  --callable {{ wsgi_callable }}
+  --max-requests 1000
+  --master
+  --processes 4
+  --chmod
+working_dir={{ app_home }}/{{ app_name }}
+
+stdout_stream.class = FileStream
+stdout_stream.filename=/var/log/circus/{{ app_name }}-stdout.log
+
+stderr_stream.class = FileStream
+stderr_stream.filename=/var/log/circus/{{ app_name }}-stderr.log

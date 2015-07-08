@@ -1,0 +1,25 @@
+---
+
+- name: install circus in virtualenv
+  pip: name={{ item }} state=present virtualenv={{ app_home }}
+  with_items:
+    - circus
+    - circus-web
+    - chaussette
+
+- name: ensure /etc/circus exists
+  file: path=/etc/circus state=directory
+  sudo: true
+
+- name: ensure /var/log/circus exists
+  file: path=/var/log/circus state=directory
+  sudo: true
+
+- name: start the circusd process
+  command: "{{ app_home }}/bin/circusd --daemon /etc/circus/circus.ini"
+  sudo: true
+
+- name: install circus conf for {{ app_name }}
+  template: src=circus.ini.j2 dest=/etc/circus/circus.ini
+  sudo: true
+  notify: restart app

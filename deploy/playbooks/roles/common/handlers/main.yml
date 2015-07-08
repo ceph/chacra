@@ -1,0 +1,4 @@
+---
+
+- name: restart app
+  command: "{{ app_home }}/bin/circusctl restart {{ app_name }}"

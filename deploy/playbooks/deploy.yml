@@ -1,0 +1,8 @@
+---
+
+- hosts: all
+  roles:
+    - common
+  vars:
+     app_name: "chacra"
+     use_ssl: true

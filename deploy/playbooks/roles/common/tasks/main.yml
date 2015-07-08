@@ -1,0 +1,32 @@
+---
+
+- name: Create a home for {{ app_name }}.
+  sudo: yes
+  file: path={{ app_home }} owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} state=directory recurse=yes
+
+- name: Install ssl requirements
+  sudo: yes
+  yum: name={{ item }} state=present
+  with_items: ssl_requirements
+  when: app_use_ssl
+
+- name: Install GCC
+  sudo: yes
+  yum: name=gcc state=present
+
+- name: Enable EPEL
+  sudo: yes
+  yum: name=epel-release state=present
+
+- name: install system packages
+  sudo: yes
+  yum: name={{ item }} state=present
+  with_items: system_packages
+
+- name: Create a virtualenv with latest pip.
+  pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade'
+
+- name: pip+git install {{ app_name }} into virtualenv.
+  pip: name='git+https://github.com/alfredodeza/chacra#egg=chacra' virtualenv={{ app_home }}
+
+- include: circus.yml
