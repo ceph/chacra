@@ -1,8 +1,11 @@
 ---
 
 - hosts: all
+  user: centos
   roles:
     - common
   vars:
      app_name: "chacra"
      use_ssl: true
+     wsgi_file: wsgi.py
+     wsgi_callable: application
