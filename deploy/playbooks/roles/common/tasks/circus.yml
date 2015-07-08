@@ -16,7 +16,7 @@
   sudo: true
 
 - name: ensure {{ app_home }}/log exists
-  file: path="{{ app_home }}/log state=directory
+  file: path="{{ app_home }}/log" state=directory
 
 - name: start the circusd process
   command: "{{ app_home }}/bin/circusd --daemon /etc/circus/circus.ini"
