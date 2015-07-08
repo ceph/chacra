@@ -2,3 +2,7 @@
 
 - name: restart app
   command: "{{ app_home }}/bin/circusctl restart {{ app_name }}"
+
+- name: restart nginx
+  sudo: yes
+  action: service name=nginx state=restarted
