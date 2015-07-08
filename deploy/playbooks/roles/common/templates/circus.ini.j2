@@ -1,10 +1,10 @@
 [watcher:{{ app_name }}]
 cmd = {{ app_home }}/bin/uwsgi
-  --socket /tmp/{{ app_name }}.sock
+  --socket /var/run/{{ app_name }}.sock
   --logto {{ app_home }}/log/application.log
   --home {{ app_home }}
   --pythonpath {{ app_home }}/src/{{ app_name }}
-  --wsgi-file {{ app_home }}/src/{{ app_name }}/{{ wsgi_file }}
+  --wsgi-file {{ app_home }}/src/{{ app_name }}/{{ app_name }}/{{ wsgi_file }}
   --callable {{ wsgi_callable }}
   --max-requests 1000
   --master
