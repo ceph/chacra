@@ -6,6 +6,9 @@ system_packages:
   - python-virtualenv
   - mongodb-server
   - gcc-c++
+  - postgresql
+  - postgresql-libs
+  - postgresql-devel
 
 ssl_requirements:
   - openssl
