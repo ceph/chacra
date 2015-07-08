@@ -9,6 +9,7 @@ system_packages:
   - postgresql
   - postgresql-libs
   - postgresql-devel
+  - nginx
 
 ssl_requirements:
   - openssl
