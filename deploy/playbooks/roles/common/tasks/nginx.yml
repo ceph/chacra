@@ -1,4 +1,9 @@
 ---
+  - name: Set SELinux to allow Nginx to proxy
+    seboolean:
+      name: httpd_can_network_connect
+      state: yes
+      persistent: yes
 
   - name: ensure sites-available for nginx
     file: path=/etc/nginx/sites-available state=directory
