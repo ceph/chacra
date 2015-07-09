@@ -18,11 +18,18 @@
 - name: ensure {{ app_home }}/log exists
   file: path="{{ app_home }}/log" state=directory
 
-- name: start the circusd process
-  command: "{{ app_home }}/bin/circusd --daemon /etc/circus/circus.ini"
+- name: install circus systemd service file
+  template: src=circus.service.j2 dest=/etc/systemd/system/circus.service
   sudo: true
+  register: circus_service
+
+- name: reload the systemctl daemon
+  when: circus_service.changed
+  sudo: true
+  command: systemctl --system daemon-reload
 
 - name: install circus conf for {{ app_name }}
   template: src=circus.ini.j2 dest=/etc/circus/circus.ini
   sudo: true
-  notify: restart app
+  notify: reload circusd
+
