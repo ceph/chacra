@@ -6,3 +6,6 @@
 - name: restart nginx
   sudo: yes
   action: service name=nginx state=restarted
+
+- name: reload circusd
+  command: "{{ app_home }}/bin/circusctl reloadconfig"
