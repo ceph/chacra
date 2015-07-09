@@ -9,3 +9,4 @@
      use_ssl: true
      wsgi_file: wsgi.py
      wsgi_callable: application
+     ansible_ssh_port: 2222
