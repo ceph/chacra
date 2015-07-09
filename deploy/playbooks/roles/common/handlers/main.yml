@@ -8,4 +8,14 @@
   action: service name=nginx state=restarted
 
 - name: reload circusd
-  command: "{{ app_home }}/bin/circusctl reloadconfig"
+  action: service name=circusd state=reloaded
+
+- name: start circusd
+  action: service name=circusd state=started
+
+- name: restart circusd
+  action: service name=circusd state=restarted
+
+- name: reload systemctl
+  command: systemctl daemon-reload
+  sudo: yes
