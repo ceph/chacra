@@ -20,6 +20,8 @@ class SearchController(object):
     @expose('json')
     def index(self, **kw):
         query = self.apply_filters(kw)
+        if not query:
+            return {}
         return query.all()
 
     def apply_filters(self, filters):
