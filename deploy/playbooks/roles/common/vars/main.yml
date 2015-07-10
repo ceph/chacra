@@ -9,6 +9,8 @@ system_packages:
   - postgresql
   - postgresql-libs
   - postgresql-devel
+  - postgresql-server
+  - python-psycopg2
   - nginx
 
 ssl_requirements:
