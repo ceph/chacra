@@ -34,6 +34,7 @@
 
 - name: pip+git install {{ app_name }} into virtualenv.
   pip: name='git+https://github.com/alfredodeza/chacra#egg=chacra' virtualenv={{ app_home }}
+  notify: restart app
   changed_when: False
 
 - include: postgresql.yml
