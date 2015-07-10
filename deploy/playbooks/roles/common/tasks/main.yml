@@ -26,13 +26,17 @@
 - name: Create a virtualenv with latest pip.
   pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade'
 
-- name: install uwsgi
-  pip:
-    name: uwsgi
-    virtualenv: "{{ app_home }}"
+- name: install python requirements in virtualenv
+  pip: name={{ item }} state=present virtualenv={{ app_home }}
+  with_items:
+    - uwsgi
+    - psycopg2
 
 - name: pip+git install {{ app_name }} into virtualenv.
   pip: name='git+https://github.com/alfredodeza/chacra#egg=chacra' virtualenv={{ app_home }}
+  changed_when: False
+
+- include: postgresql.yml
 
 - include: circus.yml
 
