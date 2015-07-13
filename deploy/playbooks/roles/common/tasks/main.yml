@@ -1,20 +1,16 @@
 ---
 
-- name: Create a home for {{ app_name }}.
+- name: ensure a home for {{ app_name }}
   sudo: yes
   file: path={{ app_home }} owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} state=directory recurse=yes
 
-- name: Install ssl requirements
+- name: install ssl system requirements
   sudo: yes
   yum: name={{ item }} state=present
   with_items: ssl_requirements
   when: app_use_ssl
 
-- name: Install GCC
-  sudo: yes
-  yum: name=gcc state=present
-
-- name: Enable EPEL
+- name: enable EPEL
   sudo: yes
   yum: name=epel-release state=present
 
@@ -26,16 +22,16 @@
 - name: Create a virtualenv with latest pip.
   pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade'
 
-- name: install python requirements in virtualenv
-  pip: name={{ item }} state=present virtualenv={{ app_home }}
-  with_items:
-    - uwsgi
-    - psycopg2
-
 - name: pip+git install {{ app_name }} into virtualenv.
   pip: name='git+https://github.com/alfredodeza/chacra#egg=chacra' virtualenv={{ app_home }}
-  notify: restart app
   changed_when: False
+
+- name: install python requirements in virtualenv
+  pip:
+    requirements: "{{ app_home }}/src/{{ app_name }}/requirements.txt"
+    state: present
+    virtualenv: "{{ app_home }}"
+  notify: restart app
 
 - include: postgresql.yml
 
