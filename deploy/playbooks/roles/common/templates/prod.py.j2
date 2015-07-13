@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 from pecan.hooks import TransactionHook, RequestViewerHook
 from chacra import models
-import prod_db
+from prod_db import sqlalchemy
 
 
 # Server Specific Configurations
