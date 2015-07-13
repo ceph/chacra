@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+sqlalchemy = {
+    'url': 'postgresql+psycopg2://{{ app_name }}:{{ db_password.stdout }}@127.0.0.1/{{ app_name }}',
+    'echo':          True,
+    'echo_pool':     True,
+    'pool_recycle':  3600,
+    'encoding':      'utf-8'
+}
