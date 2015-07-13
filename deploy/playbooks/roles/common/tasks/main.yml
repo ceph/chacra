@@ -26,6 +26,9 @@
   pip: name='git+https://github.com/alfredodeza/chacra#egg=chacra' virtualenv={{ app_home }}
   changed_when: False
 
+- name: create the prod config file
+  action: template src=../templates/prod.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod.py
+
 - name: install python requirements in virtualenv
   pip:
     requirements: "{{ app_home }}/src/{{ app_name }}/requirements.txt"

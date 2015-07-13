@@ -1,7 +1,7 @@
 ---
 
 - hosts: all
-  user: centos
+  user: vagrant
   roles:
     - common
   vars:
@@ -9,5 +9,5 @@
      use_ssl: true
      wsgi_file: wsgi.py
      wsgi_callable: application
-     ansible_ssh_port: 2222
-     binary_root: "/opt/binaries"
+     ansible_ssh_port: 22
+     restart_app: true

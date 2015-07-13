@@ -59,8 +59,8 @@
      action: postgresql_user db="{{ app_name }}" user="{{ app_name }}" password="{{ db_password.stdout }}" role_attr_flags=NOSUPERUSER,CREATEDB
      when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
 
-   - name: create the prod config file with the db password
-     action: template src=../templates/prod.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod.py
+   - name: create the prod_db config file with the db password
+     action: template src=../templates/prod_db.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod_db.py
      notify:
        - restart app
      when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
