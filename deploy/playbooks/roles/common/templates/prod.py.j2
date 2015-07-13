@@ -1,6 +1,7 @@
 # {{ ansible_managed }}
 from pecan.hooks import TransactionHook, RequestViewerHook
 from chacra import models
+import prod_db
 
 
 # Server Specific Configurations
@@ -55,17 +56,11 @@ logging = {
     }
 }
 
-sqlalchemy = {
-    'url': 'postgresql+psycopg2://{{ app_name }}:{{ db_password.stdout }}@127.0.0.1/{{ app_name }}',
-    'echo':          True,
-    'echo_pool':     True,
-    'pool_recycle':  3600,
-    'encoding':      'utf-8'
-}
-
 # When True it will set the headers so that Nginx can serve the download
 # instead of Pecan.
 delegate_downloads = False
 
 # location for storing uploaded binaries
-binary_root = '/opt/binaries'
+binary_root = {{ binary_root }}
+
+# production database configurations are imported from prod_db.py
