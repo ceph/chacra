@@ -6,12 +6,14 @@ system_packages:
   - python-virtualenv
   - mongodb-server
   - gcc-c++
+  - gcc
   - postgresql
   - postgresql-libs
   - postgresql-devel
   - postgresql-server
   - python-psycopg2
   - nginx
+  - libsemanage-python
 
 ssl_requirements:
   - openssl
