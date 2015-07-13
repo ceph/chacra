@@ -28,8 +28,15 @@
   sudo: true
   command: systemctl --system daemon-reload
 
+- name: enable circus
+  sudo: true
+  action: service name=circus enabled=yes
+
 - name: install circus conf for {{ app_name }}
   template: src=circus.ini.j2 dest=/etc/circus/circus.ini
   sudo: true
   notify: reload circusd
 
+- name: ensure circus is running
+  sudo: true
+  action: service name=circus state=started
