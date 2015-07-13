@@ -17,12 +17,15 @@
      register: db_user_exists
      changed_when: False
 
-   - debug: msg="db user exists output {{ db_user_exists.stdout }}"
-
+   # FIXME: flag/option needed
+   # this is a bit of chicken-or-egg problem. If the user for the app does
+   # exist but we failed to set the password in both postgresql and the python
+   # config file then we will fail to reset it next time around. This would
+   # leave the app without the access to the database.
    - name: generate pseudo-random password for the database connection
      shell: python -c "exec 'import os; print os.urandom(30).encode(\'base64\')[:${length}]'"
      register: db_password
-     when: "db_user_exists.stdout == '0'"
+     when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
 
    - name: allow users to connect locally
      sudo: yes
@@ -36,6 +39,7 @@
    - service:
        name: postgresql
        state: restarted
+     sudo: true
      when: pg_hba_conf.changed
 
    - name: ensure database service is up
@@ -53,13 +57,13 @@
      sudo_user: postgres
      sudo: yes
      action: postgresql_user db="{{ app_name }}" user="{{ app_name }}" password="{{ db_password.stdout }}" role_attr_flags=NOSUPERUSER,CREATEDB
-     when: "db_user_exists.stdout == '0'"
+     when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
 
    - name: create the prod config file with the db password
      action: template src=../templates/prod.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod.py
      notify:
        - restart app
-     when: "db_user_exists.stdout == '0'"
+     when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
 
    - name: check if database for app needs populating
      # this should be configurable/optional in the playbook
