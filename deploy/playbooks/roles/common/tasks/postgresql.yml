@@ -25,7 +25,7 @@
    - name: generate pseudo-random password for the database connection
      shell: python -c "exec 'import os; print os.urandom(30).encode(\'base64\')[:${length}]'"
      register: db_password
-     when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
+     #when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
 
    - name: allow users to connect locally
      sudo: yes
@@ -57,13 +57,13 @@
      sudo_user: postgres
      sudo: yes
      action: postgresql_user db="{{ app_name }}" user="{{ app_name }}" password="{{ db_password.stdout }}" role_attr_flags=NOSUPERUSER,CREATEDB
-     when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
+     #when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
 
    - name: create the prod_db config file with the db password
      action: template src=../templates/prod_db.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod_db.py
      notify:
        - restart app
-     when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
+     #when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
 
    - name: check if database for app needs populating
      # this should be configurable/optional in the playbook
