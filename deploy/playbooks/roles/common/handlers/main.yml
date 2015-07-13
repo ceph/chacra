@@ -8,13 +8,16 @@
   action: service name=nginx state=restarted
 
 - name: reload circusd
-  action: service name=circusd state=reloaded
+  sudo: yes
+  action: service name=circus state=reloaded
 
-- name: start circusd
-  action: service name=circusd state=started
+- name: start circus
+  sudo: yes
+  action: service name=circus state=started
 
-- name: restart circusd
-  action: service name=circusd state=restarted
+- name: restart circus
+  sudo: yes
+  action: service name=circus state=restarted
 
 - name: reload systemctl
   command: systemctl daemon-reload
