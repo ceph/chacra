@@ -1,5 +1,6 @@
 ---
   - name: Set SELinux to allow Nginx to proxy
+    sudo: true
     seboolean:
       name: httpd_can_network_connect
       state: yes
@@ -21,6 +22,10 @@
     action: template src=../templates/nginx.conf dest=/etc/nginx/nginx.conf
     sudo: true
 
+  - name: enable nginx
+    sudo: true
+    action: service name=nginx enabled=true
+
   - name: create nginx site config
     action: template src=../templates/nginx_site.conf dest=/etc/nginx/sites-available/{{ app_name }}.conf
     sudo: true
@@ -31,3 +36,6 @@
     action: file src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
     sudo: true
 
+  - name: ensure nginx is started
+    sudo: true
+    action: service name=nginx state=started
