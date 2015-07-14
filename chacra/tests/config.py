@@ -13,7 +13,7 @@ app = {
     'root': 'chacra.controllers.root.RootController',
     'modules': ['chacra'],
     'static_root': '%(confdir)s/public',
-    'default_renderer': 'json',
+#    'default_renderer': 'json',
     'hooks': [
         TransactionHook(
             models.start,
@@ -71,3 +71,8 @@ sqlalchemy = {
 }
 
 binary_root = '/tmp/'
+
+# When True it will set the headers so that Nginx can serve the download
+# instead of Pecan.
+delegate_downloads = False
+
