@@ -13,7 +13,7 @@ class RootController(object):
 
     @expose('json')
     def index(self):
-        documentation = "https://github.com/alfredodeza/chacra#chacra"
+        documentation = "https://github.com/ceph/chacra#chacra"
         projects = [p.name for p in Project.query.all()]
         return dict(
             description=description,
