@@ -1,9 +1,13 @@
+import logging
 import os
 from pecan import expose, abort, request
 from chacra.models import Binary
 from chacra import models
 from chacra.controllers import error
 from chacra.controllers.binaries import BinaryController
+
+
+logger = logging.getLogger(__name__)
 
 
 class ArchController(object):
@@ -55,7 +59,11 @@ class ArchController(object):
                 # FIXME this looks like we need to implement PUT
                 path = data.get('path')
                 if path:
-                    data['size'] = os.path.getsize(path)
+                    try:
+                        data['size'] = os.path.getsize(path)
+                    except OSError:
+                        logger.exception('could not retrieve size from %s' % path)
+                        data['size'] = 0
                 binary.update_from_json(data)
                 return {}
 
