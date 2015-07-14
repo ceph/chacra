@@ -24,7 +24,7 @@ app = {
             models.clear
         ),
     ],
-    'debug': True,
+    'debug': False,
 }
 
 logging = {
