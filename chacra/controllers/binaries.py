@@ -46,10 +46,11 @@ class BinaryController(object):
         # TODO: maybe disable this for testing?
         # XXX Maybe we don't need to set Content-Disposition here?
         response.headers['Content-Disposition'] = 'attachment; filename=%s' % str(self.binary.name)
-        response.headers['X-Accel-Redirect'] = str(self.binary.path)
         if conf.delegate_downloads is False:
             f = open(self.binary.path, 'rb')
             response.app_iter = FileIter(f)
+        else:
+            response.headers['X-Accel-Redirect'] = str(self.binary.path)
 
     @index.when(method='POST', template='json')
     def index_post(self):
