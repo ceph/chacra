@@ -31,7 +31,7 @@ class DistroVersionController(object):
                 resp[arch] = list(set(binaries))
         return resp
 
-    @index.when(method='POST')
+    @index.when(method='POST', template='json')
     def index_post(self):
         error('/errors/not_allowed', 'POST requests to this url are not allowed')
 
@@ -57,7 +57,7 @@ class DistroController(object):
                 resp[version] = list(set(archs))
         return resp
 
-    @index.when(method='POST')
+    @index.when(method='POST', template='json')
     def index_post(self):
         error('/errors/not_allowed', 'POST requests to this url are not allowed')
 

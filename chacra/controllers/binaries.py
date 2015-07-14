@@ -51,7 +51,7 @@ class BinaryController(object):
             f = open(self.binary.path, 'rb')
             response.app_iter = FileIter(f)
 
-    @index.when(method='POST')
+    @index.when(method='POST', template='json')
     def index_post(self):
         contents = request.POST.get('file', False)
         if self.binary is not None:

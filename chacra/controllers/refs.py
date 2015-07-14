@@ -22,7 +22,7 @@ class RefController(object):
             resp[distro] = list(set([b.distro_version for b in models.Binary.filter_by(project=self.project, distro=distro).all()]))
         return resp
 
-    @index.when(method='POST')
+    @index.when(method='POST', template='json')
     def index_post(self):
         error('/errors/not_allowed', 'POST requests to this url are not allowed')
 
