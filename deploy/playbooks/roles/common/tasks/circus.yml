@@ -35,7 +35,7 @@
 - name: install circus conf for {{ app_name }}
   template: src=circus.ini.j2 dest=/etc/circus/circus.ini
   sudo: true
-  notify: reload circusd
+  notify: reload circus config
 
 - name: ensure circus is running
   sudo: true
