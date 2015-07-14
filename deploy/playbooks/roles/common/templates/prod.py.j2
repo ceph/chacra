@@ -14,7 +14,6 @@ server = {
 app = {
     'root': 'chacra.controllers.root.RootController',
     'modules': ['chacra'],
-    'default_renderer': 'json',
     'hooks': [
         TransactionHook(
             models.start,
