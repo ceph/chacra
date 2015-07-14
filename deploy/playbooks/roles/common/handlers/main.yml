@@ -11,6 +11,9 @@
   sudo: yes
   action: service name=circus state=reloaded
 
+- name: reload circus config
+  command: "{{ app_home }}/bin/circusctl reloadconfig"
+
 - name: start circus
   sudo: yes
   action: service name=circus state=started
