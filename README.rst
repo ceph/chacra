@@ -260,3 +260,10 @@ HTTP Responses:
 
     { "msg": "resource already exists and 'force' flag was not set" }
 
+
+about the name
+==============
+`chakra` is a quechua word to refer to a small farm in the outskirts, dedicated
+to produce food for the city.
+
+Reference: https://en.wikipedia.org/wiki/Quechua
