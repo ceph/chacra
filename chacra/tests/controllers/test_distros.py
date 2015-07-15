@@ -21,6 +21,13 @@ class TestDistroController(object):
         result = session.app.get('/projects/ceph/master/ubuntu/')
         assert result.json == {'trusty': ['i386']}
 
+    def test_list_unkown_ref_for_distro(self, session):
+        p = Project('ceph')
+        Binary('ceph-1.0.0.deb', p, ref='master', distro='ubuntu', distro_version='trusty', arch='i386')
+        session.commit()
+        result = session.app.get('/projects/ceph/BOGUS/ubuntu/', expect_errors=True)
+        assert result.status_int == 404
+
     def test_distro_should_list_unique_versions(self, session):
         p = Project('ceph')
         Binary('ceph-1.0.0.deb', p, ref='master', distro='ubuntu', distro_version='trusty', arch='i386')
