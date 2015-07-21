@@ -1,6 +1,6 @@
 chacra
 ======
-A REST API for storing and retrieving specific versions and arquitectures of
+A REST API for storing and retrieving specific versions and architectures of
 (binary) packages.
 
 
