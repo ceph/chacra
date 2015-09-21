@@ -117,3 +117,14 @@ class TestBinaryController(object):
         response = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/').json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['size']
         assert result == 13
+
+    def test_binary_gets_checksum_computed(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        result = session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        response = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/').json
+        result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
+        assert len(result) == 128
+        assert result.startswith('318b')
