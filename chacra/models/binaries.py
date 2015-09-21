@@ -93,7 +93,7 @@ class Binary(Base):
 
 def generate_checksum(mapper, connection, target):
     try:
-        path = target.path
+        target.path
     except AttributeError:
         target.checksum = None
         return
@@ -105,9 +105,10 @@ def generate_checksum(mapper, connection, target):
     if not target.path:
         return
     chsum = hashlib.sha512()
-    with open(path) as f:
+    with open(target.path) as f:
         for chunk in iter(lambda: f.read(4096), ""):
             chsum.update(chunk)
         target.checksum = chsum.hexdigest()
 
 listen(Binary, 'before_insert', generate_checksum)
+listen(Binary, 'before_update', generate_checksum)
