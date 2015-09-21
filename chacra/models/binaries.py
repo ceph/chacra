@@ -1,6 +1,8 @@
+import hashlib
 import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
 from chacra.models import Base
 from chacra.controllers import util
@@ -21,6 +23,7 @@ class Binary(Base):
     modified = Column(DateTime, index=True)
     signed = Column(Boolean(), default=False)
     size = Column(Integer, default=0)
+    checksum = Column(String(256))
 
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', backref=backref('binaries', lazy='dynamic'))
@@ -79,7 +82,32 @@ class Binary(Base):
             built_by=self.built_by,
             distro=self.distro,
             distro_version=self.distro_version,
+            checksum=self.checksum,
             arch=self.arch,
             ref=self.ref,
         )
 
+
+# Listeners
+
+
+def generate_checksum(mapper, connection, target):
+    try:
+        path = target.path
+    except AttributeError:
+        target.checksum = None
+        return
+
+    # FIXME
+    # sometimes we can accept binaries without a path and that is probably something
+    # that should not happen. The core purpose of this binary is that it works with
+    # paths and files, this should be required.
+    if not target.path:
+        return
+    chsum = hashlib.sha512()
+    with open(path) as f:
+        for chunk in iter(lambda: f.read(4096), ""):
+            chsum.update(chunk)
+        target.checksum = chsum.hexdigest()
+
+listen(Binary, 'before_insert', generate_checksum)
