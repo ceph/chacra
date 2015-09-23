@@ -76,3 +76,5 @@ binary_root = '/tmp/'
 # instead of Pecan.
 delegate_downloads = False
 
+api_user = 'admin'
+api_key = 'secret'

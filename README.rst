@@ -14,6 +14,28 @@ So for a CentOS 7 x86_64 package for Ceph the url could look like::
     /projects/ceph/firefly/centos/7/x86_64/ceph-0.87.2-0.el7.centos.x86_64.rpm
 
 
+Configuration
+-------------
+The service needs to be configured with a few items to correctly work with
+binaries.
+
+binary_root
+^^^^^^^^^^^
+The ``binary_root`` is a required configuration item, it defines where binaries
+live so that when a new binary is POSTed the service will use this path to save
+the binary to.
+
+credentials
+^^^^^^^^^^^
+The POST and DELETE HTTP methods are protected by default using basic HTTP
+authentication. The credentials must be defined in the configuration file for
+the service as follows::
+
+    api_user = 'username'
+    api_key = 'secret'
+
+
+
 Self-discovery
 --------------
 The API provides informational JSON at every step of the URL about what is

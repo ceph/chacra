@@ -111,7 +111,17 @@ class TestArchController(object):
         assert result.status_int == 400
         assert result.json['message'] == 'file already exists and "force" flag was not used'
 
-    def test_allow_overwriting_with_flag(self, session):
+    def ensure_file(self, tmpdir, name=None):
+        name = name or 'ceph-9.0.0-0.el6.x86_64.rpm'
+        pecan.conf.binary_root = str(tmpdir)
+        path = os.path.join(pecan.conf.binary_root, name)
+        # fake the file contents, because we assume it already exists:
+        with open(path, 'w') as f:
+            f.write('existing binary')
+        return path
+
+    def test_allow_overwriting_with_flag(self, session, tmpdir):
+        path = self.ensure_file(tmpdir, name='other')
         session.app.post_json(
             '/projects/ceph/giant/centos/el6/x86_64/',
             params=dict(
@@ -121,11 +131,11 @@ class TestArchController(object):
             '/projects/ceph/giant/centos/el6/x86_64/',
             params=dict(
                 name='ceph-9.0.0-0.el6.x86_64.rpm',
-                path='/other',
+                path=path,
                 force=True),
             )
         result = session.app.get('/projects/ceph/giant/centos/el6/x86_64/')
-        assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['path'] == '/other'
+        assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['path'] == path
 
     def test_binary_with_path_should_get_size_computed(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
