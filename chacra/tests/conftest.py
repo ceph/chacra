@@ -10,6 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
 from chacra import models as _db
+from chacra.tests import util
 import pytest
 
 
@@ -146,6 +147,9 @@ class TestApp(object):
         @param (string) url - The URL to emulate a POST request to
         @returns (paste.fixture.TestResponse)
         """
+        # support automatic, correct authentication if not specified otherwise
+        if not kwargs.get('headers'):
+            kwargs['headers'] = {'Authorization': util.make_credentials()}
         return self._do_request(url, 'POSTJ', **kwargs)
 
     def post(self, url, **kwargs):
@@ -153,6 +157,9 @@ class TestApp(object):
         @param (string) url - The URL to emulate a POST request to
         @returns (paste.fixture.TestResponse)
         """
+        # support automatic, correct authentication if not specified otherwise
+        if not kwargs.get('headers'):
+            kwargs['headers'] = {'Authorization': util.make_credentials()}
         return self._do_request(url, 'POST', **kwargs)
 
     def get(self, url, **kwargs):
