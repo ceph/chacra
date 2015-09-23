@@ -1,0 +1,11 @@
+---
+- name: Install pbuilder
+  apt:
+    name: pbuilder
+    state: present
+    update_cache: yes
+
+- name: Ensure base_dir is present
+  file:
+    path: "{{ base_dir }}"
+    state: directory

@@ -1,0 +1,17 @@
+---
+- name: Checks to see if there is an existing tar file
+  command: >
+    python -c
+    "'try: import tarfile;print int(not int(tarfile.is_tarfile(\"{{ pbuilder_tar_path }}\")))\nexcept IOError: print 1'"
+  register: is_not_tar_file
+
+- name: Check the file size of the existing tar file
+  shell: "du -k '{{ pbuilder_tar_path }}' | cut -f1"
+  register: tar_file_size
+
+- name: Delete tar file if not a proper tar file
+  file:
+    path: "{{ pbuilder_tar_path }}"
+    state: absent
+  when: is_not_tar_file.stdout == "1" or
+        tar_file_size.stdout|int < 1

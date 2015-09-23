@@ -1,0 +1,46 @@
+---
+- name: Distro name
+  debug:
+      msg: "{{ distro }}"
+
+- name: Run pbuilder --clean
+  command: "pbuilder --clean"
+
+- name: Set pbuilder_tar_path
+  set_fact:
+    pbuilder_tar_path: "{{ base_dir }}/{{ distro }}.tgz"
+
+- name: Check to see if pbuilder_tar_path exists
+  stat:
+    path: "{{ pbuilder_tar_path }}"
+  register: tar_stat
+
+- include: check_tar_file.yml
+  when: tar_stat.stat.exists
+
+- name: Run pbuilder --clean
+  command: "pbuilder --clean"
+
+# it might have been deleted in check_tar_file.yml if it wasn't valid
+- name: Check to see if pbuilder_tar_path still exists after validation
+  stat:
+    path: "{{ pbuilder_tar_path }}"
+  register: tar_stat
+
+- name: Update the pbuilder tar file if it exists and is valid
+  command: >
+    sudo pbuilder update 
+    --basetgz "{{ pbuilder_tar_path }}"
+    --distribution "{{ distro }}" 
+    --mirror "{{ mirror }}"
+    --debug
+  when: tar_stat.stat.exists
+
+- name: Create the pbuilder tar file if it does not exist
+  command: >
+    sudo pbuilder create 
+    --basetgz "{{ pbuilder_tar_path }}"
+    --distribution "{{ distro }}"
+    --mirror "{{ mirror }}"
+    --debug
+  when: not tar_stat.stat.exists

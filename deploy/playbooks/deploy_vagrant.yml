@@ -2,8 +2,17 @@
 
 - hosts: all
   user: vagrant
+  sudo: yes
   roles:
-    - common
+    #- common
+    - pbuilder
+    - {role: pbuilder_distro, distro: "wheezy", mirror: "http://www.gtlib.gatech.edu/pub/debian", tags: ['wheezy']}
+    - {role: pbuilder_distro,
+       distro: "trusty",
+       mirror: "deb http://apt-mirror.sepia.ceph.com/archive.ubuntu.com/ubuntu trusty main restricted universe multiverse",
+       tags: ['trusty']
+      }
+    - {role: pbuilder_distro, distro: "precise", mirror: "deb http://apt-mirror.sepia.ceph.com/archive.ubuntu.com/ubuntu precise main restricted universe multiverse", tags: ['precise']}
   vars:
      app_name: "chacra"
      use_ssl: true
@@ -12,3 +21,4 @@
      ansible_ssh_port: 22
      restart_app: true
      binary_root: "/opt/binaries"
+     base_dir: "/srv/debian-base"
