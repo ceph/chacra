@@ -1,9 +1,11 @@
 import os
 import pecan
 from pecan import expose, abort, request, response, conf
+from pecan.secure import secure
 from webob.static import FileIter
 from chacra.models import Binary, Project
 from chacra.controllers import error
+from chacra.auth import basic_auth
 
 
 class BinaryController(object):
@@ -52,6 +54,7 @@ class BinaryController(object):
         else:
             response.headers['X-Accel-Redirect'] = str(self.binary.path)
 
+    @secure(basic_auth)
     @index.when(method='POST', template='json')
     def index_post(self):
         contents = request.POST.get('file', False)
