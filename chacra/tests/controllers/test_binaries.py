@@ -1,6 +1,7 @@
 import os
 import pecan
 from chacra.models import Binary
+from chacra.tests import util
 
 
 class TestBinaryUniqueness(object):
@@ -36,6 +37,15 @@ class TestBinaryController(object):
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         assert result.status_int == 201
+
+    def test_auth_fails(self, session):
+        result = session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
+            headers={'Authorization': util.make_credentials(correct=False)},
+            expect_errors=True
+        )
+        assert result.status_int == 401
 
     def test_new_binary_upload_creates_model_with_path_forced(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
