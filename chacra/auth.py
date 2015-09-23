@@ -2,7 +2,7 @@ import base64
 from pecan import request, abort, response, conf
 
 
-def simple_auth():
+def basic_auth():
     try:
         auth = request.headers.get('Authorization')
         assert auth
