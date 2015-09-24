@@ -3,7 +3,6 @@ reprepro_distros:
   - sid
   - wheezy
   - squeeze
-  - raring
   - quantal
   - precise
   - saucy
