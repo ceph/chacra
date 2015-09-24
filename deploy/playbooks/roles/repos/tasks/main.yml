@@ -1,0 +1,20 @@
+---
+- name: Update apt
+  sudo: yes
+  apt:
+    update_cache: yes
+
+- name: Install needed packages
+  sudo: yes 
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - reprepro
+    - createrepo
+
+- name: Upload debian distributions file for use with reprepro
+  sudo: yes
+  template:
+    src: distributions
+    dest: /etc/distributions

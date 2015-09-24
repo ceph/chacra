@@ -4,6 +4,7 @@
   user: centos
   roles:
     - common
+    - repos
   vars:
      app_name: "chacra"
      use_ssl: true
