@@ -1,41 +1,34 @@
 ---
-  - name: Set SELinux to allow Nginx to proxy
-    sudo: true
-    seboolean:
-      name: httpd_can_network_connect
-      state: yes
-      persistent: yes
+- name: ensure sites-available for nginx
+  file: path=/etc/nginx/sites-available state=directory
+  sudo: true
 
-  - name: ensure sites-available for nginx
-    file: path=/etc/nginx/sites-available state=directory
-    sudo: true
+- name: ensure sites-enable for nginx
+  file: path=/etc/nginx/sites-enabled state=directory
+  sudo: true
 
-  - name: ensure sites-enable for nginx
-    file: path=/etc/nginx/sites-enabled state=directory
-    sudo: true
+- name: remove default nginx site
+  action: file path=/etc/nginx/sites-enabled/default state=absent
+  sudo: true
 
-  - name: remove default nginx site
-    action: file path=/etc/nginx/sites-enabled/default state=absent
-    sudo: true
+- name: write nginx.conf
+  action: template src=../templates/nginx.conf dest=/etc/nginx/nginx.conf
+  sudo: true
 
-  - name: write nginx.conf
-    action: template src=../templates/nginx.conf dest=/etc/nginx/nginx.conf
-    sudo: true
+- name: enable nginx
+  sudo: true
+  action: service name=nginx enabled=true
 
-  - name: enable nginx
-    sudo: true
-    action: service name=nginx enabled=true
+- name: create nginx site config
+  action: template src=../templates/nginx_site.conf dest=/etc/nginx/sites-available/{{ app_name }}.conf
+  sudo: true
+  notify:
+    - restart nginx
 
-  - name: create nginx site config
-    action: template src=../templates/nginx_site.conf dest=/etc/nginx/sites-available/{{ app_name }}.conf
-    sudo: true
-    notify:
-      - restart nginx
+- name: link nginx config
+  action: file src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
+  sudo: true
 
-  - name: link nginx config
-    action: file src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
-    sudo: true
-
-  - name: ensure nginx is started
-    sudo: true
-    action: service name=nginx state=started
+- name: ensure nginx is started
+  sudo: true
+  action: service name=nginx state=started

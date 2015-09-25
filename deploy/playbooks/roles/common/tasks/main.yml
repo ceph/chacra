@@ -1,29 +1,34 @@
 ---
 
-- name: ensure a home for {{ app_name }}
+- name: "ensure a home for {{ app_name }}"
   sudo: yes
   file: path={{ app_home }} owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} state=directory recurse=yes
 
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  sudo: yes
+
 - name: install ssl system requirements
   sudo: yes
-  yum: name={{ item }} state=present
+  apt: name={{ item }} state=present
   with_items: ssl_requirements
   when: app_use_ssl
-
-- name: enable EPEL
-  sudo: yes
-  yum: name=epel-release state=present
+  tags:
+    - packages
 
 - name: install system packages
   sudo: yes
-  yum: name={{ item }} state=present
+  apt: name={{ item }} state=present
   with_items: system_packages
+  tags:
+    - packages
 
 - name: Create a virtualenv with latest pip.
   pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade'
 
-- name: pip+git install {{ app_name }} into virtualenv.
-  pip: name='git+https://github.com/alfredodeza/chacra#egg=chacra' virtualenv={{ app_home }}
+- name: "pip+git install {{ app_name }} into virtualenv."
+  pip: name='git+https://github.com/ceph/chacra#egg=chacra' virtualenv={{ app_home }}
   changed_when: False
 
 - name: create the prod config file
@@ -37,7 +42,13 @@
   notify: restart app
 
 - include: postgresql.yml
+  tags:
+    - postgres
 
 - include: circus.yml
+  tags:
+    - circus
 
 - include: nginx.yml
+  tags:
+    - nginx
