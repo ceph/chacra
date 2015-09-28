@@ -13,7 +13,15 @@ class BinaryController(object):
     def __init__(self, binary_name):
         self.binary_name = binary_name
         self.project = Project.get(request.context['project_id'])
-        self.binary = Binary.query.filter_by(name=binary_name, project=self.project).first()
+        self.distro_version = request.context['distro_version']
+        self.distro = request.context['distro']
+        self.ref = request.context['ref']
+        self.binary = Binary.query.filter_by(
+            name=binary_name,
+            ref=self.ref,
+            distro=self.distro,
+            distro_version=self.distro_version,
+            project=self.project).first()
 
     @expose(content_type='application/octet-stream', generic=True)
     def index(self):
