@@ -98,6 +98,18 @@ class TestBinaryController(object):
         )
         assert result.status_int == 200
 
+    def test_posting_twice__different_distro_ver_not_requires_force_flag(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        result = session.app.post(
+            '/projects/ceph/giant/ceph/el7/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        result = session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        assert result.status_int == 201
+
     def test_posting_twice_updates_the_binary(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
