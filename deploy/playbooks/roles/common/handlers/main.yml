@@ -21,7 +21,3 @@
 - name: restart circus
   sudo: yes
   action: service name=circus state=restarted
-
-- name: reload systemctl
-  command: systemctl daemon-reload
-  sudo: yes

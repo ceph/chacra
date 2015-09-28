@@ -12,3 +12,4 @@
      wsgi_callable: application
      ansible_ssh_port: 22
      restart_app: true
+     binary_root: "/opt/binaries"

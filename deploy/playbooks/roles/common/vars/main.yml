@@ -1,23 +1,23 @@
 ---
 
 system_packages:
-  - python-devel
+  - python-dev
   - git
   - python-virtualenv
   - mongodb-server
-  - gcc-c++
+  - g++
   - gcc
-  - postgresql
-  - postgresql-libs
-  - postgresql-devel
-  - postgresql-server
+  - libpq-dev
+  - postgresql-9.3
+  - postgresql-common
+  - postgresql-contrib
   - python-psycopg2
   - nginx
-  - libsemanage-python
+#  - libsemanage-python
 
 ssl_requirements:
   - openssl
-  - openssl-devel
+  - libssl-dev
 
 circus_system_packages:
   - libzmq-dev

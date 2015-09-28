@@ -1,79 +1,76 @@
 ---
-   - name: initialize postgresql
-     command: postgresql-setup initdb
-             creates=/var/lib/pgsql/data/postgresql.conf
-     sudo: yes
+- name: ensure database service is up
+  service:
+    name: postgresql
+    state: started
+  sudo: yes
 
-   - name: ensure database service is up
-     service:
-       name: postgresql
-       state: started
-     sudo: yes
+- name: allow users to connect locally
+  sudo: yes
+  lineinfile:
+     # TODO: should not hardcode that version
+     dest: /etc/postgresql/9.3/main/pg_hba.conf
+     regexp: '^host\s+all\s+all\s+127.0.0.1/32'
+     line: 'host    all             all             127.0.0.1/32            md5'
+     backrefs: yes
+  register: pg_hba_conf
 
-   - name: check if app user exists
-     command: psql postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ app_name }}'"
-     sudo_user: postgres
-     sudo: yes
-     register: db_user_exists
-     changed_when: False
+- service:
+    name: postgresql
+    state: restarted
+  sudo: true
+  when: pg_hba_conf.changed
 
-   # FIXME: flag/option needed
-   # this is a bit of chicken-or-egg problem. If the user for the app does
-   # exist but we failed to set the password in both postgresql and the python
-   # config file then we will fail to reset it next time around. This would
-   # leave the app without the access to the database.
-   - name: generate pseudo-random password for the database connection
-     shell: python -c "exec 'import os; print os.urandom(30).encode(\'base64\')[:${length}]'"
-     register: db_password
-     #when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
+# FIXME: flag/option needed
+# this is a bit of chicken-or-egg problem. If the user for the app does
+# exist but we failed to set the password in both postgresql and the python
+# config file then we will fail to reset it next time around. This would
+# leave the app without the access to the database.
+- name: generate pseudo-random password for the database connection
+  shell: python -c "exec 'import os; print os.urandom(30).encode(\'base64\')[:${length}]'"
+  register: db_password
+  changed_when: false
 
-   - name: allow users to connect locally
-     sudo: yes
-     lineinfile:
-        dest: /var/lib/pgsql/data/pg_hba.conf
-        regexp: '^host\s+all\s+all\s+127.0.0.1/32'
-        line: 'host    all             all             127.0.0.1/32            md5'
-        backrefs: yes
-     register: pg_hba_conf
+- name: Make {{ app_name }} user
+  postgresql_user:
+    name: "{{ app_name }}" 
+    password: "{{ db_password.stdout }}"
+    role_attr_flags: SUPERUSER
+    login_user: postgres
+  sudo_user: postgres
+  sudo: yes
 
-   - service:
-       name: postgresql
-       state: restarted
-     sudo: true
-     when: pg_hba_conf.changed
+- name: Make {{ app_name }} database
+  postgresql_db:
+    name: "{{ app_name }}"
+    owner: "{{ app_name }}"
+    state: present
+    login_user: postgres
+  sudo_user: postgres
+  sudo: yes
 
-   - name: ensure database service is up
-     service:
-       name: postgresql
-       state: started
-     sudo: yes
+- name: ensure database service is up
+  service:
+    name: postgresql
+    state: started
+  sudo: yes
 
-   - name: create app database
-     sudo_user: postgres
-     sudo: yes
-     action: postgresql_db db={{ app_name }}
+- name: create the prod_db config file with the db password
+  template:
+    src: ../templates/prod_db.py.j2
+    dest: "{{ app_home }}/src/{{ app_name }}/prod_db.py"
+  notify:
+    - restart app
 
-   - name: ensure user has access to databassss
-     sudo_user: postgres
-     sudo: yes
-     action: postgresql_user db="{{ app_name }}" user="{{ app_name }}" password="{{ db_password.stdout }}" role_attr_flags=NOSUPERUSER,CREATEDB
-     #when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
+- name: check if database for app needs populating
+  # this should be configurable/optional in the playbook
+  command: psql -t chacra -c "SELECT COUNT(*) FROM projects;"
+  sudo_user: postgres
+  sudo: yes
+  register: database_is_populated
+  ignore_errors: true
+  changed_when: "database_is_populated.rc != 0"
 
-   - name: create the prod_db config file with the db password
-     action: template src=../templates/prod_db.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod_db.py
-     notify:
-       - restart app
-     #when: db_user_exists.stdout == '0' or db_user_exists.stdout == ''
-
-   - name: check if database for app needs populating
-     # this should be configurable/optional in the playbook
-     command: psql -t chacra -c "SELECT COUNT(*) FROM projects;"
-     sudo_user: postgres
-     sudo: yes
-     register: database_is_populated
-     ignore_errors: true
-     changed_when: "database_is_populated.rc != 0"
-
-   - name: populate the database for {{ app_name }}
-     when: "database_is_populated.rc == 1"
-     command: "{{ app_home }}/bin/pecan populate {{ app_home }}/src/{{ app_name }}/prod.py"
+- name: populate the database for {{ app_name }}
+  when: "database_is_populated.rc == 1"
+  command: "{{ app_home }}/bin/pecan populate {{ app_home }}/src/{{ app_name }}/prod.py"
