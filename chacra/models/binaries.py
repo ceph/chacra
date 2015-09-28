@@ -41,8 +41,9 @@ class Binary(Base):
     def __init__(self, name, project, **kw):
         self.name = name
         self.project = project
-        self.created = datetime.datetime.utcnow()
-        self.modified = datetime.datetime.utcnow()
+        now = datetime.datetime.utcnow()
+        self.created = now
+        self.modified = now
         for key in self.allowed_keys:
             if key in kw.keys():
                 setattr(self, key, kw[key])
@@ -110,5 +111,19 @@ def generate_checksum(mapper, connection, target):
             chsum.update(chunk)
         target.checksum = chsum.hexdigest()
 
+
+def update_timestamp(mapper, connection, target):
+    """
+    Automate the 'modified' attribute when a binary changes
+    """
+    target.modified = datetime.datetime.utcnow()
+
+
+# listen for checksum changes
 listen(Binary, 'before_insert', generate_checksum)
 listen(Binary, 'before_update', generate_checksum)
+
+
+# listen for timestamp modifications
+listen(Binary, 'before_insert', update_timestamp)
+listen(Binary, 'before_update', update_timestamp)
