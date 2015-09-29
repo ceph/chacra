@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.exc import DetachedInstanceError
 from chacra.models import Base
+from chacra.models.repos import Repo
 
 
 class Project(Base):
@@ -27,6 +28,22 @@ class Project(Base):
     @property
     def refs(self):
         return list(set([b.ref for b in self.binaries.all()]))
+
+    @property
+    def built_repos(self):
+        return self.repos.filter(Repo.path != None)
+
+    @property
+    def repo_refs(self):
+        return list(set([r.ref for r in self.built_repos.all()]))
+
+    @property
+    def repo_distros(self):
+        return list(set([r.distro for r in self.built_repos.all()]))
+
+    @property
+    def repo_distro_versions(self):
+        return list(set([r.distro_version for r in self.built_repos.all()]))
 
     def __repr__(self):
         try:

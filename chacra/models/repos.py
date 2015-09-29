@@ -40,6 +40,18 @@ class Repo(Base):
         except DetachedInstanceError:
             return '<Repo detached>'
 
+    def __json__(self):
+        return dict(
+            path=self.path,
+            ref=self.ref,
+            distro=self.distro,
+            distro_version=self.distro_version,
+            modified=self.modified,
+            signed=self.signed,
+            needs_update=self.needs_update,
+            size=self.size,
+        )
+
 # listen for timestamp modifications
 listen(Repo, 'before_insert', update_timestamp)
 listen(Repo, 'before_update', update_timestamp)
