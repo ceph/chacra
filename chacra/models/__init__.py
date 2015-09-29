@@ -1,3 +1,4 @@
+import datetime
 from sqlalchemy import create_engine, MetaData, event
 from sqlalchemy.orm import scoped_session, sessionmaker, object_session, mapper
 from sqlalchemy.ext.declarative import declarative_base
@@ -39,6 +40,13 @@ Base.query = Session.query_property()
 @event.listens_for(mapper, 'init')
 def auto_add(target, args, kwargs):
     Session.add(target)
+
+
+def update_timestamp(mapper, connection, target):
+    """
+    Automate the 'modified' attribute when a model changes
+    """
+    target.modified = datetime.datetime.utcnow()
 
 
 # Utilities:
