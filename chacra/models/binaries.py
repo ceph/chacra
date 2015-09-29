@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
-from chacra.models import Base
+from chacra.models import Base, update_timestamp
 from chacra.models.repos import Repo
 from chacra.controllers import util
 
@@ -138,13 +138,6 @@ def generate_checksum(mapper, connection, target):
         for chunk in iter(lambda: f.read(4096), ""):
             chsum.update(chunk)
         target.checksum = chsum.hexdigest()
-
-
-def update_timestamp(mapper, connection, target):
-    """
-    Automate the 'modified' attribute when a binary changes
-    """
-    target.modified = datetime.datetime.utcnow()
 
 
 # listen for checksum changes
