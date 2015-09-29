@@ -363,6 +363,18 @@ only the {REPO} that can have any destination (vs. DEBs which are intertwined
 within the repository). This is the reason why there is no need to define
 a configuration strategy for RPM repositories.
 
+Disabling per project
+---------------------
+Automatic repository creation can be disabled (on by default) in the
+configuration for repos. In the case of a project like ``ceph-deploy`` that
+is usually included in other repos, it could be disabled like::
+
+    repos = {
+        'ceph-deploy': {
+            'disabled': True
+        }
+    }
+
 about the name
 ==============
 `chakra` is a quechua word to refer to a small farm in the outskirts, dedicated
