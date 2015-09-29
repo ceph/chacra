@@ -1,11 +1,9 @@
-import hashlib
 import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
-from chacra.models import Base
-from chacra.controllers import util
+from chacra.models import Base, update_timestamp
 
 
 class Repo(Base):
@@ -35,3 +33,7 @@ class Repo(Base):
             return '<Repo %r>' % self.name
         except DetachedInstanceError:
             return '<Repo detached>'
+
+# listen for timestamp modifications
+listen(Repo, 'before_insert', update_timestamp)
+listen(Repo, 'before_update', update_timestamp)
