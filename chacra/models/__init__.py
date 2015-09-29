@@ -106,3 +106,4 @@ def flush():
 
 from projects import Project  # noqa
 from binaries import Binary  # noqa
+from repos import Repo  # noqa
