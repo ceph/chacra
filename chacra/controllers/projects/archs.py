@@ -4,7 +4,7 @@ from pecan import expose, abort, request
 from chacra.models import Binary
 from chacra import models
 from chacra.controllers import error
-from chacra.controllers.binaries import BinaryController
+from chacra.controllers.projects.binaries import BinaryController
 
 
 logger = logging.getLogger(__name__)

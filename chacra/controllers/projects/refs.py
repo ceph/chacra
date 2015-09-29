@@ -1,9 +1,7 @@
-from sqlalchemy.orm import subqueryload_all
 from pecan import expose, abort, request
-from chacra.models import projects
 from chacra import models
-from chacra.controllers import error, set_id_in_context
-from chacra.controllers.distros import DistroController
+from chacra.controllers import error
+from chacra.controllers.projects.distros import DistroController
 
 
 class RefController(object):
