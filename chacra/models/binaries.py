@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
 from chacra.models import Base
+from chacra.models.repos import Repo
 from chacra.controllers import util
 
 
@@ -28,6 +29,9 @@ class Binary(Base):
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', backref=backref('binaries', lazy='dynamic'))
 
+    repo_id = Column(Integer, ForeignKey('repos.id'))
+    repo = relationship('Repo', backref=backref('binaries', lazy='dynamic'))
+
     allowed_keys = [
         'path',
         'distro',
@@ -38,7 +42,7 @@ class Binary(Base):
         'size',
     ]
 
-    def __init__(self, name, project, **kw):
+    def __init__(self, name, project, repo=None, **kw):
         self.name = name
         self.project = project
         now = datetime.datetime.utcnow()
@@ -47,6 +51,30 @@ class Binary(Base):
         for key in self.allowed_keys:
             if key in kw.keys():
                 setattr(self, key, kw[key])
+        self.repo = repo or self._get_or_create_repo()
+
+    def _get_or_create_repo(self):
+        """
+        A repo model object may exist for this binary, if it exists, then
+        return it otherwise create it and then return it.
+        """
+        # try to find one that matches our needs first
+        repo = Repo.query.filter_by(
+            ref=self.ref,
+            distro=self.distro,
+            distro_version=self.distro_version,
+            project=self.project).first()
+
+        # create one otherwise
+        if not repo:
+            repo = Repo(
+                self.project,
+                self.ref,
+                self.distro,
+                self.distro_version
+            )
+
+        return repo
 
     def __repr__(self):
         try:
