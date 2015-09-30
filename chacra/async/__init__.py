@@ -1,9 +1,8 @@
 import pecan
 from celery import Celery
+import celery
 from datetime import timedelta
-import requests
-import jenkins
-import json
+from chacra import models
 import os
 import logging
 logger = logging.getLogger(__name__)
@@ -25,20 +24,39 @@ pecan.configuration.set_config(get_pecan_config(), overwrite=True)
 # `chacra.async.debian` or if it doesn't matter
 app = Celery('chacra.async', broker='amqp://guest@localhost//')
 
+models.init_model()
+
+
+class SQLATask(celery.Task):
+    """An abstract Celery Task that ensures that the connection the the
+    database is closed on task completion"""
+    abstract = True
+
+    def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        models.remove()
+
+
+@app.task(base=SQLATask)
+def poll_repos():
+    """
+    Poll the repository objects that need to be updated and call the tasks
+    that can create (or update) repositories with that information
+
+    """
+    logger.info('polling repos....')
+    from chacra.models import Repo
+    for r in Repo.query.all():
+        if r.needs_update:
+            logger.info("repo %s needs to be updated/created", r)
+            # TODO: implement the actual call to RPM/DEB task here
+    logger.info('completed repo polling')
+
+
 app.conf.update(
     CELERYBEAT_SCHEDULE={
-        'check-idle-every-30-seconds': {
-            'task': 'async.check_idling',
-            # FIXME: no way we want this to be 10 seconds
-            'schedule': timedelta(seconds=10),
-        },
-        'add-every-30-seconds': {
-            'task': 'async.check_queue',
-            # FIXME: no way we want this to be 10 seconds
+        'poll-repos': {
+            'task': 'async.poll_repos',
             'schedule': timedelta(seconds=10),
         },
     },
-    nodes=pecan.conf.nodes,
-    pecan_app=pecan.conf.server,
-    jenkins=pecan.conf.jenkins
 )
