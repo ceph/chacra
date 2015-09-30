@@ -68,3 +68,6 @@ binary_root = '%(confdir)s/public'
 # When True it will set the headers so that Nginx can serve the download
 # instead of Pecan.
 delegate_downloads = False
+
+api_user = 'admin'
+api_key = 'secret'
