@@ -1,4 +1,4 @@
-from chacra.models import Binary, Project
+from chacra.models import Binary, Project, Repo
 
 
 class TestBinaryModification(object):
@@ -48,3 +48,48 @@ class TestBinaryModification(object):
         binary = Binary.get(1)
 
         assert initial_created < binary.modified.time()
+
+    def test_binary_uses_explicit_repo(self, session):
+        repo = Repo(self.p, 'firefly', 'centos', '7')
+        binary = Binary(
+            'ceph-1.0.rpm',
+            self.p,
+            distro='centos',
+            distro_version='7',
+            arch='x86_64',
+            repo=repo,
+            )
+        session.commit()
+        binary = Binary.get(1)
+        assert binary.repo.ref == 'firefly'
+        assert binary.repo.distro_version == '7'
+
+    def test_binary_create_repo_object(self, session):
+        binary = Binary(
+            'ceph-1.0.rpm',
+            self.p,
+            ref='firefly',
+            distro='centos',
+            distro_version='7',
+            arch='x86_64',
+            )
+        session.commit()
+        binary = Binary.get(1)
+        assert binary.repo.ref == 'firefly'
+        assert binary.repo.distro_version == '7'
+
+    def test_binary_reuse_repo_object(self, session):
+        repo = Repo(self.p, 'hammer', 'centos', '7')
+        session.commit()
+        binary = Binary(
+            'ceph-1.0.rpm',
+            self.p,
+            ref='hammer',
+            distro='centos',
+            distro_version='7',
+            arch='x86_64',
+            )
+        session.commit()
+        binary = Binary.get(1)
+        assert binary.repo.ref == 'hammer'
+        assert binary.repo.distro_version == '7'
