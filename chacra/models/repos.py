@@ -29,6 +29,15 @@ class Repo(Base):
         self.distro_version = distro_version
         self.modified = datetime.datetime.utcnow()
 
+    @property
+    def name(self):
+        return "{}/{}/{}/{}".format(
+            self.project.name,
+            self.ref,
+            self.distro,
+            self.distro_version,
+        )
+
     def __repr__(self):
         try:
             return '<Repo %r>' % self.name
