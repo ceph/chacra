@@ -19,7 +19,7 @@ class Repo(Base):
     needs_update = Column(Boolean(), default=False)
     size = Column(Integer, default=0)
 
-    binary_id = Column(Integer, ForeignKey('projects.id'))
+    project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', backref=backref('repos', lazy='dynamic'))
 
     def __init__(self, project, ref, distro, distro_version):
