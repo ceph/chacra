@@ -16,6 +16,7 @@ class Repo(Base):
     distro_version = Column(String(256), nullable=False, index=True)
     modified = Column(DateTime, index=True)
     signed = Column(Boolean(), default=False)
+    needs_update = Column(Boolean(), default=False)
     size = Column(Integer, default=0)
 
     binary_id = Column(Integer, ForeignKey('projects.id'))
