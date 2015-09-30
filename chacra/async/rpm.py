@@ -1,11 +1,8 @@
 import pecan
-from celery import Celery
-from datetime import timedelta
-import json
 import os
 import logging
 import subprocess
-from mita import util
+from chacra.async import app, SQLATask
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +11,7 @@ def create_repo(repo_ids):
     """
     Go create or update repositories with specific IDs.
     """
-    from chacra.models import Repos
+    from chacra.models import Repo
     directories = ['SRPMS', 'noarch', 'x86_64']
     # get the root path for storing repos
     for _id in repo_ids:
