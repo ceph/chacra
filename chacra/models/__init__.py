@@ -112,6 +112,11 @@ def clear():
 def flush():
     Session.flush()
 
+
+def remove():
+    Session.remove()
+
+
 from projects import Project  # noqa
 from binaries import Binary  # noqa
 from repos import Repo  # noqa
