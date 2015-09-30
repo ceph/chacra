@@ -292,46 +292,39 @@ The default repository structure URL looks like::
 
     /repos/{project}/{ref}/{distro}/{distro version}/{REPO}
 
-For the Ceph project, the production URL repository structure for RPMs looks
-like::
 
-    /repos/{project}/rpm-{ref}/{distro}{distro version}/{REPO}
-
-And for DEB packages is::
-
-    /repos/{project}/debian-{ref}/{combined REPO}
-
-``{combined REPO}`` is the case where in a DEB repository, packages for
-multiple distribution versions can exist in the same repository.
-
-DEBIAN
-------
-To alter default structure with a custom name, like in production repos
-the configuration needs to be updated per project. Repos can only be created *per*
-REF, although configuration is done at PROJECT level, affecting all REFs. For example
+Defining custom repositories
+----------------------------
+To create repos that combine multiple distro versions, define them in ``repos``
+dictionary in your config. Repos can only be created *per* REF, although
+configuration is done at PROJECT level, affecting all REFs. For example
 in config.py::
 
     repos = {
         'ceph': {
-            'deb': {
-              'combined': True,
-              'versions': ['wheezy', 'precise', 'jessie']
-            },
-            # 'rpm' is not defined as there is currently no immediate need to design a custom
-            # structure, so it is left undefined on purpose.
+            'combined': ['wheezy', 'precise', 'jessie'],
         }
     }
 
-The above configuration would cause "combined" repositories of the defined
+The above configuration would create a "combined" repository of the defined
 versions. The repository would then be available at::
 
-    /repos/{project}/{ref}/debian/{combined REPO}
+    /repos/{project}/{ref}/combined/{combined REPO}
 
-If the `combined` key was undefined or explicitly set to `False` then the
-repositories would follow the default structure:
+All other repos built for other other distro versions will still be available at the
+default endpoint::
 
-    /repos/{project}/{ref}/debian/{distro version}/{REPO}
+    /repos/{project}/{ref}/{distro}/{distro version}/{REPO}
 
+
+.. note::
+
+    Creating a repository that combines multiple distro versions is only available for
+    debian based distros.
+
+
+Defining extra packages
+-----------------------
 
 For extra packages that may be coming from other projects, the configuration structure will allow
 for definition of them. For example, 'ceph-deploy' exists publicly in the 'ceph' repositories, just
@@ -340,10 +333,7 @@ like 'radosgw-agent'. This inclusion would be defined at the project level, like
     repos = {
         'ceph': {
             'extras': ['ceph-deploy', 'radosgw-agent'],
-            'deb': {
-              'combined': True,
-              'versions': ['wheezy', 'precise', 'jessie']
-            },
+            'combined': ['wheezy', 'precise', 'jessie'],
         }
     }
 
@@ -351,17 +341,6 @@ The `extras` key would require those projects to be present in the chacra
 instance that is creating the repositories.
 # TODO: Maybe allow for URLs as well? That way packages could come from another source?
 
-RPM
----
-Default repo structure for Firefly Ceph on CentOS 7 would look like::
-
-    /repos/ceph/firefly/centos/7/{REPO}
-
-This default structure would be good enough to be promoted to production,
-because the parent directory structure would not matter at this point as it is
-only the {REPO} that can have any destination (vs. DEBs which are intertwined
-within the repository). This is the reason why there is no need to define
-a configuration strategy for RPM repositories.
 
 Disabling per project
 ---------------------
