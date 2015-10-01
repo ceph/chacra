@@ -46,7 +46,7 @@ def poll_repos():
 
     """
     logger.info('polling repos....')
-    for r in models.Repo.query.all():
+    for r in models.Repo.query.filter_by(needs_update=True).all():
         logger.info(r)
         logger.info(r.binaries)
         if r.needs_update:
