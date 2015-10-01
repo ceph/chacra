@@ -42,20 +42,20 @@ class TestArchController(object):
 
     def test_single_binary_should_create_all_url(self, session):
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el6/x86_64/',
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
         result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
         result.json['ceph-9.0.0-0.el6.x86_64.rpm']['name'] == 'ceph-9.0.0-0.el6.x86_64.rpm'
 
     def test_multiple_binaries(self, session):
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el6/x86_64/',
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el6/x86_64/',
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.1.0-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.1.0-0.el6.x86_64.rpm'))
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el6/x86_64/',
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.2-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.0.2-0.el6.x86_64.rpm'))
         result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
         assert len(result.json.keys()) == 3
@@ -64,10 +64,10 @@ class TestArchController(object):
     def test_multiple_binaries_in_same_arch_different_versions(self, session):
         # post same binary to el6 and el7 and same x86_64 arch
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el6/x86_64/',
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el7/x86_64/',
+            '/projects/ceph/giant/ceph/el7/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.1.0-0.el6.x86_64.rpm'))
         el6 = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
         el7 = session.app.get('/projects/ceph/giant/ceph/el7/x86_64/')
@@ -77,10 +77,10 @@ class TestArchController(object):
     def test_multiple_same_binaries_in_same_arch_different_versions(self, session):
         # post same binary to el6 and el7 and same x86_64 arch
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el6/x86_64/',
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el7/x86_64/',
+            '/projects/ceph/giant/ceph/el7/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm'))
         result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
         assert len(result.json.keys()) == 1
@@ -88,7 +88,7 @@ class TestArchController(object):
 
     def test_set_the_path_on_binary(self, session):
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el6/x86_64/',
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(
                 name='ceph-9.0.0-0.el6.x86_64.rpm',
                 path='/'))
@@ -97,12 +97,12 @@ class TestArchController(object):
 
     def test_do_not_allow_overwriting(self, session):
         session.app.post_json(
-            '/projects/ceph/giant/centos/el6/x86_64/',
+            '/projects/ceph/giant/centos/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(
                 name='ceph-9.0.0-0.el6.x86_64.rpm',
                 path='/'))
         result = session.app.post_json(
-            '/projects/ceph/giant/centos/el6/x86_64/',
+            '/projects/ceph/giant/centos/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(
                 name='ceph-9.0.0-0.el6.x86_64.rpm',
                 path='/'),
@@ -123,16 +123,16 @@ class TestArchController(object):
     def test_allow_overwriting_with_flag(self, session, tmpdir):
         path = self.ensure_file(tmpdir, name='other')
         session.app.post_json(
-            '/projects/ceph/giant/centos/el6/x86_64/',
+            '/projects/ceph/giant/centos/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(
                 name='ceph-9.0.0-0.el6.x86_64.rpm',
                 path='/'))
         session.app.post_json(
-            '/projects/ceph/giant/centos/el6/x86_64/',
+            '/projects/ceph/giant/centos/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(
                 name='ceph-9.0.0-0.el6.x86_64.rpm',
                 path=path,
-                force=True),
+                force=True)
             )
         result = session.app.get('/projects/ceph/giant/centos/el6/x86_64/')
         assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['path'] == path
@@ -144,7 +144,7 @@ class TestArchController(object):
         with open(path, 'w') as f:
             f.write('existing binary')
         session.app.post_json(
-            '/projects/ceph/giant/ceph/el6/x86_64/',
+            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(name='ceph-9.0.0-0.el6.x86_64.rpm', path=path))
         result = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/')
         assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['size'] == 15
@@ -155,12 +155,12 @@ class TestArchController(object):
         with open(path, 'w') as f:
             f.write('existing binary')
         session.app.post_json(
-            '/projects/ceph/giant/centos/el6/x86_64/',
+            '/projects/ceph/giant/centos/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(
                 name='ceph-9.0.0-0.el6.x86_64.rpm',
                 path='/'))
         session.app.post_json(
-            '/projects/ceph/giant/centos/el6/x86_64/',
+            '/projects/ceph/giant/centos/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params=dict(
                 name='ceph-9.0.0-0.el6.x86_64.rpm',
                 path=path,
@@ -168,3 +168,12 @@ class TestArchController(object):
             )
         result = session.app.get('/projects/ceph/giant/centos/el6/x86_64/')
         assert result.json['ceph-9.0.0-0.el6.x86_64.rpm']['size'] == 15
+
+    def test_single_binary_file_creates_resource(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        result = session.app.post(
+            '/projects/ceph/giant/ceph/el6/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        assert result.status_int == 201
