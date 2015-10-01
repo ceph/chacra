@@ -46,8 +46,7 @@ def poll_repos():
 
     """
     logger.info('polling repos....')
-    from chacra.models import Repo
-    for r in Repo.query.all():
+    for r in models.Repo.query.all():
         logger.info(r)
         logger.info(r.binaries)
         if r.needs_update:
@@ -63,12 +62,11 @@ def create_repo(repo_ids):
     """
     Go create or update repositories with specific IDs.
     """
-    from chacra.models import Repo
     directories = ['SRPMS', 'noarch', 'x86_64']
     # get the root path for storing repos
     for _id in repo_ids:
         # TODO: Is it possible we can get an ID that doesn't exist anymore?
-        repo = Repo.get(_id)
+        repo = models.Repo.get(_id)
         logger.info(repo.binaries)
         project_name = repo.project.name
 
