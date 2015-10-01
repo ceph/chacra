@@ -6,6 +6,7 @@ from chacra import models
 from chacra.util import repo_directory
 import os
 import logging
+import subprocess
 logger = logging.getLogger(__name__)
 
 
@@ -34,8 +35,7 @@ class SQLATask(celery.Task):
     abstract = True
 
     def after_return(self, status, retval, task_id, args, kwargs, einfo):
-        return
-        models.remove()
+        models.clear()
 
 
 @app.task(base=SQLATask)
@@ -99,7 +99,6 @@ def create_repo(repo_ids):
                 logger.warning('could not symlink')
 
         for d in repo_dirs:
-            import subprocess
             subprocess.call(['createrepo', d])
 
 
