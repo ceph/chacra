@@ -140,6 +140,12 @@ def generate_checksum(mapper, connection, target):
         target.checksum = chsum.hexdigest()
 
 
+def update_repo(mapper, connection, target):
+    try:
+        target.repo.needs_update = True
+    except AttributeError:
+        pass
+
 # listen for checksum changes
 listen(Binary, 'before_insert', generate_checksum)
 listen(Binary, 'before_update', generate_checksum)
@@ -148,3 +154,9 @@ listen(Binary, 'before_update', generate_checksum)
 # listen for timestamp modifications
 listen(Binary, 'before_insert', update_timestamp)
 listen(Binary, 'before_update', update_timestamp)
+
+
+# listen for any changes to mark the repos
+listen(Binary, 'before_insert', update_repo)
+listen(Binary, 'before_update', update_repo)
+
