@@ -3,6 +3,7 @@ from celery import Celery
 import celery
 from datetime import timedelta
 from chacra import models
+from chacra.util import repo_directory
 import os
 import logging
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ class SQLATask(celery.Task):
     abstract = True
 
     def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        return
         models.remove()
 
 
@@ -46,10 +48,61 @@ def poll_repos():
     logger.info('polling repos....')
     from chacra.models import Repo
     for r in Repo.query.all():
+        logger.info(r)
+        logger.info(r.binaries)
         if r.needs_update:
             logger.info("repo %s needs to be updated/created", r)
-            # TODO: implement the actual call to RPM/DEB task here
+            if r.binaries[0].name.endswith('rpm'):
+                create_repo.delay([r.id])
+
     logger.info('completed repo polling')
+
+
+@app.task(base=SQLATask)
+def create_repo(repo_ids):
+    """
+    Go create or update repositories with specific IDs.
+    """
+    from chacra.models import Repo
+    directories = ['SRPMS', 'noarch', 'x86_64']
+    # get the root path for storing repos
+    for _id in repo_ids:
+        # TODO: Is it possible we can get an ID that doesn't exist anymore?
+        repo = Repo.get(_id)
+        logger.info(repo.binaries)
+        project_name = repo.project.name
+
+        # Determine paths for this repository
+        root_path = os.path.join(pecan.conf.repos_root, project_name)
+        relative_repo_path = '%s/%s/%s/%s' % (project_name, repo.ref, repo.distro, repo.distro_version)
+        abs_repo_path = os.path.join(root_path, relative_repo_path)
+        repo_dirs = [os.path.join(abs_repo_path, d) for d in directories]
+
+        # does this repo has a path? if so, it exists already, no need to
+        # create structure
+        if not repo.path or not os.path.exists(abs_repo_path):
+            try:
+                os.makedirs(abs_repo_path)
+            except OSError as err:
+                pass  # fixme! we should check if this exists
+            for d in repo_dirs:
+                if not os.path.exists(d):
+                    os.mkdir(d)
+
+        # now that structure is done, we need to symlink the RPMs that belong
+        # to this repo so that we can create the metadata.
+        for binary in repo.binaries:
+            logger.warning(binary.__json__())
+            source = binary.path
+            destination = os.path.join(abs_repo_path, repo_directory(binary.name))
+            try:
+                os.symlink(source, destination)
+            except OSError:
+                logger.warning('could not symlink')
+
+        for d in repo_dirs:
+            import subprocess
+            subprocess.call(['createrepo', d])
 
 
 app.conf.update(
