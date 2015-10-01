@@ -3,6 +3,7 @@ import os
 import logging
 import subprocess
 from chacra.async import app, SQLATask
+from chacra.util import repo_directory
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +38,7 @@ def create_repo(repo_ids):
         # to this repo so that we can create the metadata.
         for binary in repo.binaries:
             source = binary.path
-            destination = os.path.join(abs_repo_path, binary.repo_directory())
+            destination = os.path.join(abs_repo_path, repo_directory(binary.name))
             os.symlink(source, destination)
 
         for d in repo_dirs:
