@@ -35,11 +35,9 @@ def create_repo(repo_ids):
 
         # now that structure is done, we need to symlink the RPMs that belong
         # to this repo so that we can create the metadata.
-        # FIXME!!! This is just assuming x86_64 for now and slapping everything
-        # there which is (or can be) completely incorrect
         for binary in repo.binaries:
             source = binary.path
-            destination = os.path.join(abs_repo_path, 'x86_64')
+            destination = os.path.join(abs_repo_path, binary.repo_directory())
             os.symlink(source, destination)
 
         for d in repo_dirs:
