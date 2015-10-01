@@ -82,12 +82,16 @@ class CrawlCommand(BaseCommand):
         * bpo60 means squeeze
         """
         super(CrawlCommand, self).run(args)
+        app = self.load_app()
 
         if not all((args.distro, args.version, args.arch, args.project, args.ref)):
             raise SystemExit('--project, --ref, --distro, --version, and --arch are required')
 
-        host = conf.server['host']
-        port = conf.server['port']
+        host = app.config.server['host']
+        port = app.config.server['port']
+        user = app.config.api_user
+        key = app.config.api_key
+
         base_url = 'http://%s:%s/projects/%s/%s/%s/%s/%s/' % (host, port, args.project, args.ref, args.distro, args.version, args.arch)
         print base_url
 
@@ -110,7 +114,12 @@ class CrawlCommand(BaseCommand):
                     continue
         for name, path in binaries.items():
             print 'POST %s %s' % (base_url, str(dict(name=name, path=path)))
-            requests.post(base_url, json.dumps(dict(name=name, path=path)))
+            with open(path) as binary:
+                post_file = requests.post(base_url, files={'file': binary}, auth=(user, key))
+                print 'POST FILE %s %s' % (base_url, binary)
+                print post_file
+                print post_file.text
+
 
     def is_valid(self, filename, args):
         checkers = {
