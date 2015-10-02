@@ -16,10 +16,7 @@ class ProjectController(object):
             Repo.path != None
         ).first()
         if not self.project:
-            if request.method != 'POST':
-                abort(404)
-            elif request.method == 'POST':
-                self.project = models.get_or_create(Project, name=project_name)
+            abort(404)
         request.context['project_id'] = self.project.id
 
     @expose('json')
