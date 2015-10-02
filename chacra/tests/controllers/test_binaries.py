@@ -10,13 +10,13 @@ class TestBinaryUniqueness(object):
     def test_two_projects_different_archs(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
-            '/projects/ceph/giant/centos/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/centos/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
 
         session.app.post(
-            '/projects/ceph-deploy/master/centos/el6/i386/ceph-deploy-1.0.0-0.el6.i386.rpm/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            '/projects/ceph-deploy/master/centos/el6/i386/',
+            upload_files=[('file', 'ceph-deploy-1.0.0-0.el6.i386.rpm', 'hello tharrrr')]
         )
 
         # get archs for ceph-deploy
@@ -32,7 +32,7 @@ class TestBinaryController(object):
     def test_single_binary_file_creates_resource(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             params={'force': 1},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
@@ -51,18 +51,15 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
 
         session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            params={'force': '1'},
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
-        session.app.post(
+        session.app.put(
             '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            params={'force': '1'},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
-        session.app.post(
+        session.app.put(
             '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            params={'force': '1'},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
 
@@ -74,38 +71,25 @@ class TestBinaryController(object):
 
         # we do a bunch of requests that do talk to the database
         session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         result = session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
             expect_errors=True
         )
 
         assert result.status_int == 400
 
-    def test_posting_twice_requires_force_flag(self, session, tmpdir):
-        pecan.conf.binary_root = str(tmpdir)
-        result = session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
-        )
-        result = session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            params={'force': True},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
-        )
-        assert result.status_int == 200
-
     def test_posting_twice__different_distro_ver_not_requires_force_flag(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/projects/ceph/giant/ceph/el7/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el7/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         result = session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         assert result.status_int == 201
@@ -113,12 +97,11 @@ class TestBinaryController(object):
     def test_posting_twice_updates_the_binary(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
-        session.app.post(
+        session.app.put(
             '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            params={'force': True},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'something changed')]
         )
 
@@ -133,7 +116,7 @@ class TestBinaryController(object):
     def test_binary_gets_size_computed(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         response = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/').json
@@ -143,7 +126,7 @@ class TestBinaryController(object):
     def test_binary_gets_checksum_computed(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         response = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/').json
@@ -154,13 +137,13 @@ class TestBinaryController(object):
     def test_binary_gets_checksum_computed_when_updated(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/projects/ceph/giant/ceph/el6/x86_64/',
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         response = session.app.get('/projects/ceph/giant/ceph/el6/x86_64/').json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
         assert result.startswith('318b')
-        session.app.post(
+        session.app.put(
             '/projects/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params={'force': True},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'something changed')]

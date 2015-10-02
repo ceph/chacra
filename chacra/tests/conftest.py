@@ -66,8 +66,6 @@ def connection(app, request):
     _db.commit()
     _db.clear()
 
-    #connection = db_engine.connect()
-
     def teardown():
         _db.Base.metadata.drop_all(db_engine)
 
@@ -174,6 +172,8 @@ class TestApp(object):
         @param (string) url - The URL to emulate a PUT request to
         @returns (paste.fixture.TestResponse)
         """
+        if not kwargs.get('headers'):
+            kwargs['headers'] = {'Authorization': util.make_credentials()}
         return self._do_request(url, 'PUT', **kwargs)
 
     def delete(self, url, **kwargs):

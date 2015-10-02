@@ -1,4 +1,5 @@
 import os
+import logging
 import pecan
 from pecan import expose, abort, request, response, conf
 from pecan.secure import secure
@@ -6,6 +7,8 @@ from webob.static import FileIter
 from chacra.models import Binary, Project
 from chacra.controllers import error
 from chacra.auth import basic_auth
+
+logger = logging.getLogger(__name__)
 
 
 class BinaryController(object):
@@ -15,6 +18,7 @@ class BinaryController(object):
         self.project = Project.get(request.context['project_id'])
         self.distro_version = request.context['distro_version']
         self.distro = request.context['distro']
+        self.arch = request.context['arch']
         self.ref = request.context['ref']
         self.binary = Binary.query.filter_by(
             name=binary_name,
@@ -65,30 +69,57 @@ class BinaryController(object):
     @secure(basic_auth)
     @index.when(method='POST', template='json')
     def index_post(self):
+        try:
+            data = request.json
+            name = data.get('name')
+        except ValueError:
+            error('/errors/invalid/', 'could not decode JSON body')
+
+        # updates the binary only if explicitly told to do so
+        if self.binary:
+            if not data.get('force'):
+                error('/errors/invalid/', 'file already exists and "force" flag was not used')
+            else:
+                # FIXME this looks like we need to implement PUT
+                path = data.get('path')
+                if path:
+                    try:
+                        data['size'] = os.path.getsize(path)
+                    except OSError:
+                        logger.exception('could not retrieve size from %s' % path)
+                        data['size'] = 0
+                self.binary.update_from_json(data)
+                return {}
+
+        # we allow empty data to be pushed
+        if not name:
+            error('/errors/invalid/', "could not find required key: 'name'")
+        name = data.pop('name')
+        path = data.get('path')
+
+        if path:
+            size = os.path.getsize(path)
+        else:
+            size = 0
+        Binary(
+            name=name, project=self.project, arch=self.arch,
+            distro=self.distro, distro_version=self.distro_version,
+            ref=self.ref, size=size
+        )
+
+        return {}
+
+    @secure(basic_auth)
+    @index.when(method='PUT', template='json')
+    def index_put(self):
         contents = request.POST.get('file', False)
-        if self.binary is not None:
-            if os.path.exists(self.binary.path):
-                if request.POST.get('force', False) is False:
-                    error('/errors/invalid', "resource already exists and 'force' flag was not set")
         if contents is False:
             error('/errors/invalid/', 'no file object found in "file" param in POST request')
         file_obj = contents.file
-        full_path = self.save_file(file_obj)
-
-        if self.binary is None:
-            path = full_path
-            distro = request.context['distro']
-            distro_version = request.context['distro_version']
-            arch = request.context['arch']
-            ref = request.context['ref']
-
-            Binary(
-                self.binary_name, self.project, arch=arch,
-                distro=distro, distro_version=distro_version,
-                ref=ref, path=path, size=os.path.getsize(path)
-            )
-        else:
-            self.binary.path = full_path
+        # this looks odd, path is not changing, but we need to 'ping' the object by
+        # re-saving the attribute so that the listener can update the checksum and modified
+        # timestamps
+        self.binary.path = self.save_file(file_obj)
         return dict()
 
     def create_directory(self):
@@ -101,12 +132,15 @@ class BinaryController(object):
         return path
 
     def save_file(self, file_obj):
+        # TODO: we should just use self.binary.path for this
         dir_path = self.create_directory()
         if self.binary_name in os.listdir(dir_path):
             # resource exists so we will update it
             response.status = 200
         else:
-            # we will create a resource
+            # TODO: enforce this.
+            # we will create a resource, but this SHOULD NOT HAPPEN
+            # because we are PUT not POST
             response.status = 201
 
         destination = os.path.join(dir_path, self.binary_name)
