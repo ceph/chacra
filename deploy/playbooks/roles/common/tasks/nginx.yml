@@ -3,6 +3,10 @@
   file: path=/etc/nginx/sites-available state=directory
   sudo: true
 
+- name: ensure there is an nginx user
+  user: name=nginx comment="Nginx user"
+  sudo: true
+
 - name: ensure sites-enable for nginx
   file: path=/etc/nginx/sites-enabled state=directory
   sudo: true
