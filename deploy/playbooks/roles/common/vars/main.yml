@@ -4,7 +4,6 @@ system_packages:
   - python-dev
   - git
   - python-virtualenv
-  - mongodb-server
   - g++
   - gcc
   - libpq-dev
