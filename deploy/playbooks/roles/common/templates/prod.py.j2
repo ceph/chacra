@@ -1,6 +1,7 @@
 # {{ ansible_managed }}
 from pecan.hooks import TransactionHook, RequestViewerHook
 from chacra import models
+from chacra import hooks
 from prod_db import sqlalchemy
 
 
@@ -22,6 +23,7 @@ app = {
             models.rollback,
             models.clear
         ),
+        hooks.CustomErrorHook(),
     ],
     'debug': False,
 }
