@@ -67,12 +67,12 @@ def create_repo(repo_ids):
     for _id in repo_ids:
         # TODO: Is it possible we can get an ID that doesn't exist anymore?
         repo = models.Repo.get(_id)
-        logger.info(repo.binaries)
+        logger.info("processing repository: %s", repo)
         project_name = repo.project.name
 
         # Determine paths for this repository
         root_path = os.path.join(pecan.conf.repos_root, project_name)
-        relative_repo_path = '%s/%s/%s/%s' % (project_name, repo.ref, repo.distro, repo.distro_version)
+        relative_repo_path = '%s/%s/%s' % (repo.ref, repo.distro, repo.distro_version)
         abs_repo_path = os.path.join(root_path, relative_repo_path)
         repo_dirs = [os.path.join(abs_repo_path, d) for d in directories]
 
@@ -82,25 +82,32 @@ def create_repo(repo_ids):
             try:
                 os.makedirs(abs_repo_path)
             except OSError as err:
+                logger.warning('did not created dirs: %s', err)
                 pass  # fixme! we should check if this exists
             for d in repo_dirs:
                 if not os.path.exists(d):
-                    os.mkdir(d)
+                    os.makedirs(d)
 
         # now that structure is done, we need to symlink the RPMs that belong
         # to this repo so that we can create the metadata.
         for binary in repo.binaries:
             logger.warning(binary.__json__())
             source = binary.path
-            destination = os.path.join(abs_repo_path, repo_directory(binary.name))
+            destination_dir = os.path.join(abs_repo_path, repo_directory(binary.name))
+            destination = os.path.join(destination_dir, binary.name)
             try:
-                os.symlink(source, destination)
+                if not os.path.exists(destination):
+                    os.symlink(source, destination)
             except OSError:
-                logger.warning('could not symlink')
+                logger.exception('could not symlink')
 
         for d in repo_dirs:
             subprocess.call(['createrepo', d])
 
+        # Finally, set the repo path in the object and mark needs_update as False
+        repo.path = abs_repo_path
+        repo.needs_update = False
+        models.commit()
 
 app.conf.update(
     CELERYBEAT_SCHEDULE={
