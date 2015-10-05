@@ -6,7 +6,7 @@ from pecan import expose, abort, request
 from chacra.models import Binary
 from chacra import models
 from chacra.controllers import error
-from chacra.controllers.projects.binaries import BinaryController
+from chacra.controllers.binaries import BinaryController
 
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ class ArchController(object):
         return dict()
 
     def create_directory(self):
-        end_part = request.url.split('projects/')[-1].rstrip('/')
+        end_part = request.url.split('binaries/')[-1].rstrip('/')
         # take out the binary name
         end_part = end_part.split(self.binary_name)[0]
         path = os.path.join(pecan.conf.binary_root, end_part.lstrip('/'))
