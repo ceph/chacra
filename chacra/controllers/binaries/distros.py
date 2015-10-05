@@ -1,7 +1,7 @@
 from pecan import expose, abort, request
 from chacra import models
 from chacra.controllers import error
-from chacra.controllers.projects.archs import ArchController
+from chacra.controllers.binaries.archs import ArchController
 
 
 class DistroVersionController(object):
