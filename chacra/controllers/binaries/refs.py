@@ -1,7 +1,7 @@
 from pecan import expose, abort, request
 from chacra import models
 from chacra.controllers import error
-from chacra.controllers.projects.distros import DistroController
+from chacra.controllers.binaries.distros import DistroController
 
 
 class RefController(object):

@@ -2,7 +2,7 @@ from pecan import expose, abort, request
 from chacra.models import Project
 from chacra import models
 from chacra.controllers import error
-from chacra.controllers.projects.refs import RefController
+from chacra.controllers.binaries.refs import RefController
 
 
 class ProjectController(object):
