@@ -17,41 +17,11 @@ class RepoController(object):
             ref=self.ref,
         ).first()
 
-    @expose(content_type='text/html', generic=True)
+    @expose('json', generic=True)
     def index(self):
-        """
-        Special method for internal redirect URI's so that webservers (like
-        Nginx) can serve downloads to clients while the app just delegates.
-        This method will require an Nginx configuration that points to
-        resources and match `binary_root` URIs::
-
-            location /home/ubuntu/repos/ {
-              internal;
-              alias   /files/;
-            }
-
-        `alias` can be anything, it would probably make sense to have a set of rules that allow
-        distinct URIs, like::
-
-            location /home/ubuntu/repos/rpm-firefly/ {
-              internal;
-              alias   /files/rpm-firefly/;
-            }
-
-
-        There are two ways to get binaries into this app: via existing files in
-        certain paths POSTing JSON to the arch/ endpoint, or via actual upload
-        of the binary. So if many locations need to be supported, they each
-        need to have a corresponding section in Nginx to be configured.
-        """
-        if self.distro_version not in self.project.repo_distro_versions:
-            abort(404)
-
         if self.repo.path is None:
             abort(404)
-
-        #TODO: nginx should serve the path to the repo directory
-        return "Nginx to serve: %s" % (self.repo.path)
+        return self.repo
 
     @index.when(method='POST', template='json')
     def index_post(self):
