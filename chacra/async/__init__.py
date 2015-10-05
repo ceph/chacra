@@ -107,6 +107,7 @@ def create_repo(repo_ids):
         # Finally, set the repo path in the object and mark needs_update as False
         repo.path = abs_repo_path
         repo.needs_update = False
+        models.commit()
 
 app.conf.update(
     CELERYBEAT_SCHEDULE={
