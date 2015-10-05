@@ -27,27 +27,3 @@ class RepoController(object):
     def index_post(self):
         error('/errors/not_allowed',
               'POST requests to this url are not allowed')
-
-    @expose('json', generic=True)
-    def api(self):
-        if self.distro_version not in self.project.repo_distro_versions:
-            abort(404)
-
-        if self.ref not in self.project.repo_refs:
-            abort(404)
-
-        if self.distro_name not in self.project.repo_distros:
-            abort(404)
-
-        return self.repo
-
-    #TODO: post/delete will be supported eventually
-    @api.when(method='POST', template='json')
-    def api_post(self):
-        error('/errors/not_allowed',
-              'POST requests to this url are not allowed')
-
-    @api.when(method='DELETE', template='json')
-    def api_delete(self):
-        error('/errors/not_allowed',
-              'DELETE requests to this url are not allowed')
