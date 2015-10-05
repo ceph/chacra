@@ -4,20 +4,20 @@ from chacra.models import Project, Binary
 class TestProjectsController(object):
 
     def test_get_index_no_projects(self, session):
-        result = session.app.get('/projects/')
+        result = session.app.get('/binaries/')
         assert result.status_int == 200
         assert result.json == {}
 
     def test_list_a_project(self, session):
         Project('foobar')
         session.commit()
-        result = session.app.get('/projects/').json
+        result = session.app.get('/binaries/').json
         assert result == {'foobar': []}
 
     def test_single_project_should_have_one_item(self, session):
         Project('foobar')
         session.commit()
-        result = session.app.get('/projects/')
+        result = session.app.get('/binaries/')
         assert result.status_int == 200
         assert len(result.json) == 1
 
@@ -26,7 +26,7 @@ class TestProjectsController(object):
             Project('foo_%s' % p)
         session.commit()
 
-        result = session.app.get('/projects/')
+        result = session.app.get('/binaries/')
         json = result.json
         assert result.status_int == 200
         assert len(json) == 20
@@ -37,17 +37,17 @@ class TestProjectController(object):
     def test_get_index_single_project(self, session):
         Project('foobar')
         session.commit()
-        result = session.app.get('/projects/foobar/')
+        result = session.app.get('/binaries/foobar/')
         assert result.status_int == 200
 
     def test_get_index_no_project(self, session):
-        result = session.app.get('/projects/foobar/', expect_errors=True)
+        result = session.app.get('/binaries/foobar/', expect_errors=True)
         assert result.status_int == 404
 
     def test_get_index_single_project_data(self, session):
         Project('foobar')
         session.commit()
-        result = session.app.get('/projects/foobar/')
+        result = session.app.get('/binaries/foobar/')
         assert result.json == {}
 
     def test_get_project_refs(self, session):
@@ -55,5 +55,5 @@ class TestProjectController(object):
         Binary('ceph-1.0.0.rpm', p, ref='master', distro='centos', distro_version='el6', arch='i386')
         Binary('ceph-1.0.0.rpm', p, ref='firefly', distro='centos', distro_version='el6', arch='i386')
         session.commit()
-        result = session.app.get('/projects/foobar/')
+        result = session.app.get('/binaries/foobar/')
         assert result.json == {'firefly': ['centos'], 'master': ['centos']}
