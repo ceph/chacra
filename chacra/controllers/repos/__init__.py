@@ -19,7 +19,7 @@ class RepoController(object):
 
     @expose('json', generic=True)
     def index(self):
-        if self.repo.path is None:
+        if self.repo is None:
             abort(404)
         return self.repo
 
