@@ -90,7 +90,7 @@ def create_deb_repo(repo_id):
         destination_dir = os.path.join(abs_repo_path, repo_directory(binary.name))
         command = [
             'reprepro',
-            '--confdir', '/etc/distributions',
+            '--confdir', '/etc',
             '-b', destination_dir,
             '-C', 'main',
             '--ignore=wrongdistribution',
