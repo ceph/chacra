@@ -65,47 +65,46 @@ def create_deb_repo(repo_id):
     Go create or update repositories with specific IDs.
     """
     # get the root path for storing repos
-    for _id in repo_ids:
-        # TODO: Is it possible we can get an ID that doesn't exist anymore?
-        repo = models.Repo.get(_id)
-        logger.info("processing repository: %s", repo)
-        project_name = repo.project.name
+    # TODO: Is it possible we can get an ID that doesn't exist anymore?
+    repo = models.Repo.get(repo_id)
+    logger.info("processing repository: %s", repo)
+    project_name = repo.project.name
 
-        # Determine paths for this repository
-        root_path = os.path.join(pecan.conf.repos_root, project_name)
-        relative_repo_path = '%s/%s/%s' % (repo.ref, repo.distro, repo.distro_version)
-        abs_repo_path = os.path.join(root_path, relative_repo_path)
+    # Determine paths for this repository
+    root_path = os.path.join(pecan.conf.repos_root, project_name)
+    relative_repo_path = '%s/%s/%s' % (repo.ref, repo.distro, repo.distro_version)
+    abs_repo_path = os.path.join(root_path, relative_repo_path)
 
-        # does this repo has a path? if so, it exists already, no need to
-        # create structure
-        if not repo.path or not os.path.exists(abs_repo_path):
-            try:
-                os.makedirs(abs_repo_path)
-            except OSError as err:
-                logger.warning('did not created dirs: %s', err)
-                pass  # fixme! we should check if this exists
+    # does this repo has a path? if so, it exists already, no need to
+    # create structure
+    if not repo.path or not os.path.exists(abs_repo_path):
+        try:
+            os.makedirs(abs_repo_path)
+        except OSError as err:
+            logger.warning('did not created dirs: %s', err)
+            pass  # fixme! we should check if this exists
 
-        for binary in repo.binaries:
-            logger.warning(binary.__json__())
-            source = binary.path
-            destination_dir = os.path.join(abs_repo_path, repo_directory(binary.name))
-            command = [
-                'reprepro',
-                '--confdir', '/etc/distributions',
-                '-b', destination_dir,
-                '-C', 'main',
-                '--ignore=wrongdistribution',
-                '--ignore=wrongversion',
-                '--ignore=undefinedtarget',
-                'includedeb', binary.distro_version, source
-            ]
+    for binary in repo.binaries:
+        logger.warning(binary.__json__())
+        source = binary.path
+        destination_dir = os.path.join(abs_repo_path, repo_directory(binary.name))
+        command = [
+            'reprepro',
+            '--confdir', '/etc/distributions',
+            '-b', destination_dir,
+            '-C', 'main',
+            '--ignore=wrongdistribution',
+            '--ignore=wrongversion',
+            '--ignore=undefinedtarget',
+            'includedeb', binary.distro_version, source
+        ]
 
-            subprocess.call(command)
+        subprocess.call(command)
 
-        # Finally, set the repo path in the object and mark needs_update as False
-        repo.path = abs_repo_path
-        repo.needs_update = False
-        models.commit()
+    # Finally, set the repo path in the object and mark needs_update as False
+    repo.path = abs_repo_path
+    repo.needs_update = False
+    models.commit()
 
 
 @app.task(base=SQLATask)
