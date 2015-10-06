@@ -99,7 +99,7 @@ def create_deb_repo(repo_id):
             'includedeb', binary.distro_version, source
         ]
 
-        subprocess.call(command)
+        subprocess.check_call(command)
 
     # Finally, set the repo path in the object and mark needs_update as False
     repo.path = abs_repo_path
