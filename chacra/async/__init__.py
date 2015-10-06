@@ -150,7 +150,7 @@ def create_rpm_repo(repo_id):
             logger.exception('could not symlink')
 
     for d in repo_dirs:
-        subprocess.call(['createrepo', d])
+        subprocess.check_call(['createrepo', d])
 
     # Finally, set the repo path in the object and mark needs_update as False
     repo.path = abs_repo_path
