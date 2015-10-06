@@ -93,3 +93,18 @@ class TestBinaryModification(object):
         binary = Binary.get(1)
         assert binary.repo.ref == 'hammer'
         assert binary.repo.distro_version == '7'
+
+    def test_binary_sets_repo_type(self, session):
+        repo = Repo(self.p, 'hammer', 'centos', '7')
+        session.commit()
+        binary = Binary(
+            'ceph-1.0.rpm',
+            self.p,
+            ref='hammer',
+            distro='centos',
+            distro_version='7',
+            arch='x86_64',
+            )
+        session.commit()
+        repo = Repo.get(1)
+        assert repo.type == 'rpm'
