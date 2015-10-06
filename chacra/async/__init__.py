@@ -87,11 +87,10 @@ def create_deb_repo(repo_id):
     for binary in repo.binaries:
         logger.warning(binary.__json__())
         source = binary.path
-        destination_dir = os.path.join(abs_repo_path, repo_directory(binary.name))
         command = [
             'reprepro',
             '--confdir', '/etc',
-            '-b', destination_dir,
+            '-b', abs_repo_path,
             '-C', 'main',
             '--ignore=wrongdistribution',
             '--ignore=wrongversion',
