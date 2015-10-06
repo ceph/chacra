@@ -14,3 +14,4 @@
      restart_app: true
      binary_root: "/opt/binaries"
      repos_root: "/opt/repos"
+     branch: "master"

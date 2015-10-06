@@ -92,7 +92,7 @@ class CrawlCommand(BaseCommand):
         user = app.config.api_user
         key = app.config.api_key
 
-        base_url = 'http://%s:%s/projects/%s/%s/%s/%s/%s/' % (host, port, args.project, args.ref, args.distro, args.version, args.arch)
+        base_url = 'http://%s:%s/binaries/%s/%s/%s/%s/%s/' % (host, port, args.project, args.ref, args.distro, args.version, args.arch)
         print base_url
 
         # Local is faster

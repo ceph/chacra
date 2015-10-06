@@ -52,6 +52,12 @@ class Binary(Base):
             if key in kw.keys():
                 setattr(self, key, kw[key])
         self.repo = repo or self._get_or_create_repo()
+        # ensure that the repo.type is set
+        self._set_repo_type()
+
+    def _set_repo_type(self):
+        if self.repo.type is None:
+            self.repo.type = self.name[-3:]
 
     def _get_or_create_repo(self):
         """
