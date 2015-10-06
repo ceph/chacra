@@ -17,6 +17,7 @@ setup(
         "pecan",
         "sqlalchemy",
         "psycopg2",
+        "pecan-notario",
     ],
     test_suite='chacra',
     zip_safe=False,

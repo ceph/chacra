@@ -1,6 +1,10 @@
 from pecan import expose, abort, request
+from pecan.secure import secure
+from pecan.ext.notario import validate
+
 from chacra.models import Project
-from chacra.controllers import error
+from chacra.auth import basic_auth
+from chacra import schemas
 
 
 class RepoController(object):
@@ -23,7 +27,11 @@ class RepoController(object):
             abort(404)
         return self.repo
 
+    @secure(basic_auth)
     @index.when(method='POST', template='json')
+    @validate(schemas.repo_schema, handler='/errors/schema')
     def index_post(self):
-        error('/errors/not_allowed',
-              'POST requests to this url are not allowed')
+        data = request.json
+        for key in data:
+            setattr(self.repo, key, data[key])
+        return {}
