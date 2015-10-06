@@ -57,3 +57,100 @@ class TestRepoApiController(object):
         session.commit()
         result = session.app.get('/repos/foobar/hammer/ubuntu/trusty/', expect_errors=True)
         assert result.status_int == 404
+
+    def test_update_single_field(self, session):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        repo_id = repo.id
+        data = {"distro_version": "precise"}
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/",
+            params=data,
+        )
+        assert result.status_int == 200
+        updated_repo = Repo.get(repo_id)
+        assert updated_repo.distro_version == "precise"
+
+    def test_update_multiple_fields(self, session):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        repo_id = repo.id
+        data = {"distro_version": "7", "distro": "centos"}
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/",
+            params=data,
+        )
+        assert result.status_int == 200
+        updated_repo = Repo.get(repo_id)
+        assert updated_repo.distro_version == "7"
+        assert updated_repo.distro == "centos"
+
+    def test_update_invalid_fields(self, session):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        repo_id = repo.id
+        data = {"bogus": "7", "distro": "centos"}
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/",
+            params=data,
+            expect_errors=True,
+        )
+        assert result.status_int == 400
+        updated_repo = Repo.get(repo_id)
+        assert updated_repo.distro == "ubuntu"
+
+    def test_update_empty_json(self, session):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/",
+            params=dict(),
+            expect_errors=True,
+        )
+        assert result.status_int == 400
+
+    def test_update_invalid_field_value(self, session):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        data = {"distro": 123}
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/",
+            params=data,
+            expect_errors=True,
+        )
+        assert result.status_int == 400
