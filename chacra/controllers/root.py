@@ -24,7 +24,7 @@ class RootController(object):
             description=description,
             documentation=documentation,
             repos=repos,
-            projects=projects)
+            binaries=projects)
 
     binaries = ProjectsController()
     errors = ErrorsController()
