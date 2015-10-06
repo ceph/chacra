@@ -17,6 +17,7 @@ class Repo(Base):
     modified = Column(DateTime, index=True)
     signed = Column(Boolean(), default=False)
     needs_update = Column(Boolean(), default=True)
+    type = Column(String(12))
     size = Column(Integer, default=0)
 
     project_id = Column(Integer, ForeignKey('projects.id'))
@@ -51,6 +52,7 @@ class Repo(Base):
             needs_update=self.needs_update,
             size=self.size,
         )
+
 
 # listen for timestamp modifications
 listen(Repo, 'before_insert', update_timestamp)
