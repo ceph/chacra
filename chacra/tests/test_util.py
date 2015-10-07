@@ -1,3 +1,4 @@
+import os
 import random
 import string
 import pytest
@@ -88,3 +89,14 @@ class TestRepoPaths(object):
         pecan.conf.repos_root = '/tmp/repos'
         result = util.repo_paths(self.repo)['absolute']
         assert result == '/tmp/repos/ceph-deploy/master/centos/el7'
+
+
+class TestMakeDirs(object):
+
+    def test_path_exists(self, tmpdir):
+        path = str(tmpdir)
+        assert util.makedirs(path) is None
+
+    def test_path_gets_created(self, tmpdir):
+        path = os.path.join(str(tmpdir), 'createme')
+        assert util.makedirs(path).endswith('/createme')
