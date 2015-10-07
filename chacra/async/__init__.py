@@ -72,14 +72,8 @@ def create_deb_repo(repo_id):
     # Determine paths for this repository
     paths = repo_paths(repo)
 
-    # does this repo has a path? if so, it exists already, no need to
-    # create structure
-    if not repo.path or not os.path.exists(paths['absolute']):
-        try:
-            os.makedirs(paths['absolute'])
-        except OSError as err:
-            logger.warning('%s not created: %s', paths['absolute'], err)
-            pass  # fixme! we should check if this exists
+    # try to create the absolute path to the repository if it doesn't exist
+    makedirs(paths['absolute'])
 
     for binary in repo.binaries:
         logger.warning(binary.__json__())
