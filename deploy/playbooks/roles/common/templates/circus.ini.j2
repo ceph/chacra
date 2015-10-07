@@ -7,3 +7,16 @@ stdout_stream.filename=/var/log/circus/{{ app_name }}-stdout.log
 
 stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/{{ app_name }}-stderr.log
+
+[watcher:celery]
+cmd = {{ app_home }}/bin/celery -A async worker -B --loglevel=info
+working_dir={{ app_home }}/src/{{ app_name }}/{{ app_name }}
+
+stdout_stream.class = FileStream
+stdout_stream.filename=/var/log/celery/{{ app_name }}-stdout.log
+
+stderr_stream.class = FileStream
+stderr_stream.filename=/var/log/celery/{{ app_name }}-stderr.log
+
+[env:celery]
+PECAN_CONFIG = {{ app_home }}/src/{{ app_name }}/prod.py
