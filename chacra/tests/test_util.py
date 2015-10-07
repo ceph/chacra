@@ -45,22 +45,22 @@ class TestRepoDirectory(object):
 
     @pytest.mark.parametrize('binary', source_rpms)
     def test_source_rpm(self, binary):
-        result = util.repo_directory(binary)
+        result = util.infer_arch_directory(binary)
         assert result == 'SRPMS'
 
     @pytest.mark.parametrize('binary', x64_rpms)
     def test_x64_rpm(self, binary):
-        result = util.repo_directory(binary)
+        result = util.infer_arch_directory(binary)
         assert result == 'x86_64'
 
     @pytest.mark.parametrize('binary', noarch)
     def test_noarch(self, binary):
-        result = util.repo_directory(binary)
+        result = util.infer_arch_directory(binary)
         assert result == 'noarch'
 
     @pytest.mark.parametrize('binary', undetermined)
     def test_undetermined(self, binary):
-        result = util.repo_directory(binary)
+        result = util.infer_arch_directory(binary)
         assert result == 'noarch'
 
 
