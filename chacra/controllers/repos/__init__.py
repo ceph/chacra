@@ -32,6 +32,5 @@ class RepoController(object):
     @validate(schemas.repo_schema, handler='/errors/schema')
     def index_post(self):
         data = request.json
-        for key in data:
-            setattr(self.repo, key, data[key])
-        return {}
+        self.repo.update_from_json(data)
+        return self.repo

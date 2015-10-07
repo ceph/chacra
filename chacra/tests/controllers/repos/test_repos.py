@@ -77,6 +77,7 @@ class TestRepoApiController(object):
         assert result.status_int == 200
         updated_repo = Repo.get(repo_id)
         assert updated_repo.distro_version == "precise"
+        assert result.json['distro_version'] == "precise"
 
     def test_update_multiple_fields(self, session):
         p = Project('foobar')
@@ -98,6 +99,8 @@ class TestRepoApiController(object):
         updated_repo = Repo.get(repo_id)
         assert updated_repo.distro_version == "7"
         assert updated_repo.distro == "centos"
+        assert result.json['distro_version'] == "7"
+        assert result.json['distro'] == "centos"
 
     def test_update_invalid_fields(self, session):
         p = Project('foobar')
