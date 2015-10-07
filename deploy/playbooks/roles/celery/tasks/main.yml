@@ -1,11 +1,4 @@
 ---
-
-- name: pip install celery
-  pip:
-    name: "celery[librabbitmq]"
-    virtualenv: "{{ app_home }}"
-    state: present
-
 - name: add rabbitmq official repo to sources.list
   sudo: yes
   lineinfile:
