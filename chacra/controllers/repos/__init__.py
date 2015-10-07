@@ -33,4 +33,4 @@ class RepoController(object):
     def index_post(self):
         data = request.json
         self.repo.update_from_json(data)
-        return {}
+        return self.repo
