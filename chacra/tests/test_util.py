@@ -1,7 +1,9 @@
 import random
 import string
 import pytest
+import pecan
 from chacra import util
+from chacra import models
 
 
 source_rpms = [
@@ -60,3 +62,29 @@ class TestRepoDirectory(object):
     def test_undetermined(self, binary):
         result = util.repo_directory(binary)
         assert result == 'noarch'
+
+
+class TestRepoPaths(object):
+
+    def setup(self):
+        self.repo = models.Repo(
+            models.Project('ceph-deploy'),
+            'master',
+            'centos',
+            'el7'
+        )
+
+    def test_relative(self):
+        pecan.conf.repos_root = '/tmp/repos'
+        result = util.repo_paths(self.repo)
+        assert result['relative'] == 'master/centos/el7'
+
+    def test_root(self):
+        pecan.conf.repos_root = '/tmp/repos'
+        result = util.repo_paths(self.repo)
+        assert result['root'] == '/tmp/repos/ceph-deploy'
+
+    def test_absolute(self):
+        pecan.conf.repos_root = '/tmp/repos'
+        result = util.repo_paths(self.repo)['absolute']
+        assert result == '/tmp/repos/ceph-deploy/master/centos/el7'
