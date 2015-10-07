@@ -3,7 +3,7 @@ from celery import Celery
 import celery
 from datetime import timedelta
 from chacra import models
-from chacra.util import infer_arch_dir, repo_paths
+from chacra.util import infer_arch_dir, repo_paths, makedirs
 import os
 import logging
 import subprocess
@@ -118,17 +118,10 @@ def create_rpm_repo(repo_id):
     paths = repo_paths(repo)
     repo_dirs = [os.path.join(paths['absolute'], d) for d in directories]
 
-    # does this repo has a path? if so, it exists already, no need to
-    # create structure
-    if not repo.path or not os.path.exists(paths['absolute']):
-        try:
-            os.makedirs(paths['absolute'])
-        except OSError as err:
-            logger.warning('%s not created: %s', paths['absolute'], err)
-            pass  # fixme! we should check if this exists
-        for d in repo_dirs:
-            if not os.path.exists(d):
-                os.makedirs(d)
+    # this is safe to do, behind the scenes it is just trying to create them if
+    # they don't exist and it will include the 'absolute' path
+    for d in repo_dirs:
+        makedirs(d)
 
     # now that structure is done, we need to symlink the RPMs that belong
     # to this repo so that we can create the metadata.
@@ -151,6 +144,7 @@ def create_rpm_repo(repo_id):
     repo.path = paths['absolute']
     repo.needs_update = False
     models.commit()
+
 
 app.conf.update(
     CELERYBEAT_SCHEDULE={
