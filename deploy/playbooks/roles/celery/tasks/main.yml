@@ -1,0 +1,39 @@
+---
+
+- name: pip install celery
+  pip:
+    name: "celery[librabbitmq]"
+    virtualenv: "{{ app_home }}"
+    state: present
+
+- name: add rabbitmq official repo to sources.list
+  sudo: yes
+  lineinfile:
+     dest: /etc/apt/sources.list 
+     regexp: '^deb http://www.rabbitmq.com/debian/ testing main'
+     line: 'deb http://www.rabbitmq.com/debian/ testing main'
+     backrefs: yes
+
+- name: add the rabbitmq public key
+  sudo: yes
+  apt_key:
+    url: "https://www.rabbitmq.com/rabbitmq-signing-key-public.asc"
+    state: present
+
+- name: update the apt cache
+  sudo: yes
+  apt:
+    update_cache: true
+
+- name: install rabbitmq-server
+  sudo: yes
+  apt:
+    name: rabbitmq-server
+    state: present
+
+- name: ensure rabbitmq is running and enabled
+  sudo: yes
+  service:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
