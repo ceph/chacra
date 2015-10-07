@@ -3,7 +3,7 @@ from celery import Celery
 import celery
 from datetime import timedelta
 from chacra import models
-from chacra.util import repo_directory
+from chacra.util import repo_directory, repo_paths
 import os
 import logging
 import subprocess
@@ -68,40 +68,37 @@ def create_deb_repo(repo_id):
     # TODO: Is it possible we can get an ID that doesn't exist anymore?
     repo = models.Repo.get(repo_id)
     logger.info("processing repository: %s", repo)
-    project_name = repo.project.name
 
     # Determine paths for this repository
-    root_path = os.path.join(pecan.conf.repos_root, project_name)
-    relative_repo_path = '%s/%s/%s' % (repo.ref, repo.distro, repo.distro_version)
-    abs_repo_path = os.path.join(root_path, relative_repo_path)
+    paths = repo_paths(repo)
 
     # does this repo has a path? if so, it exists already, no need to
     # create structure
-    if not repo.path or not os.path.exists(abs_repo_path):
+    if not repo.path or not os.path.exists(paths['absolute']):
         try:
-            os.makedirs(abs_repo_path)
+            os.makedirs(paths['absolute'])
         except OSError as err:
-            logger.warning('did not created dirs: %s', err)
+            logger.warning('%s not created: %s', paths['absolute'], err)
             pass  # fixme! we should check if this exists
 
     for binary in repo.binaries:
         logger.warning(binary.__json__())
-        source = binary.path
         command = [
             'reprepro',
             '--confdir', '/etc',
-            '-b', abs_repo_path,
+            '-b', paths['absolute'],
             '-C', 'main',
             '--ignore=wrongdistribution',
             '--ignore=wrongversion',
             '--ignore=undefinedtarget',
-            'includedeb', binary.distro_version, source
+            'includedeb', binary.distro_version,
+            binary.path
         ]
 
         subprocess.check_call(command)
 
     # Finally, set the repo path in the object and mark needs_update as False
-    repo.path = abs_repo_path
+    repo.path = paths['absolute']
     repo.needs_update = False
     models.commit()
 
