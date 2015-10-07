@@ -1,3 +1,5 @@
+import os
+from pecan import conf
 
 
 def repo_directory(rpm_binary):
@@ -26,3 +28,23 @@ def repo_directory(rpm_binary):
     return 'noarch'
 
 
+def repo_paths(repo):
+    """
+    A helper to construct all the paths that might be useful when
+    working with a repository.
+    """
+    paths = {}
+
+    # e.g. ceph-deploy/master/ubuntu/trusty
+    paths['relative'] = '%s/%s/%s' % (
+        repo.ref,
+        repo.distro,
+        repo.distro_version
+    )
+
+    # e.g. /opt/repos/ceph-deploy
+    paths['root'] = os.path.join(conf.repos_root, repo.project.name)
+
+    paths['absolute'] = os.path.join(paths['root'], paths['relative'])
+
+    return paths
