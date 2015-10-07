@@ -88,15 +88,6 @@ class Binary(Base):
         except DetachedInstanceError:
             return '<Binary detached>'
 
-    def update_from_json(self, data):
-        """
-        We received a JSON blob with updated metadata information
-        that needs to update some fields
-        """
-        for key in self.allowed_keys:
-            if key in data.keys():
-                setattr(self, key, data[key])
-
     @property
     def last_changed(self):
         if self.modified > self.created:

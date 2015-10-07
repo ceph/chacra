@@ -28,6 +28,14 @@ class _EntityBase(object):
         return dict((k, v) for k, v in self.__dict__.items()
                     if not k.startswith('_'))
 
+    def update_from_json(self, data):
+        """
+        We received a JSON blob with updated metadata information
+        that needs to update some fields
+        """
+        for key in data.keys():
+            setattr(self, key, data[key])
+
 
 Session = scoped_session(sessionmaker())
 metadata = MetaData()
