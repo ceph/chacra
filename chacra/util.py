@@ -61,9 +61,13 @@ def makedirs(path):
 
     Does not do anything with permissions because that should've been ensured
     with config management.
+
+    On successful creation it will return the path, but this is merely for
+    testing purposes and has no effect on behavior.
     """
     try:
         os.makedirs(path)
+        return path
     except OSError, e:
         if e.errno == errno.EEXIST:
             pass
