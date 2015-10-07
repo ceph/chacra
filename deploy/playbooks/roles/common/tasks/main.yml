@@ -41,6 +41,18 @@
     virtualenv: "{{ app_home }}"
   notify: restart app
 
+- name: ensure file paths are set properly
+  sudo: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    recurse: yes
+  with_items:
+    - "{{ binary_root }}"
+    - "{{ repos_root }}"
+
 - include: postgresql.yml
   tags:
     - postgres
