@@ -1,11 +1,9 @@
 ---
-- name: add rabbitmq official repo to sources.list
+- name: add the rabbitmq official repo
   sudo: yes
-  lineinfile:
-     dest: /etc/apt/sources.list 
-     regexp: '^deb http://www.rabbitmq.com/debian/ testing main'
-     line: 'deb http://www.rabbitmq.com/debian/ testing main'
-     backrefs: yes
+  apt_repository:
+    repo: "deb http://www.rabbitmq.com/debian/ testing main"
+    state: present
 
 - name: add the rabbitmq public key
   sudo: yes
