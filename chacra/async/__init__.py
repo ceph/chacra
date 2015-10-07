@@ -3,7 +3,7 @@ from celery import Celery
 import celery
 from datetime import timedelta
 from chacra import models
-from chacra.util import repo_directory, repo_paths
+from chacra.util import infer_arch_dir, repo_paths
 import os
 import logging
 import subprocess
@@ -113,21 +113,18 @@ def create_rpm_repo(repo_id):
     # TODO: Is it possible we can get an ID that doesn't exist anymore?
     repo = models.Repo.get(repo_id)
     logger.info("processing repository: %s", repo)
-    project_name = repo.project.name
 
     # Determine paths for this repository
-    root_path = os.path.join(pecan.conf.repos_root, project_name)
-    relative_repo_path = '%s/%s/%s' % (repo.ref, repo.distro, repo.distro_version)
-    abs_repo_path = os.path.join(root_path, relative_repo_path)
-    repo_dirs = [os.path.join(abs_repo_path, d) for d in directories]
+    paths = repo_paths(repo)
+    repo_dirs = [os.path.join(paths['absolute'], d) for d in directories]
 
     # does this repo has a path? if so, it exists already, no need to
     # create structure
-    if not repo.path or not os.path.exists(abs_repo_path):
+    if not repo.path or not os.path.exists(paths['absolute']):
         try:
-            os.makedirs(abs_repo_path)
+            os.makedirs(paths['absolute'])
         except OSError as err:
-            logger.warning('did not created dirs: %s', err)
+            logger.warning('%s not created: %s', paths['absolute'], err)
             pass  # fixme! we should check if this exists
         for d in repo_dirs:
             if not os.path.exists(d):
@@ -138,7 +135,8 @@ def create_rpm_repo(repo_id):
     for binary in repo.binaries:
         logger.warning(binary.__json__())
         source = binary.path
-        destination_dir = os.path.join(abs_repo_path, repo_directory(binary.name))
+        arch_directory = infer_arch_dir(binary.name)
+        destination_dir = os.path.join(paths['absolute'], arch_directory)
         destination = os.path.join(destination_dir, binary.name)
         try:
             if not os.path.exists(destination):
@@ -150,7 +148,7 @@ def create_rpm_repo(repo_id):
         subprocess.check_call(['createrepo', d])
 
     # Finally, set the repo path in the object and mark needs_update as False
-    repo.path = abs_repo_path
+    repo.path = paths['absolute']
     repo.needs_update = False
     models.commit()
 
