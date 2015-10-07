@@ -2,7 +2,7 @@ import os
 from pecan import conf
 
 
-def repo_directory(rpm_binary):
+def infer_arch_directory(rpm_binary):
     """
     There has to be a better way to do this. The problem here is that chacra
     URLs are up to the client to define. So if a client POSTs using amd64 as
