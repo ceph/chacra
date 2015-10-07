@@ -1,13 +1,17 @@
 import os
+import errno
+import logging
 from pecan import conf
+
+logger = logging.getLogger(__name__)
 
 
 def infer_arch_directory(rpm_binary):
     """
     There has to be a better way to do this. The problem here is that chacra
     URLs are up to the client to define. So if a client POSTs using amd64 as
-    the architecture of an RPM binary and this service assumed that amd64 is the
-    right architecture the repository structure would then be completely
+    the architecture of an RPM binary and this service assumed that amd64 is
+    the right architecture the repository structure would then be completely
     incorrect. The right directory name for such a binary would be x86_64.
 
     Similarly, for 'all' or 'no architecture' binaries, the convention
@@ -48,3 +52,21 @@ def repo_paths(repo):
     paths['absolute'] = os.path.join(paths['root'], paths['relative'])
 
     return paths
+
+
+def makedirs(path):
+    """
+    Check if ``path`` exists, if it does, then don't do anything, otherwise
+    create all the intermidiate directories.
+
+    Does not do anything with permissions because that should've been ensured
+    with config management.
+    """
+    try:
+        os.makedirs(path)
+    except OSError, e:
+        if e.errno == errno.EEXIST:
+            pass
+        else:
+            logger.exception('could not create %s')
+            raise
