@@ -33,6 +33,6 @@
   action: file src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
   sudo: true
 
-- name: ensure nginx is started
+- name: ensure nginx is restarted
   sudo: true
   action: service name=nginx state=restarted
