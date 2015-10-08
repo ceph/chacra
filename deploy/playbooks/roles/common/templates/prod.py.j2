@@ -1,5 +1,5 @@
 # {{ ansible_managed }}
-from pecan.hooks import TransactionHook, RequestViewerHook
+from pecan.hooks import TransactionHook
 from chacra import models
 from chacra import hooks
 from prod_db import sqlalchemy
@@ -59,10 +59,24 @@ logging = {
 
 # When True it will set the headers so that Nginx can serve the download
 # instead of Pecan.
-delegate_downloads = False
+delegate_downloads = True
 
 # location for storing uploaded binaries
 binary_root = "{{ binary_root }}"
 repos_root = "{{ repos_root }}"
+
+# Basic HTTP Auth credentials
+# FIXME
+api_user = False
+api_key = False
+
+# Celery options
+# How often (in seconds) the database should be queried for repos that need to
+# be rebuilt
+polling_cycle = 15
+
+# Once a "create repo" task is called, how many seconds (if any) to wait before actually
+# creating the repository
+quiet_time = 30
 
 # production database configurations are imported from prod_db.py

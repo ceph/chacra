@@ -21,6 +21,7 @@ app = {
             models.rollback,
             models.clear
         ),
+        RequestViewerHook(),
     ],
     'debug': True,
 }
@@ -70,5 +71,15 @@ repos_root = '%(confdir)s/repos'
 # instead of Pecan.
 delegate_downloads = False
 
+# Basic HTTP Auth credentials
 api_user = 'admin'
 api_key = 'secret'
+
+# Celery options
+# How often (in seconds) the database should be queried for repos that need to
+# be rebuilt
+polling_cycle = 15
+
+# Once a "create repo" task is called, how many seconds (if any) to wait before actually
+# creating the repository
+quiet_time = 30

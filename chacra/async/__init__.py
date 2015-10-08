@@ -3,7 +3,7 @@ from celery import Celery
 import celery
 from datetime import timedelta
 from chacra import models
-from chacra.util import infer_arch_dir, repo_paths, makedirs
+from chacra.util import infer_arch_directory, repo_paths, makedirs
 import os
 import logging
 import subprocess
@@ -52,9 +52,13 @@ def poll_repos():
         if r.needs_update:
             logger.info("repo %s needs to be updated/created", r)
             if r.type == 'rpm':
-                create_rpm_repo(r.id)
+                create_rpm_repo.apply_async(
+                    (r.id,),
+                    countdown=pecan.conf.quiet_time)
             elif r.type == 'deb':
-                create_deb_repo(r.id)
+                create_deb_repo.apply_async(
+                    (r.id,),
+                    countdown=pecan.conf.quiet_time)
 
     logger.info('completed repo polling')
 
@@ -122,7 +126,7 @@ def create_rpm_repo(repo_id):
     for binary in repo.binaries:
         logger.warning(binary.__json__())
         source = binary.path
-        arch_directory = infer_arch_dir(binary.name)
+        arch_directory = infer_arch_directory(binary.name)
         destination_dir = os.path.join(paths['absolute'], arch_directory)
         destination = os.path.join(destination_dir, binary.name)
         try:
@@ -144,7 +148,8 @@ app.conf.update(
     CELERYBEAT_SCHEDULE={
         'poll-repos': {
             'task': 'async.poll_repos',
-            'schedule': timedelta(seconds=10),
+            'schedule': timedelta(
+                seconds=pecan.conf.polling_cycle),
         },
     },
 )
