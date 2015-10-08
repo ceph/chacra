@@ -8,11 +8,17 @@
     - chaussette
 
 - name: ensure /etc/circus exists
-  file: path=/etc/circus state=directory
+  file:
+    path: /etc/circus
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
   sudo: true
 
 - name: ensure /var/log/circus exists
-  file: path=/var/log/circus state=directory
+  file:
+    path: /var/log/circus
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
   sudo: true
 
 - name: ensure {{ app_home }}/log exists
