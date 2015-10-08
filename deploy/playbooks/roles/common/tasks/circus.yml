@@ -12,6 +12,7 @@
     path: /etc/circus
     state: directory
     owner: "{{ ansible_ssh_user }}"
+    recurse: yes
   sudo: true
 
 - name: ensure /var/log/circus exists
@@ -19,6 +20,7 @@
     path: /var/log/circus
     state: directory
     owner: "{{ ansible_ssh_user }}"
+    recursive: yes
   sudo: true
 
 - name: ensure {{ app_home }}/log exists
