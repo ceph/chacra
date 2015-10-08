@@ -1,7 +1,6 @@
 import pecan
 from celery import Celery
 import celery
-import time
 from datetime import timedelta
 from chacra import models
 from chacra.util import infer_arch_directory, repo_paths, makedirs
