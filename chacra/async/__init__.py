@@ -4,7 +4,7 @@ import celery
 import time
 from datetime import timedelta
 from chacra import models
-from chacra.util import infer_arch_dir, repo_paths, makedirs
+from chacra.util import infer_arch_directory, repo_paths, makedirs
 import os
 import logging
 import subprocess
@@ -127,7 +127,7 @@ def create_rpm_repo(repo_id):
     for binary in repo.binaries:
         logger.warning(binary.__json__())
         source = binary.path
-        arch_directory = infer_arch_dir(binary.name)
+        arch_directory = infer_arch_directory(binary.name)
         destination_dir = os.path.join(paths['absolute'], arch_directory)
         destination = os.path.join(destination_dir, binary.name)
         try:
