@@ -1,5 +1,5 @@
 # {{ ansible_managed }}
-from pecan.hooks import TransactionHook, RequestViewerHook
+from pecan.hooks import TransactionHook
 from chacra import models
 from chacra import hooks
 from prod_db import sqlalchemy
@@ -59,10 +59,15 @@ logging = {
 
 # When True it will set the headers so that Nginx can serve the download
 # instead of Pecan.
-delegate_downloads = False
+delegate_downloads = True
 
 # location for storing uploaded binaries
 binary_root = "{{ binary_root }}"
 repos_root = "{{ repos_root }}"
+
+# Basic HTTP Auth credentials
+# FIXME
+api_user = False
+api_key = False
 
 # production database configurations are imported from prod_db.py
