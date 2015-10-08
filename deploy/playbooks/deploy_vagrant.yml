@@ -5,6 +5,7 @@
   roles:
     - common
     - repos
+    - celery
   vars:
      app_name: "chacra"
      use_ssl: true
