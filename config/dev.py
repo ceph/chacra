@@ -21,6 +21,7 @@ app = {
             models.rollback,
             models.clear
         ),
+        RequestViewerHook(),
     ],
     'debug': True,
 }
@@ -70,5 +71,6 @@ repos_root = '%(confdir)s/repos'
 # instead of Pecan.
 delegate_downloads = False
 
+# Basic HTTP Auth credentials
 api_user = 'admin'
 api_key = 'secret'
