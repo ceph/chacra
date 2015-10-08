@@ -1,6 +1,7 @@
 import pecan
 from celery import Celery
 import celery
+import time
 from datetime import timedelta
 from chacra import models
 from chacra.util import infer_arch_dir, repo_paths, makedirs
@@ -52,9 +53,13 @@ def poll_repos():
         if r.needs_update:
             logger.info("repo %s needs to be updated/created", r)
             if r.type == 'rpm':
-                create_rpm_repo(r.id)
+                create_rpm_repo.apply_async(
+                    (r.id,),
+                    countdown=pecan.conf.quiet_time)
             elif r.type == 'deb':
-                create_deb_repo(r.id)
+                create_deb_repo.apply_async(
+                    (r.id,),
+                    countdown=pecan.conf.quiet_time)
 
     logger.info('completed repo polling')
 
