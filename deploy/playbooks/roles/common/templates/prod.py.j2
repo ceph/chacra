@@ -70,4 +70,13 @@ repos_root = "{{ repos_root }}"
 api_user = False
 api_key = False
 
+# Celery options
+# How often (in seconds) the database should be queried for repos that need to
+# be rebuilt
+polling_cycle = 15
+
+# Once a "create repo" task is called, how many seconds (if any) to wait before actually
+# creating the repository
+quiet_time = 30
+
 # production database configurations are imported from prod_db.py
