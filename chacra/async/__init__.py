@@ -144,7 +144,8 @@ app.conf.update(
     CELERYBEAT_SCHEDULE={
         'poll-repos': {
             'task': 'async.poll_repos',
-            'schedule': timedelta(seconds=10),
+            'schedule': timedelta(
+                seconds=pecan.conf.polling_cycle),
         },
     },
 )
