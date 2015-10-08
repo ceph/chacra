@@ -35,4 +35,4 @@
 
 - name: ensure nginx is started
   sudo: true
-  action: service name=nginx state=started
+  action: service name=nginx state=restarted
