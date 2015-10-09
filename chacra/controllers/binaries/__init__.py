@@ -65,10 +65,11 @@ class BinaryController(object):
             f = open(self.binary.path, 'rb')
             response.app_iter = FileIter(f)
         else:
-            relative_path = self.binary.path.split(pecan.conf.binary_root)[-1]
+            relative_path = self.binary.path.split(pecan.conf.binary_root)[-1].strip('/')
             # FIXME: this should be read from configuration, this is not configurable
             # at the moment and relies on the nginx config being properly set
             path = os.path.join('/b/', relative_path)
+            logger.info('setting path header: %s', path)
             response.headers['X-Accel-Redirect'] = path
 
     @secure(basic_auth)
