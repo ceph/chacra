@@ -61,6 +61,7 @@
     dest: "{{ app_home }}/src/{{ app_name }}/prod_db.py"
   notify:
     - restart app
+    - restart celery
 
 - name: check if database for app needs populating
   # this should be configurable/optional in the playbook
