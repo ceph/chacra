@@ -7,6 +7,7 @@ from webob.static import FileIter
 from chacra.models import Binary, Project
 from chacra.controllers import error
 from chacra.auth import basic_auth
+from chacra.util import repo_paths
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,11 @@ class BinaryController(object):
             f = open(self.binary.path, 'rb')
             response.app_iter = FileIter(f)
         else:
-            response.headers['X-Accel-Redirect'] = str(self.binary.path)
+            relative_path = self.binary.path.split(pecan.conf.binary_root)[-1]
+            # FIXME: this should be read from configuration, this is not configurable
+            # at the moment and relies on the nginx config being properly set
+            path = os.path.join('/b/', relative_path)
+            response.headers['X-Accel-Redirect'] = path
 
     @secure(basic_auth)
     @index.when(method='POST', template='json')
