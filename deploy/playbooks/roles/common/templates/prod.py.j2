@@ -15,6 +15,7 @@ server = {
 app = {
     'root': 'chacra.controllers.root.RootController',
     'modules': ['chacra'],
+    'guess_content_type_from_ext': False,
     'hooks': [
         TransactionHook(
             models.start,
