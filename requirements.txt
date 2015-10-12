@@ -4,3 +4,4 @@ pecan
 sqlalchemy
 pecan-notario
 celery[librabbitmq]
+alembic
