@@ -1,11 +1,25 @@
+import os
+
 from pecan.commands.base import BaseCommand
 from pecan import conf
+
+from alembic.config import Config
+from alembic import command
 
 from chacra import models
 
 
 def out(string):
     print "==> %s" % string
+
+
+def get_alembic_config():
+    try:
+        os.environ['ALEMBIC_CONFIG']
+    except KeyError:
+        here = os.path.abspath(os.path.dirname(__file__))
+        config_path = os.path.abspath(os.path.join(here, '../../alembic.ini'))
+        return config_path
 
 
 class PopulateCommand(BaseCommand):
@@ -29,3 +43,6 @@ class PopulateCommand(BaseCommand):
         else:
             out("COMMITING... ")
             models.commit()
+            out("STAMPING INITIAL STATE WITH ALEMBIC... ")
+            alembic_cfg = Config(get_alembic_config())
+            command.stamp(alembic_cfg, "head")
