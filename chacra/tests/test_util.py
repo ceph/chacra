@@ -160,3 +160,66 @@ class TestCombined(object):
         conf = {'ceph': {'combined': ['wheezy']}}
         result = util.get_combined_repos('ceph', repo_config=conf)
         assert result == ['wheezy']
+
+
+class TestGetBinaries(object):
+
+    def setup(self):
+        self.p = models.Project('ceph')
+
+    def test_no_project(self, session):
+        result = util.get_extra_binaries('f', 'ubuntu', 'precise')
+        assert result == []
+
+    def test_no_matching_ref_without_specific_ref(self, session):
+        models.commit()
+        result = util.get_extra_binaries('ceph', 'ubuntu', 'precise')
+        assert result == []
+
+    def test_no_matching_ref_with_specific_ref(self, session):
+        models.commit()
+        result = util.get_extra_binaries(
+            'ceph', 'ubuntu', 'precise', ref='master')
+        assert result == []
+
+    def test_no_ref_matches_binaries(self, session):
+        models.Binary(
+            'ceph-1.1.deb',
+            self.p,
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+        models.Binary(
+            'ceph-1.0.deb',
+            self.p,
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+
+        models.commit()
+        result = util.get_extra_binaries('ceph', 'ubuntu', 'trusty')
+        assert len(result) == 2
+
+    def test_ref_matches_binaries(self, session):
+        models.Binary(
+            'ceph-1.1.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+        models.Binary(
+            'ceph-1.0.deb',
+            self.p,
+            ref='master',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+
+        models.commit()
+        result = util.get_extra_binaries('ceph', 'ubuntu', 'trusty', ref='master')
+        assert len(result) == 1
