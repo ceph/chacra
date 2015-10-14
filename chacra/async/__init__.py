@@ -87,21 +87,33 @@ def create_deb_repo(repo_id):
     extra_binaries = []
     for project_name, project_refs in conf_extra_repos.items():
         extra_project = models.Project.query.filter_by(name=project_name).first()
-        extra_repo = models.Repo.query.filter_by(
-            project=extra_project,
-            ref=repo.ref,
-            distro=repo.distro,
-            distro_version=repo.distro_version
-        ).first()
-        if extra_repo:
-            extra_binaries += extra_repo.binaries
+        for ref in project_refs:
+            if ref == 'all':
+                # query without a 'ref' filter to get all the 'refs' for that
+                # project but keeping the distro and distro_version
+                extra_repos = models.Repo.query.filter_by(
+                    project=extra_project,
+                    distro=repo.distro,
+                    distro_version=repo.distro_version
+                ).all()
+                for r in extra_repos:
+                    extra_binaries += r.binaries
+            else:
+                extra_repo = models.Repo.query.filter_by(
+                    project=extra_project,
+                    ref=ref,
+                    distro=repo.distro,
+                    distro_version=repo.distro_version
+                ).first()
+                if extra_repo:
+                    extra_binaries += extra_repo.binaries
 
     # check for the option to 'combine' repositories with different
     # debian/ubuntu versions
     combined_versions = get_combined_repos(repo.project)
     # FIXME: this needs to be abstracted as it is almost the same as the one
     # looking for binaries
-    for distro_version in combined_versions: #, project_refs in conf_extra_repos.items():
+    for distro_version in combined_versions:
         project_name = repo.project.name
         project = models.Project.query.filter_by(name=project_name).first()
         extra_repo = models.Repo.query.filter_by(
