@@ -3,7 +3,7 @@ from celery import Celery
 import celery
 from datetime import timedelta
 from chacra import models
-from chacra.util import infer_arch_directory, repo_paths, makedirs
+from chacra.util import infer_arch_directory, repo_paths, makedirs, get_combined_repos, get_extra_repos
 import os
 import logging
 import subprocess
@@ -80,10 +80,28 @@ def create_deb_repo(repo_id):
     # Determine paths for this repository
     paths = repo_paths(repo)
 
+    # determine if other repositories might need to be queried to add extra
+    # binaries (repos are tied to binaries which are all related with  refs,
+    # archs, distros, and distro versions.
+    conf_extra_repos = get_extra_repos(repo.project, repo.ref)
+    extra_binaries = []
+    for project_name, project_refs in conf_extra_repos.items():
+        extra_project = models.Project.query.filter_by(name=project_name).first()
+        extra_repo = models.Repo.query.filter_by(
+            project=extra_project,
+            ref=repo.ref,
+            distro=repo.distro,
+            distro_version=repo.distro_version
+        ).first()
+        if extra_repo:
+            extra_binaries += extra_repo.binaries
+
     # try to create the absolute path to the repository if it doesn't exist
     makedirs(paths['absolute'])
 
-    for binary in repo.binaries:
+    all_binaries = extra_binaries + repo.binaries
+
+    for binary in all_binaries:
         logger.warning(binary.__json__())
         command = [
             'reprepro',
