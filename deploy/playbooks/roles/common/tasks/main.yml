@@ -34,6 +34,11 @@
 - name: create the prod config file
   action: template src=../templates/prod.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod.py
 
+- name: create the prod alembic.ini file
+  template:
+    src: ../templates/alembic-prod.ini.j2
+    dest: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
+
 - name: install python requirements in virtualenv
   pip:
     requirements: "{{ app_home }}/src/{{ app_name }}/requirements.txt"
