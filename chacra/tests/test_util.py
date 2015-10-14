@@ -100,3 +100,63 @@ class TestMakeDirs(object):
     def test_path_gets_created(self, tmpdir):
         path = os.path.join(str(tmpdir), 'createme')
         assert util.makedirs(path).endswith('/createme')
+
+
+class TestGetExtraRepos(object):
+
+    def test_no_repo_config(self):
+        result = util.get_extra_repos('ceph', 'firefly')
+        assert result == {}
+
+    def test_fallback_to_all_repos(self):
+        conf = {'ceph': {'all': {'ceph-deploy': ['all']}}}
+        # master is not defined, so 'all' is used
+        result = util.get_extra_repos('ceph', 'master',  repo_config=conf)
+        assert result == {'ceph-deploy': ['all']}
+
+    def test_fallback_to_all_repos_gets_empty_dict(self):
+        conf = {'ceph': {'master': {'ceph-deploy': ['all']}}}
+        # 'firefly' is not defined, so 'all' is attempted
+        result = util.get_extra_repos('ceph', 'firefly',  repo_config=conf)
+        assert result == {}
+
+    def test_no_matching_project(self):
+        conf = {'ceph': {'all': {'ceph-deploy': ['all']}}}
+        result = util.get_extra_repos('ceph-deploy', 'master',  repo_config=conf)
+        assert result == {}
+
+    def test_matching_project_ref(self):
+        conf = {'ceph': {'firefly': {'ceph-deploy': ['all']}}}
+        result = util.get_extra_repos('ceph', 'firefly',  repo_config=conf)
+        assert result == {'ceph-deploy': ['all']}
+
+    def test_matching_ref_over_all(self):
+        conf = {'ceph': {
+            'all': {'ceph-deploy': ['master']},
+            'firefly': {'ceph-deploy': ['all']}
+            }
+        }
+        result = util.get_extra_repos('ceph', 'firefly',  repo_config=conf)
+        assert result == {'ceph-deploy': ['all']}
+
+
+class TestCombined(object):
+
+    def test_no_repo_config(self):
+        result = util.get_combined_repos('ceph')
+        assert result == []
+
+    def test_project_is_not_defined(self):
+        conf = {'ceph': {'all': {'ceph-deploy': ['all']}}}
+        result = util.get_combined_repos('ceph-deploy', repo_config=conf)
+        assert result == []
+
+    def test_combined_is_not_defined_in_project(self):
+        conf = {'ceph': {'all': {'ceph-deploy': ['all']}}}
+        result = util.get_combined_repos('ceph', repo_config=conf)
+        assert result == []
+
+    def test_combined_is_defined_and_found(self):
+        conf = {'ceph': {'combined': ['wheezy']}}
+        result = util.get_combined_repos('ceph', repo_config=conf)
+        assert result == ['wheezy']
