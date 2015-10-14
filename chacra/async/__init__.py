@@ -84,7 +84,7 @@ def create_deb_repo(repo_id):
     # determine if other repositories might need to be queried to add extra
     # binaries (repos are tied to binaries which are all related with  refs,
     # archs, distros, and distro versions.
-    conf_extra_repos = get_extra_repos(repo.project, repo.ref)
+    conf_extra_repos = get_extra_repos(repo.project.name, repo.ref)
     extra_binaries = []
     for project_name, project_refs in conf_extra_repos.items():
         for ref in project_refs:
@@ -97,7 +97,7 @@ def create_deb_repo(repo_id):
 
     # check for the option to 'combine' repositories with different
     # debian/ubuntu versions
-    combined_versions = get_combined_repos(repo.project)
+    combined_versions = get_combined_repos(repo.project.name)
     for distro_version in combined_versions:
         extra_binaries += util.get_extra_binaries(
             repo.project.name,
@@ -158,7 +158,7 @@ def create_rpm_repo(repo_id):
 
     # now that structure is done, we need to symlink the RPMs that belong
     # to this repo so that we can create the metadata.
-    conf_extra_repos = get_extra_repos(repo.project, repo.ref)
+    conf_extra_repos = get_extra_repos(repo.project.name, repo.ref)
     extra_binaries = []
     for project_name, project_refs in conf_extra_repos.items():
         for ref in project_refs:
