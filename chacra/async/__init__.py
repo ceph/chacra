@@ -4,6 +4,7 @@ import celery
 from datetime import timedelta
 from chacra import models
 from chacra.util import infer_arch_directory, repo_paths, makedirs, get_combined_repos, get_extra_repos
+from chacra import util
 import os
 import logging
 import subprocess
@@ -86,44 +87,24 @@ def create_deb_repo(repo_id):
     conf_extra_repos = get_extra_repos(repo.project, repo.ref)
     extra_binaries = []
     for project_name, project_refs in conf_extra_repos.items():
-        extra_project = models.Project.query.filter_by(name=project_name).first()
         for ref in project_refs:
-            if ref == 'all':
-                # query without a 'ref' filter to get all the 'refs' for that
-                # project but keeping the distro and distro_version
-                extra_repos = models.Repo.query.filter_by(
-                    project=extra_project,
-                    distro=repo.distro,
-                    distro_version=repo.distro_version
-                ).all()
-                for r in extra_repos:
-                    extra_binaries += [b for b in r.binaries]
-            else:
-                extra_repo = models.Repo.query.filter_by(
-                    project=extra_project,
-                    ref=ref,
-                    distro=repo.distro,
-                    distro_version=repo.distro_version
-                ).first()
-                if extra_repo:
-                    extra_binaries += [b for b in extra_repo.binaries]
+            extra_binaries += util.get_extra_binaries(
+                project_name,
+                repo.distro,
+                repo.distro_version,
+                ref=ref if ref != 'all' else None
+            )
 
     # check for the option to 'combine' repositories with different
     # debian/ubuntu versions
     combined_versions = get_combined_repos(repo.project)
-    # FIXME: this needs to be abstracted as it is almost the same as the one
-    # looking for binaries
     for distro_version in combined_versions:
-        project_name = repo.project.name
-        project = models.Project.query.filter_by(name=project_name).first()
-        extra_repo = models.Repo.query.filter_by(
-            project=project,
-            ref=repo.ref,
-            distro=repo.distro,
-            distro_version=distro_version
-        ).first()
-        if extra_repo:
-            extra_binaries += [b for b in extra_repo.binaries]
+        extra_binaries += util.get_extra_binaries(
+            repo.project.name,
+            repo.distro,
+            distro_version,
+            ref=repo.ref
+        )
 
     # try to create the absolute path to the repository if it doesn't exist
     makedirs(paths['absolute'])
@@ -177,8 +158,18 @@ def create_rpm_repo(repo_id):
 
     # now that structure is done, we need to symlink the RPMs that belong
     # to this repo so that we can create the metadata.
-    for binary in repo.binaries:
-        logger.warning(binary.__json__())
+    conf_extra_repos = get_extra_repos(repo.project, repo.ref)
+    extra_binaries = []
+    for project_name, project_refs in conf_extra_repos.items():
+        for ref in project_refs:
+            extra_binaries += util.get_extra_binaries(
+                project_name,
+                repo.distro,
+                repo.distro_version,
+                ref=ref if ref != 'all' else None
+            )
+
+    for binary in extra_binaries:
         source = binary.path
         arch_directory = infer_arch_directory(binary.name)
         destination_dir = os.path.join(paths['absolute'], arch_directory)
