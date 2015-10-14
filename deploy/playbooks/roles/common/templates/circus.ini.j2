@@ -22,5 +22,15 @@ stdout_stream.filename=/var/log/circus/celery-stdout.log
 stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/celery-stderr.log
 
-[env:celery]
+[watcher:celerybeat]
+cmd = {{ app_home }}/bin/celery -A async beat --loglevel=info
+working_dir={{ app_home }}/src/{{ app_name }}/{{ app_name }}
+
+stdout_stream.class = FileStream
+stdout_stream.filename=/var/log/circus/celerybeat-stdout.log
+
+stderr_stream.class = FileStream
+stderr_stream.filename=/var/log/circus/celerybeat-stderr.log
+
+[env:celery,celerybeat]
 PECAN_CONFIG = {{ app_home }}/src/{{ app_name }}/prod.py
