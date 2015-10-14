@@ -97,7 +97,7 @@ def create_deb_repo(repo_id):
                     distro_version=repo.distro_version
                 ).all()
                 for r in extra_repos:
-                    extra_binaries += r.binaries
+                    extra_binaries += [b for b in r.binaries]
             else:
                 extra_repo = models.Repo.query.filter_by(
                     project=extra_project,
@@ -106,7 +106,7 @@ def create_deb_repo(repo_id):
                     distro_version=repo.distro_version
                 ).first()
                 if extra_repo:
-                    extra_binaries += extra_repo.binaries
+                    extra_binaries += [b for b in extra_repo.binaries]
 
     # check for the option to 'combine' repositories with different
     # debian/ubuntu versions
@@ -123,12 +123,12 @@ def create_deb_repo(repo_id):
             distro_version=distro_version
         ).first()
         if extra_repo:
-            extra_binaries += extra_repo.binaries
+            extra_binaries += [b for b in extra_repo.binaries]
 
     # try to create the absolute path to the repository if it doesn't exist
     makedirs(paths['absolute'])
 
-    all_binaries = extra_binaries + repo.binaries
+    all_binaries = extra_binaries + [b for b in repo.binaries]
 
     for binary in all_binaries:
         logger.warning(binary.__json__())
@@ -143,8 +143,11 @@ def create_deb_repo(repo_id):
             'includedeb', binary.distro_version,
             binary.path
         ]
-
-        subprocess.check_call(command)
+        logger.info('running command: %s', ' '.join(command))
+        try:
+            subprocess.check_call(command)
+        except subprocess.CalledProcessError:
+            logger.exception('failed to add binary %s', binary.name)
 
     # Finally, set the repo path in the object and mark needs_update as False
     repo.path = paths['absolute']
