@@ -64,6 +64,12 @@
     - restart celery
     - restart celery beat
 
+# this needs to be here because it needs the new db password
+- name: create the prod alembic.ini file
+  template:
+    src: ../templates/alembic-prod.ini.j2
+    dest: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
+
 - name: check if database for app needs populating
   # this should be configurable/optional in the playbook
   command: psql -t chacra -c "SELECT COUNT(*) FROM projects;"
