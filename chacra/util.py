@@ -2,6 +2,7 @@ import os
 import errno
 import logging
 from pecan import conf
+from chacra import models
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +88,34 @@ def get_extra_repos(project, ref=None, repo_config=None):
     if not project_config:
         return {}
     return project_config.get(project_ref) or project_config.get('all', {})
+
+
+def get_extra_binaries(project_name, distro, distro_version, ref=None):
+    """
+    Try to match a given repository with the distinctive  project/ref/distro
+    information and return a list of associated binaries
+    """
+    project = models.Project.query.filter_by(name=project_name).first()
+    if not project:
+        return []
+    repo_query = models.Repo.query.filter_by(
+        project=project,
+        distro=distro,
+        distro_version=distro_version
+    )
+    if ref is None:
+        # means that we should just get everything that matches our original
+        # query as a list
+        binaries = []
+        for r in repo_query.all():
+            binaries += [b for b in r.binaries]
+        return binaries
+    else:
+        # further filter by using ref, also return as a list
+        repo = repo_query.filter_by(ref=ref).first()
+        if not repo:
+            return []
+        return [b for b in repo.binaries]
 
 
 def makedirs(path):
