@@ -54,6 +54,39 @@ def repo_paths(repo):
     return paths
 
 
+def get_combined_repos(project, repo_config=None):
+    """
+    Configuration can define specific project repositories to be
+    'combined', this combination of different distro versions are only for
+    Debian-based distros and involves some spelunking in the dictionary
+    to configure them.
+
+    This helper will always return a list because that is the expectation from
+    the configuration.
+    """
+    repo_config = repo_config or getattr(conf.repos, None)
+    if not repo_config:
+        return []
+    return repo_config.get(project, {}).get('combined', [])
+
+
+def get_extra_repos(project, ref=None, repo_config=None):
+    """
+    Go through the configuration options for each 'ref' in a project and return
+    the matching ref option for a project, falling to 'all' which signals work
+    for all (but really 'any' in this case) refs.
+
+    If nothing is defined an empty dictionary is returned, so that consumers
+    can treat the return values always as a dictionary
+    """
+    repo_config = repo_config or getattr(conf.repos, None)
+    project_ref = ref or 'all'
+    if not repo_config:
+        return None
+
+    return repo_config.get(project, {}).get(project_ref, {})
+
+
 def makedirs(path):
     """
     Check if ``path`` exists, if it does, then don't do anything, otherwise
