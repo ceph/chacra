@@ -13,7 +13,7 @@ stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/{{ app_name }}-stderr.log
 
 [watcher:celery]
-cmd = {{ app_home }}/bin/celery -A async worker -B --loglevel=info
+cmd = {{ app_home }}/bin/celery -A async worker --loglevel=info
 working_dir={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 
 stdout_stream.class = FileStream
