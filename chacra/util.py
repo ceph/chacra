@@ -64,7 +64,7 @@ def get_combined_repos(project, repo_config=None):
     This helper will always return a list because that is the expectation from
     the configuration.
     """
-    repo_config = repo_config or getattr(conf.repos, None)
+    repo_config = repo_config or getattr(conf, 'repos', {})
     if not repo_config:
         return []
     return repo_config.get(project, {}).get('combined', [])
@@ -79,12 +79,14 @@ def get_extra_repos(project, ref=None, repo_config=None):
     If nothing is defined an empty dictionary is returned, so that consumers
     can treat the return values always as a dictionary
     """
-    repo_config = repo_config or getattr(conf.repos, None)
+    repo_config = repo_config or getattr(conf, 'repos', {})
     project_ref = ref or 'all'
     if not repo_config:
-        return None
-
-    return repo_config.get(project, {}).get(project_ref, {})
+        return {}
+    project_config = repo_config.get(project, {})
+    if not project_config:
+        return {}
+    return project_config.get(project_ref) or project_config.get('all', {})
 
 
 def makedirs(path):
