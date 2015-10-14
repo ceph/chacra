@@ -35,7 +35,6 @@ the service as follows::
     api_key = 'secret'
 
 
-
 Self-discovery
 --------------
 The API provides informational JSON at every step of the URL about what is
@@ -330,12 +329,27 @@ For extra packages that may be coming from other projects, the configuration str
 for definition of them. For example, 'ceph-deploy' exists publicly in the 'ceph' repositories, just
 like 'radosgw-agent'. This inclusion would be defined at the project level, like::
 
+
     repos = {
         'ceph': {
-            'extras': ['ceph-deploy', 'radosgw-agent'],
+            'all': {
+                'ceph-deploy': ['all'],
+            },
+            'firefly' {
+                'radosgw-agent': ['all'],
+                'ceph-deploy': ['v1.0.0', 'v1.1.1'],
+            },
+            'hammer' {
+                'radosgw-agent': ['all'],
+            },
+            'giant' {
+                'radosgw-agent': ['all'],
+            },
             'combined': ['wheezy', 'precise', 'jessie'],
         }
     }
+
+
 
 The `extras` key would require those projects to be present in the chacra
 instance that is creating the repositories.
