@@ -7,11 +7,11 @@ A REST API for storing and retrieving specific versions and architectures of
 The URL structure is very simple and allows to be explicit about what the type
 and version of a given binary package the API is providing::
 
-    /projects/{package_name}/{version}/{distribution}/{distro_release}/{architecture}/$binary
+    /bianries/{package_name}/{version}/{distribution}/{distro_release}/{architecture}/$binary
 
 So for a CentOS 7 x86_64 package for Ceph the url could look like::
 
-    /projects/ceph/firefly/centos/7/x86_64/ceph-0.87.2-0.el7.centos.x86_64.rpm
+    /binaries/ceph/firefly/centos/7/x86_64/ceph-0.87.2-0.el7.centos.x86_64.rpm
 
 
 Configuration
@@ -42,7 +42,7 @@ The API provides informational JSON at every step of the URL about what is
 available as a resource. The following examples show informational output that
 can be consumed to dig deeper into the URL structure:
 
-``GET /projects/``::
+``GET /binaries/``::
 
     {
         "ceph": ["firefly", "giant", "hammer"],
@@ -50,14 +50,14 @@ can be consumed to dig deeper into the URL structure:
     }
 
 
-``GET /projects/ceph/``::
+``GET /binaries/ceph/``::
 
     {
         "firefly": ["centos", "redhat", "debian", "ubuntu"]
     }
 
 
-``GET /projects/ceph/firefly/``::
+``GET /binaries/ceph/firefly/``::
 
     {
         "centos": ["7", "6"],
@@ -65,20 +65,20 @@ can be consumed to dig deeper into the URL structure:
         "ubuntu": ["trusty"],
     }
 
-``GET /projects/ceph/firefly/centos/``::
+``GET /binaries/ceph/firefly/centos/``::
 
     {
         "7": ["x86_64"],
         "6": ["x86_64"]
     }
 
-``GET /projects/ceph/firefly/centos/7/``::
+``GET /binaries/ceph/firefly/centos/7/``::
 
     {
         "x86_64": ["ceph-0.87.2-0.el7.centos.x86_64.rpm"]
     }
 
-``GET /projects/ceph/firefly/centos/7/x86_64/``::
+``GET /binaries/ceph/firefly/centos/7/x86_64/``::
 
     {
         "ceph-0.87.2-0.el7.centos.x86_64.rpm": {
@@ -141,11 +141,11 @@ HTTP Responses:
     [
       {
         "ceph-0.87.2-0.el10.centos.x86_64.rpm": {
-            "url": "/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
+            "url": "/binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm"
         }
       },
         "ceph-0.87.1-0.el10.centos.x86_64.rpm": {
-            "url": "/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
+            "url": "/binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm"
         },
       }
     ]
@@ -166,7 +166,7 @@ File resources
 ``POST`` requests will create new resources when using the full url with all
 the metadata parts including the filename *when uploading files*. For example::
 
-    curl -F "file=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" chacra.ceph.com/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/
+    curl -F "file=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" chacra.ceph.com/binaries/ceph/firefly/centos/10/x86_64/
 
 Note how a trailing slash is required as well as the full name of the binary.
 
@@ -192,7 +192,7 @@ Or any other absolute path is allowed too::
 Directory paths will follow the same structure as in URLs. For example, with
 a ``binary_root`` key that points to ``/opt/binaries/`` the final location for
 a resource that lives in
-``/projects/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/`` would
+``/binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/`` would
 be
 ``/opt/binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/``
 
@@ -206,7 +206,7 @@ HTTP Responses:
 
 
 ``POST`` will create new items at given parts of the URL. For example, to
-create a new package, a ``POST`` to ``/projects/`` with an HTTP body that
+create a new package, a ``POST`` to ``/binaries/`` with an HTTP body that
 should look like::
 
     { "name": "my_new_package" }
@@ -227,7 +227,7 @@ For non-existing URLs a retroactive feature will create the rest of the url
 structure. For example, a new distribution release for CentOS 10 that didn't
 exist before at this url and for the following package::
 
-    /projects/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm
+    /binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm
 
 Would create all the parts that didn't exist before ('10','x86_64', and
 'ceph-0.87.2-0.el10.centos.x86_64.rpm' from our previous examples). This would
@@ -248,7 +248,7 @@ Optional (but recommended key) is the ``built-by``::
 These requests need to go to the parent url part, so for the example above the
 HTTP request would go to::
 
-    /projects/ceph/firefly/centos/10/x86_64/
+    /binaries/ceph/firefly/centos/10/x86_64/
 
 Note the need for a trailing slash.
 
@@ -270,7 +270,7 @@ Again, note that this ``POST`` would need to go to the root of the url, followin
 the examples above that would mean::
 
 
-    /projects/ceph/firefly/centos/10/x86_64/
+    /binaries/ceph/firefly/centos/10/x86_64/
 
 Note the need for a trailing slash.
 
