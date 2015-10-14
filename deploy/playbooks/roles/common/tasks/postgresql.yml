@@ -62,6 +62,13 @@
   notify:
     - restart app
     - restart celery
+    - restart celery beat
+
+# this needs to be here because it needs the new db password
+- name: create the prod alembic.ini file
+  template:
+    src: ../templates/alembic-prod.ini.j2
+    dest: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
 
 - name: check if database for app needs populating
   # this should be configurable/optional in the playbook
@@ -75,3 +82,5 @@
 - name: populate the database for {{ app_name }}
   when: "database_is_populated.rc == 1"
   command: "{{ app_home }}/bin/pecan populate {{ app_home }}/src/{{ app_name }}/prod.py"
+  environment:
+    ALEMBIC_CONFIG: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"

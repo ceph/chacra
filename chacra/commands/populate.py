@@ -15,11 +15,11 @@ def out(string):
 
 def get_alembic_config():
     try:
-        os.environ['ALEMBIC_CONFIG']
+        config_path = os.environ['ALEMBIC_CONFIG']
     except KeyError:
         here = os.path.abspath(os.path.dirname(__file__))
         config_path = os.path.abspath(os.path.join(here, '../../alembic.ini'))
-        return config_path
+    return config_path
 
 
 class PopulateCommand(BaseCommand):
