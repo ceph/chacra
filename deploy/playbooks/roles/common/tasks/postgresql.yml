@@ -62,6 +62,7 @@
   notify:
     - restart app
     - restart celery
+    - restart celery beat
 
 - name: check if database for app needs populating
   # this should be configurable/optional in the playbook
