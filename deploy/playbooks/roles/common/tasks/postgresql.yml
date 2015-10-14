@@ -76,3 +76,5 @@
 - name: populate the database for {{ app_name }}
   when: "database_is_populated.rc == 1"
   command: "{{ app_home }}/bin/pecan populate {{ app_home }}/src/{{ app_name }}/prod.py"
+  environment:
+    ALEMBIC_CONFIG: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
