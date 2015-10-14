@@ -96,6 +96,23 @@ def create_deb_repo(repo_id):
         if extra_repo:
             extra_binaries += extra_repo.binaries
 
+    # check for the option to 'combine' repositories with different
+    # debian/ubuntu versions
+    combined_versions = get_combined_repos(repo.project)
+    # FIXME: this needs to be abstracted as it is almost the same as the one
+    # looking for binaries
+    for distro_version in combined_versions: #, project_refs in conf_extra_repos.items():
+        project_name = repo.project.name
+        project = models.Project.query.filter_by(name=project_name).first()
+        extra_repo = models.Repo.query.filter_by(
+            project=project,
+            ref=repo.ref,
+            distro=repo.distro,
+            distro_version=distro_version
+        ).first()
+        if extra_repo:
+            extra_binaries += extra_repo.binaries
+
     # try to create the absolute path to the repository if it doesn't exist
     makedirs(paths['absolute'])
 
