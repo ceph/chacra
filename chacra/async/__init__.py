@@ -99,9 +99,12 @@ def create_deb_repo(repo_id):
     # debian/ubuntu versions
     combined_versions = get_combined_repos(repo.project.name)
     for distro_version in combined_versions:
+        # When combining distro_versions we cannot filter by distribution as
+        # well, otherwise it will be an impossible query. E.g. "get wheezy,
+        # precise and trusty but only for the Ubuntu distro"
         extra_binaries += util.get_extra_binaries(
             repo.project.name,
-            repo.distro,
+            None,
             distro_version,
             ref=repo.ref
         )
