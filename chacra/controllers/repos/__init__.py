@@ -1,10 +1,17 @@
+import logging
+import shutil
+
 from pecan import expose, abort, request
 from pecan.secure import secure
 from pecan.ext.notario import validate
 
 from chacra.models import Project
+from chacra.controllers import error
 from chacra.auth import basic_auth
 from chacra import schemas
+
+
+logger = logging.getLogger(__name__)
 
 
 class RepoController(object):
@@ -33,4 +40,32 @@ class RepoController(object):
     def index_post(self):
         data = request.json
         self.repo.update_from_json(data)
+        return self.repo
+
+    @secure(basic_auth)
+    @expose('json')
+    def update(self):
+        if request.method != 'POST':
+            error(
+                '/errors/not_allowed',
+                'only POST request are accepted for this url'
+            )
+        # Just mark the repo so that celery picks it up
+        self.repo.needs_update = True
+        return self.repo
+
+    @secure(basic_auth)
+    @expose('json')
+    def recreate(self):
+        if request.method != 'POST':
+            error(
+                '/errors/not_allowed',
+                'only POST request are accepted for this url'
+            )
+        # completely remove the path to the repository
+        logger.info('removing repository path: %s', self.repo.path)
+        shutil.rmtree(self.repo.path)
+
+        # mark the repo so that celery picks it up
+        self.repo.needs_update = True
         return self.repo
