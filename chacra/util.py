@@ -100,6 +100,7 @@ def get_extra_binaries(project_name, distro, distro_version, distro_versions=Non
     Try to match a given repository with the distinctive  project/ref/distro
     information and return a list of associated binaries
     """
+    binaries = []
     project = models.Project.query.filter_by(name=project_name).first()
     if not project:
         return []
@@ -122,9 +123,10 @@ def get_extra_binaries(project_name, distro, distro_version, distro_versions=Non
     else:
         # further filter by using ref, also return as a list
         repo = repo_query.filter_by(ref=ref).first()
-        if not repo:
-            return []
-        return [b for b in repo.binaries]
+        if repo:
+            binaries = [b for b in repo.binaries]
+    logger.info('%d matched binaries found', len(binaries))
+    return binaries
 
 
 def makedirs(path):
