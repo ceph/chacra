@@ -3,7 +3,6 @@ from celery import Celery
 import celery
 from datetime import timedelta
 from chacra import models
-from chacra.util import infer_arch_directory, repo_paths, makedirs, get_combined_repos, get_extra_repos
 from chacra import util
 import os
 import logging
@@ -79,13 +78,13 @@ def create_deb_repo(repo_id):
     logger.info("processing repository: %s", repo)
 
     # Determine paths for this repository
-    paths = repo_paths(repo)
+    paths = util.repo_paths(repo)
 
     # determine if other repositories might need to be queried to add extra
     # binaries (repos are tied to binaries which are all related with  refs,
     # archs, distros, and distro versions.
-    conf_extra_repos = get_extra_repos(repo.project.name, repo.ref)
-    combined_versions = get_combined_repos(repo.project.name)
+    conf_extra_repos = util.get_extra_repos(repo.project.name, repo.ref)
+    combined_versions = util.get_combined_repos(repo.project.name)
     extra_binaries = []
     for project_name, project_refs in conf_extra_repos.items():
         for ref in project_refs:
@@ -118,7 +117,7 @@ def create_deb_repo(repo_id):
         )
 
     # try to create the absolute path to the repository if it doesn't exist
-    makedirs(paths['absolute'])
+    util.makedirs(paths['absolute'])
 
     all_binaries = extra_binaries + [b for b in repo.binaries]
 
@@ -163,17 +162,17 @@ def create_rpm_repo(repo_id):
     logger.info("processing repository: %s", repo)
 
     # Determine paths for this repository
-    paths = repo_paths(repo)
+    paths = util.repo_paths(repo)
     repo_dirs = [os.path.join(paths['absolute'], d) for d in directories]
 
     # this is safe to do, behind the scenes it is just trying to create them if
     # they don't exist and it will include the 'absolute' path
     for d in repo_dirs:
-        makedirs(d)
+        util.makedirs(d)
 
     # now that structure is done, we need to symlink the RPMs that belong
     # to this repo so that we can create the metadata.
-    conf_extra_repos = get_extra_repos(repo.project.name, repo.ref)
+    conf_extra_repos = util.get_extra_repos(repo.project.name, repo.ref)
     extra_binaries = []
     for project_name, project_refs in conf_extra_repos.items():
         for ref in project_refs:
@@ -186,7 +185,7 @@ def create_rpm_repo(repo_id):
 
     for binary in extra_binaries:
         source = binary.path
-        arch_directory = infer_arch_directory(binary.name)
+        arch_directory = util.infer_arch_directory(binary.name)
         destination_dir = os.path.join(paths['absolute'], arch_directory)
         destination = os.path.join(destination_dir, binary.name)
         try:
