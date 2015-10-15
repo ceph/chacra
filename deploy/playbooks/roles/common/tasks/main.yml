@@ -35,14 +35,12 @@
 - name: create the prod config file
   action: template src=../templates/prod.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod.py
 
-- name: create the prod api creddentials file
+- name: create the prod api credentials file
   template:
     src: prod_api_creds.py.j2
     dest: "{{ app_home }}/src/{{ app_name }}/prod_api_creds.py"
   when: (api_key is defined or api_user is defined) or
         (app_home_created is defined and app_home_created|changed)
-  tags:
-    - creds
 
 - name: install python requirements in virtualenv
   pip:
