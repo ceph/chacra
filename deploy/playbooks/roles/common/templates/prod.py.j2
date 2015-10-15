@@ -68,9 +68,8 @@ binary_root = "{{ binary_root }}"
 repos_root = "{{ repos_root }}"
 
 # Basic HTTP Auth credentials
-# FIXME
-api_user = False
-api_key = False
+api_user = "{{ api_user | default('admin') }}"
+api_key = "{{ api_key | default('secret') }}"
 
 # Celery options
 # How often (in seconds) the database should be queried for repos that need to
