@@ -83,11 +83,16 @@ def get_extra_repos(project, ref=None, repo_config=None):
     repo_config = repo_config or getattr(conf, 'repos', {})
     project_ref = ref or 'all'
     if not repo_config:
+        logging.debug('no repos configuration defined for extra repositories')
         return {}
     project_config = repo_config.get(project, {})
     if not project_config:
+        logging.debug('%s has no configuration for extra repositories', project)
         return {}
-    return project_config.get(project_ref) or project_config.get('all', {})
+    extras = project_config.get(project_ref) or project_config.get('all', {})
+    if not extras:
+        logger.warning('%s has no matching repositories for ref: %s', project, project_ref)
+    return extras
 
 
 def get_extra_binaries(project_name, distro, distro_version, ref=None):
