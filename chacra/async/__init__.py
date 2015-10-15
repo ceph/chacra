@@ -124,11 +124,16 @@ def create_deb_repo(repo_id):
             'includedeb', binary.distro_version,
             binary.path
         ]
-        logger.info('running command: %s', ' '.join(command))
         try:
-            subprocess.check_call(command)
-        except subprocess.CalledProcessError:
-            logger.exception('failed to add binary %s', binary.name)
+            logger.info('running command: %s', ' '.join(command))
+        except TypeError:
+            logger.exception('was not able to add binary: %s', binary)
+            continue
+        else:
+            try:
+                subprocess.check_call(command)
+            except subprocess.CalledProcessError:
+                logger.exception('failed to add binary %s', binary.name)
 
     # Finally, set the repo path in the object and mark needs_update as False
     repo.path = paths['absolute']
