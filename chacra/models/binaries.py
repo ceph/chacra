@@ -79,7 +79,7 @@ class Binary(Base):
                 self.distro,
                 self.distro_version
             )
-
+        repo.needs_update = True
         return repo
 
     def __repr__(self):

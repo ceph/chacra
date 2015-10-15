@@ -75,10 +75,21 @@ api_key = False
 # Celery options
 # How often (in seconds) the database should be queried for repos that need to
 # be rebuilt
-polling_cycle = 15
+polling_cycle = 20
 
 # Once a "create repo" task is called, how many seconds (if any) to wait before actually
 # creating the repository
-quiet_time = 30
+quiet_time = 5
+
+repos = {
+    'ceph': {
+        'all': {
+            'ceph-deploy': ['all'],
+            'radosgw-agent': ['all'],
+        },
+        'combined': ['wheezy', 'trusty', 'precise']
+   },
+    '__force_dict__': True,
+}
 
 # production database configurations are imported from prod_db.py
