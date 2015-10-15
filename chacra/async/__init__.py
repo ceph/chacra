@@ -112,7 +112,6 @@ def create_deb_repo(repo_id):
     all_binaries = extra_binaries + [b for b in repo.binaries]
 
     for binary in all_binaries:
-        logger.warning(binary.__json__())
         command = [
             'reprepro',
             '--confdir', '/etc',
