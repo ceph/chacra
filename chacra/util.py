@@ -95,7 +95,7 @@ def get_extra_repos(project, ref=None, repo_config=None):
     return extras
 
 
-def get_extra_binaries(project_name, distro, distro_version, ref=None):
+def get_extra_binaries(project_name, distro, distro_version, distro_versions=None, ref=None):
     """
     Try to match a given repository with the distinctive  project/ref/distro
     information and return a list of associated binaries
@@ -103,11 +103,14 @@ def get_extra_binaries(project_name, distro, distro_version, ref=None):
     project = models.Project.query.filter_by(name=project_name).first()
     if not project:
         return []
-    repo_query = models.Repo.query.filter_by(
-        project=project,
-        distro_version=distro_version
-    )
-    if distro != None:
+    repo_query = models.Repo.query.filter_by(project=project)
+
+    if distro_versions:
+        repo_query = repo_query.filter(models.Repo.distro_version.in_(distro_versions))
+    else:
+        repo_query = repo_query.filter_by(distro_version=distro_version)
+
+    if distro is not None:
         repo_query = repo_query.filter_by(distro=distro)
     if ref is None:
         # means that we should just get everything that matches our original
