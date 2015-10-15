@@ -2,11 +2,13 @@ import logging
 import os
 import pecan
 from pecan import response
+from pecan.secure import secure
 from pecan import expose, abort, request
 from chacra.models import Binary
 from chacra import models
 from chacra.controllers import error
 from chacra.controllers.binaries import BinaryController
+from chacra.auth import basic_auth
 
 
 logger = logging.getLogger(__name__)
@@ -44,6 +46,7 @@ class ArchController(object):
             ref=self.ref
         ).first()
 
+    @secure(basic_auth)
     @index.when(method='POST', template='json')
     def index_post(self):
         contents = request.POST.get('file', False)
