@@ -1,3 +1,4 @@
+import os
 from chacra.models import Project, Repo
 
 
@@ -157,3 +158,43 @@ class TestRepoApiController(object):
             expect_errors=True,
         )
         assert result.status_int == 400
+
+
+class TestRepoCRUDOperations(object):
+
+    def test_update(self, session, tmpdir):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        repo.get(1)
+        repo.needs_update = False
+        session.commit()
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/update",
+            params={}
+        )
+        assert result.json['needs_update'] is True
+
+    def test_recreate(self, session, tmpdir):
+        path = str(tmpdir)
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = path
+        session.commit()
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/recreate",
+            params={}
+        )
+        assert os.path.exists(path) is False
+        assert result.json['needs_update'] is True
