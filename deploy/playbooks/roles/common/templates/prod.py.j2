@@ -3,6 +3,7 @@ from pecan.hooks import TransactionHook
 from chacra import models
 from chacra import hooks
 from prod_db import sqlalchemy
+from prod_api_creds import api_key, api_user
 
 
 # Server Specific Configurations
@@ -66,10 +67,6 @@ delegate_downloads = True
 # location for storing uploaded binaries
 binary_root = "{{ binary_root }}"
 repos_root = "{{ repos_root }}"
-
-# Basic HTTP Auth credentials
-api_user = "{{ api_user | default('admin') }}"
-api_key = "{{ api_key | default('secret') }}"
 
 # Celery options
 # How often (in seconds) the database should be queried for repos that need to
