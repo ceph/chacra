@@ -105,9 +105,10 @@ def get_extra_binaries(project_name, distro, distro_version, ref=None):
         return []
     repo_query = models.Repo.query.filter_by(
         project=project,
-        distro=distro,
         distro_version=distro_version
     )
+    if distro != None:
+        repo_query = repo_query.filter_by(distro=distro)
     if ref is None:
         # means that we should just get everything that matches our original
         # query as a list
