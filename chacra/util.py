@@ -103,6 +103,10 @@ def get_extra_binaries(project_name, distro, distro_version, distro_versions=Non
     binaries = []
     project = models.Project.query.filter_by(name=project_name).first()
     if not project:
+        logger.warning(
+            '%s does not exist but is configured, no binaries fetched',
+            project_name
+        )
         return []
     repo_query = models.Repo.query.filter_by(project=project)
 
@@ -113,13 +117,12 @@ def get_extra_binaries(project_name, distro, distro_version, distro_versions=Non
 
     if distro is not None:
         repo_query = repo_query.filter_by(distro=distro)
+
     if ref is None:
         # means that we should just get everything that matches our original
         # query as a list
-        binaries = []
         for r in repo_query.all():
             binaries += [b for b in r.binaries]
-        return binaries
     else:
         # further filter by using ref, also return as a list
         repo = repo_query.filter_by(ref=ref).first()
