@@ -183,7 +183,8 @@ def create_rpm_repo(repo_id):
                 ref=ref if ref != 'all' else None
             )
 
-    for binary in extra_binaries:
+    all_binaries = extra_binaries + [b for b in repo.binaries]
+    for binary in all_binaries:
         source = binary.path
         arch_directory = util.infer_arch_directory(binary.name)
         destination_dir = os.path.join(paths['absolute'], arch_directory)
