@@ -135,6 +135,7 @@ class TestApp(object):
             'POST': self.app.post,
             'POSTJ': self.app.post_json,
             'PUT': self.app.put,
+            'HEAD': self.app.head,
             'DELETE': self.app.delete
         }
         kwargs.setdefault('headers', {}).update(self.__headers__)
