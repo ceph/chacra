@@ -181,6 +181,8 @@ class TestApp(object):
         @param (string) url - The URL to emulate a DELETE request to
         @returns (paste.fixture.TestResponse)
         """
+        if not kwargs.get('headers'):
+            kwargs['headers'] = {'Authorization': util.make_credentials()}
         return self._do_request(url, 'DELETE', **kwargs)
 
     def head(self, url, **kwargs):
