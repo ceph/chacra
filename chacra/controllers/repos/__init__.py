@@ -45,6 +45,8 @@ class RepoController(object):
     @secure(basic_auth)
     @expose('json')
     def update(self):
+        if request.method == 'HEAD':
+            return {}
         if request.method != 'POST':
             error(
                 '/errors/not_allowed',
@@ -57,6 +59,8 @@ class RepoController(object):
     @secure(basic_auth)
     @expose('json')
     def recreate(self):
+        if request.method == 'HEAD':
+            return {}
         if request.method != 'POST':
             error(
                 '/errors/not_allowed',
