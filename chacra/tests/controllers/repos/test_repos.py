@@ -181,6 +181,21 @@ class TestRepoCRUDOperations(object):
         )
         assert result.json['needs_update'] is True
 
+    def test_update_head(self, session, tmpdir):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.head(
+            "/repos/foobar/firefly/ubuntu/trusty/update"
+        )
+        assert result.status_int == 200
+
     def test_recreate(self, session, tmpdir):
         path = str(tmpdir)
         p = Project('foobar')
@@ -198,3 +213,34 @@ class TestRepoCRUDOperations(object):
         )
         assert os.path.exists(path) is False
         assert result.json['needs_update'] is True
+
+    def test_recreate_head(self, session, tmpdir):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.head(
+            "/repos/foobar/firefly/ubuntu/trusty/recreate"
+        )
+        assert result.status_int == 200
+
+    def test_recreate_head_not_found(self, session, tmpdir):
+        # probably overkill
+        result = session.app.head(
+            "/repos/foobar/firefly/ubuntu/trusty/recreate",
+            expect_errors=True,
+        )
+        assert result.status_int == 404
+
+    def test_create_head_not_found(self, session, tmpdir):
+        # probably overkill
+        result = session.app.head(
+            "/repos/foobar/firefly/ubuntu/trusty/create",
+            expect_errors=True,
+        )
+        assert result.status_int == 404
