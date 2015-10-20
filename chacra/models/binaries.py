@@ -56,8 +56,16 @@ class Binary(Base):
         self._set_repo_type()
 
     def _set_repo_type(self):
+        extension_map = {
+            'rpm': 'rpm',
+            'deb': 'deb',
+            'dsc': 'deb',
+            # really a .changes ext, but we ask for the last three chars
+            'ges': 'deb'
+        }
         if self.repo.type is None:
-            self.repo.type = self.name[-3:]
+            extension = self.name[-3:]
+            self.repo.type = extension_map[extension]
 
     def _get_or_create_repo(self):
         """
