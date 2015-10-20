@@ -108,3 +108,27 @@ class TestBinaryModification(object):
         session.commit()
         repo = Repo.get(1)
         assert repo.type == 'rpm'
+
+    def test_binary_type_for_changes(self, session):
+        repo = Repo(self.p, 'hammer', 'debian', 'wheezy')
+        Binary(
+            'ceph-1.0.changes',
+            self.p,
+            ref='hammer',
+            distro='debian',
+            distro_version='wheezy',
+            arch='amd64',
+            )
+        assert repo.type == 'deb'
+
+    def test_binary_type_for_dsc(self, session):
+        repo = Repo(self.p, 'hammer', 'debian', 'wheezy')
+        Binary(
+            'ceph-1.0.dsc',
+            self.p,
+            ref='hammer',
+            distro='debian',
+            distro_version='wheezy',
+            arch='amd64',
+            )
+        assert repo.type == 'deb'
