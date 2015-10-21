@@ -122,6 +122,10 @@ def create_deb_repo(repo_id):
     all_binaries = extra_binaries + [b for b in repo.binaries]
 
     for binary in all_binaries:
+        # XXX This is really not a good alternative but we are not going to be
+        # using .changes for now although we can store it.
+        if binary.extension == 'changes':
+            continue
         try:
             command = util.reprepro_command(paths['absolute'], binary)
         except KeyError:  # probably a tar.gz or similar file that should not be added directly
