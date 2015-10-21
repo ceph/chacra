@@ -165,9 +165,9 @@ def reprepro_command(repository_path, binary):
         'deb': 'includedeb',
         'dsc': 'includedsc',
         # we slice for the last 3 chars, for .changes this would be ges
-        'ges': 'include',
+        'changes': 'include',
     }
-    include_flag = include_flags[binary.name[-3:]]
+    include_flag = include_flags[binary.extension]
     return [
         'reprepro',
         '--confdir', '/etc',
