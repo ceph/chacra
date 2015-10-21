@@ -223,3 +223,42 @@ class TestGetBinaries(object):
         models.commit()
         result = util.get_extra_binaries('ceph', 'ubuntu', 'trusty', ref='master')
         assert len(result) == 1
+
+
+class TestRepreproCommand(object):
+
+    def test_deb_binary(self, session):
+        binary = models.Binary(
+            'ceph-1.1.deb',
+            None,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+        command = util.reprepro_command('/path', binary)
+        assert command[-3] == 'includedeb'
+
+    def test_deb_dsc(self, session):
+        binary = models.Binary(
+            'ceph-1.1.dsc',
+            None,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+        command = util.reprepro_command('/path', binary)
+        assert command[-3] == 'includedsc'
+
+    def test_deb_changes(self, session):
+        binary = models.Binary(
+            'ceph-1.1.changes',
+            None,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+        command = util.reprepro_command('/path', binary)
+        assert command[-3] == 'include'
