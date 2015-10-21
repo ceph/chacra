@@ -12,6 +12,7 @@ system_packages:
   - postgresql-contrib
   - python-psycopg2
   - nginx
+  - vim
   # needed for the ansible apt_repository module
   - python-apt
 #  - libsemanage-python
