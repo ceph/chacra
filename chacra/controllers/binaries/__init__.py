@@ -4,7 +4,7 @@ import pecan
 from pecan import expose, abort, request, response, conf
 from pecan.secure import secure
 from webob.static import FileIter
-from chacra.models import Binary, Project
+from chacra.models import Binary, Project, delete, commit
 from chacra.controllers import error
 from chacra.auth import basic_auth
 from chacra.util import repo_paths
@@ -126,6 +126,35 @@ class BinaryController(object):
         # re-saving the attribute so that the listener can update the checksum and modified
         # timestamps
         self.binary.path = self.save_file(file_obj)
+        return dict()
+
+    @secure(basic_auth)
+    @index.when(method='DELETE', template='json')
+    def index_delete(self):
+        if not self.binary:
+            abort(404)
+        binary_path = self.binary.path
+        repo = self.binary.repo
+        project = self.binary.project
+        delete(self.binary)
+        try:
+            os.remove(binary_path)
+        except IOError:
+            # should we complain loudly here?
+            logger.exception("Could not remove the binary path: %s" % binary_path)
+        commit()
+        if repo.binaries.count() > 0:
+            # there are still binaries related to this repo, mark it to rebuild
+            repo.needs_update = True
+        else:
+            # there are no more binaries for this repo, delete the repo
+            delete(repo)
+
+        if project.binaries.count() == 0:
+            delete(project)
+
+        commit()
+        response.status = 204
         return dict()
 
     def create_directory(self):
