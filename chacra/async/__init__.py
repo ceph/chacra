@@ -122,17 +122,7 @@ def create_deb_repo(repo_id):
     all_binaries = extra_binaries + [b for b in repo.binaries]
 
     for binary in all_binaries:
-        command = [
-            'reprepro',
-            '--confdir', '/etc',
-            '-b', paths['absolute'],
-            '-C', 'main',
-            '--ignore=wrongdistribution',
-            '--ignore=wrongversion',
-            '--ignore=undefinedtarget',
-            'includedeb', binary.distro_version,
-            binary.path
-        ]
+        command = util.reprepro_command(paths['absolute'], binary)
         try:
             logger.info('running command: %s', ' '.join(command))
         except TypeError:
