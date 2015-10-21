@@ -122,7 +122,10 @@ def create_deb_repo(repo_id):
     all_binaries = extra_binaries + [b for b in repo.binaries]
 
     for binary in all_binaries:
-        command = util.reprepro_command(paths['absolute'], binary)
+        try:
+            command = util.reprepro_command(paths['absolute'], binary)
+        except KeyError:  # probably a tar.gz or similar file that should not be added directly
+            continue
         try:
             logger.info('running command: %s', ' '.join(command))
         except TypeError:
