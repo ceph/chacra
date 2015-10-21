@@ -67,7 +67,10 @@ class Binary(Base):
             'changes': 'deb'
         }
         if self.repo.type is None:
-            self.repo.type = extension_map[self.extension]
+            # XXX This is very naive, but 'deb' repos are the only ones that
+            # will have .tar or .tar.gz or just .gz extensions for source
+            # files, so fallback to that
+            self.repo.type = extension_map.get(self.extension, 'deb')
 
     def _get_or_create_repo(self):
         """
