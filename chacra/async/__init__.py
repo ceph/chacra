@@ -63,6 +63,8 @@ def poll_repos():
                 create_deb_repo.apply_async(
                     (r.id,),
                     countdown=pecan.conf.quiet_time)
+            else:
+                logger.warning('got a repository with an unkown type: %s', r)
 
     logger.info('completed repo polling')
 
@@ -122,17 +124,14 @@ def create_deb_repo(repo_id):
     all_binaries = extra_binaries + [b for b in repo.binaries]
 
     for binary in all_binaries:
-        command = [
-            'reprepro',
-            '--confdir', '/etc',
-            '-b', paths['absolute'],
-            '-C', 'main',
-            '--ignore=wrongdistribution',
-            '--ignore=wrongversion',
-            '--ignore=undefinedtarget',
-            'includedeb', binary.distro_version,
-            binary.path
-        ]
+        # XXX This is really not a good alternative but we are not going to be
+        # using .changes for now although we can store it.
+        if binary.extension == 'changes':
+            continue
+        try:
+            command = util.reprepro_command(paths['absolute'], binary)
+        except KeyError:  # probably a tar.gz or similar file that should not be added directly
+            continue
         try:
             logger.info('running command: %s', ' '.join(command))
         except TypeError:

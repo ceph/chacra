@@ -152,3 +152,31 @@ def makedirs(path):
         else:
             logger.exception('could not create %s')
             raise
+
+
+def reprepro_command(repository_path, binary):
+    """
+    Depending on the filetype we are dealin the reprepro command will need to
+    change to accommodate for its inclusion in a DEB repository. This is
+    specifically meant to handle both .dsc and .changes files which need to be
+    treaded differently.
+    """
+    include_flags = {
+        'deb': 'includedeb',
+        'dsc': 'includedsc',
+        'changes': 'include',
+    }
+    # It is OK to fail so that the KeyError can be catched and properly ignored
+    # when adding such an unknown file to the repo
+    include_flag = include_flags[binary.extension]
+    return [
+        'reprepro',
+        '--confdir', '/etc',
+        '-b', repository_path,
+        '-C', 'main',
+        '--ignore=wrongdistribution',
+        '--ignore=wrongversion',
+        '--ignore=undefinedtarget',
+        include_flag, binary.distro_version,
+        binary.path
+    ]

@@ -55,17 +55,22 @@ class Binary(Base):
         # ensure that the repo.type is set
         self._set_repo_type()
 
+    @property
+    def extension(self):
+        return self.name.split('.')[-1]
+
     def _set_repo_type(self):
         extension_map = {
             'rpm': 'rpm',
             'deb': 'deb',
             'dsc': 'deb',
-            # really a .changes ext, but we ask for the last three chars
-            'ges': 'deb'
+            'changes': 'deb'
         }
         if self.repo.type is None:
-            extension = self.name[-3:]
-            self.repo.type = extension_map[extension]
+            # XXX This is very naive, but 'deb' repos are the only ones that
+            # will have .tar or .tar.gz or just .gz extensions for source
+            # files, so fallback to that
+            self.repo.type = extension_map.get(self.extension, 'deb')
 
     def _get_or_create_repo(self):
         """
