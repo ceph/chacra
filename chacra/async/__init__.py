@@ -63,6 +63,8 @@ def poll_repos():
                 create_deb_repo.apply_async(
                     (r.id,),
                     countdown=pecan.conf.quiet_time)
+            else:
+                logger.warning('got a repository with an unkown type: %s', r)
 
     logger.info('completed repo polling')
 
