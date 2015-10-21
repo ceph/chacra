@@ -132,3 +132,15 @@ class TestBinaryModification(object):
             arch='amd64',
             )
         assert repo.type == 'deb'
+
+    def test_binary_type_for_tar(self, session):
+        repo = Repo(self.p, 'hammer', 'debian', 'wheezy')
+        Binary(
+            'ceph-1.0.tar.gz',
+            self.p,
+            ref='hammer',
+            distro='debian',
+            distro_version='wheezy',
+            arch='amd64',
+            )
+        assert repo.type == 'deb'
