@@ -166,6 +166,8 @@ def reprepro_command(repository_path, binary):
         'dsc': 'includedsc',
         'changes': 'include',
     }
+    # It is OK to fail so that the KeyError can be catched and properly ignored
+    # when adding such an unknown file to the repo
     include_flag = include_flags[binary.extension]
     return [
         'reprepro',
