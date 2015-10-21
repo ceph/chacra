@@ -164,7 +164,6 @@ def reprepro_command(repository_path, binary):
     include_flags = {
         'deb': 'includedeb',
         'dsc': 'includedsc',
-        # we slice for the last 3 chars, for .changes this would be ges
         'changes': 'include',
     }
     include_flag = include_flags[binary.extension]
