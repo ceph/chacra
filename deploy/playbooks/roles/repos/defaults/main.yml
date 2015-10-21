@@ -1,9 +1,14 @@
 ---
 reprepro_distros:
   - sid
+  - stretch
+  - jessie
   - wheezy
   - squeeze
-  - quantal
   - precise
+  - quantal
   - saucy
   - trusty
+  - utopic
+  - vivid
+  - wily
