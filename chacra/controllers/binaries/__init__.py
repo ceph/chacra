@@ -4,7 +4,7 @@ import pecan
 from pecan import expose, abort, request, response, conf
 from pecan.secure import secure
 from webob.static import FileIter
-from chacra.models import Binary, Project, delete, commit
+from chacra.models import Binary, Project
 from chacra.controllers import error
 from chacra.auth import basic_auth
 from chacra.util import repo_paths
@@ -136,7 +136,7 @@ class BinaryController(object):
         binary_path = self.binary.path
         repo = self.binary.repo
         project = self.binary.project
-        delete(self.binary)
+        self.binary.delete()
         try:
             os.remove(binary_path)
         except IOError:
@@ -147,10 +147,10 @@ class BinaryController(object):
             repo.needs_update = True
         else:
             # there are no more binaries for this repo, delete the repo
-            delete(repo)
+            repo.delete()
 
         if project.binaries.count() == 0:
-            delete(project)
+            project.delete()
 
         response.status = 204
         return dict()
