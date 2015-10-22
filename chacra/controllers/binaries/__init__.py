@@ -142,7 +142,6 @@ class BinaryController(object):
         except IOError:
             # should we complain loudly here?
             logger.exception("Could not remove the binary path: %s" % binary_path)
-        commit()
         if repo.binaries.count() > 0:
             # there are still binaries related to this repo, mark it to rebuild
             repo.needs_update = True
@@ -153,7 +152,6 @@ class BinaryController(object):
         if project.binaries.count() == 0:
             delete(project)
 
-        commit()
         response.status = 204
         return dict()
 
