@@ -139,9 +139,10 @@ class BinaryController(object):
         self.binary.delete()
         try:
             os.remove(binary_path)
-        except IOError:
-            # should we complain loudly here?
-            logger.exception("Could not remove the binary path: %s" % binary_path)
+        except (IOError, OSError):
+            msg = "Could not remove the binary path: %s" % binary_path
+            logger.exception(msg)
+            error('/errors/error/', msg)
         if repo.binaries.count() > 0:
             # there are still binaries related to this repo, mark it to rebuild
             repo.needs_update = True

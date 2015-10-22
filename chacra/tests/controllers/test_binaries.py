@@ -63,6 +63,19 @@ class TestBinaryController(object):
         result = session.app.get('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
         assert result.status_int == 404
 
+    def test_binary_file_can_not_delete_binary_file(self, session, tmpdir):
+        p = Project("ceph")
+        Binary(
+            "ceph-9.0.0-0.el6.x86_64.rpm",
+            p,
+            distro="ceph",
+            distro_version="el6",
+            ref="giant",
+            arch="x86_64",
+        )
+        result = session.app.delete('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
+        assert result.status_int == 500
+
     def test_delete_missing_binary_file(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.get('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
