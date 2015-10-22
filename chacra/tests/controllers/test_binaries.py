@@ -1,6 +1,7 @@
 import os
 import pecan
-from chacra.models import Binary
+
+from chacra.models import Binary, Project, Repo
 from chacra.tests import util
 
 
@@ -48,6 +49,103 @@ class TestBinaryController(object):
         result = session.app.get('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
         assert result.status_int == 200
 
+    def test_single_binary_file_can_be_deleted(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        result = session.app.get('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
+        assert result.status_int == 200
+        result = session.app.delete('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
+        assert result.status_int == 204
+        result = session.app.get('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
+        assert result.status_int == 404
+
+    def test_binary_file_can_not_delete_binary_file(self, session, tmpdir):
+        p = Project("ceph")
+        Binary(
+            "ceph-9.0.0-0.el6.x86_64.rpm",
+            p,
+            distro="ceph",
+            distro_version="el6",
+            ref="giant",
+            arch="x86_64",
+        )
+        result = session.app.delete('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
+        assert result.status_int == 500
+
+    def test_delete_missing_binary_file(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        result = session.app.get('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
+        assert result.status_int == 404
+
+    def test_binary_file_deleted_removes_project(self, session, tmpdir):
+        # if a project has no binaries related to it after binary deletion, it is deleted as well
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        result = session.app.delete('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
+        assert result.status_int == 204
+        p = Project.get(1)
+        assert not p
+
+    def test_binary_file_deleted_project_exists(self, session, tmpdir):
+        # if a project has binaries related to it after binary deletion, it will still exist
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el7/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        result = session.app.delete('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
+        assert result.status_int == 204
+        p = Project.get(1)
+        assert p.name == "ceph"
+
+    def test_binary_file_deleted_removes_repo(self, session, tmpdir):
+        # if a repo has no binaries related to it after binary deletion, it is deleted as well
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        repo = Repo.get(1)
+        assert repo
+        result = session.app.delete('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
+        assert result.status_int == 204
+        repo = Repo.get(1)
+        assert not repo
+
+    def test_binary_file_deleted_repo_exists(self, session, tmpdir):
+        # if a repo has binaries related to it after binary deletion, it will still exist
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.1.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        repo = Repo.get(1)
+        assert repo
+        result = session.app.delete('/binaries/ceph/giant/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
+        assert result.status_int == 204
+        repo = Repo.get(1)
+        assert repo.needs_update
 
     def test_auth_fails(self, session):
         result = session.app.post(

@@ -128,6 +128,34 @@ class BinaryController(object):
         self.binary.path = self.save_file(file_obj)
         return dict()
 
+    @secure(basic_auth)
+    @index.when(method='DELETE', template='json')
+    def index_delete(self):
+        if not self.binary:
+            abort(404)
+        binary_path = self.binary.path
+        repo = self.binary.repo
+        project = self.binary.project
+        self.binary.delete()
+        try:
+            os.remove(binary_path)
+        except (IOError, OSError):
+            msg = "Could not remove the binary path: %s" % binary_path
+            logger.exception(msg)
+            error('/errors/error/', msg)
+        if repo.binaries.count() > 0:
+            # there are still binaries related to this repo, mark it to rebuild
+            repo.needs_update = True
+        else:
+            # there are no more binaries for this repo, delete the repo
+            repo.delete()
+
+        if project.binaries.count() == 0:
+            project.delete()
+
+        response.status = 204
+        return dict()
+
     def create_directory(self):
         end_part = request.url.split('binaries/')[-1].rstrip('/')
         # take out the binary name
