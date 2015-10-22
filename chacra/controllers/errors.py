@@ -53,3 +53,11 @@ class ErrorsController(object):
         response.status = 503
         return dict(message=msg)
 
+    @expose('json')
+    def error(self, **kw):
+        msg = kw.get(
+            'error_message',
+            'an error has occured',
+        )
+        response.status = 500
+        return dict(message=msg)
