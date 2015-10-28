@@ -368,6 +368,30 @@ is usually included in other repos, it could be disabled like::
         }
     }
 
+Configuring distributions
+-------------------------
+Creating a debian repository requires a distributions file be created. Chacra will create these for each project
+by using the following configuration::
+
+    distributions = {
+       "defaults": {
+            "DebIndices": "Packages Release . .gz .bz2",
+            "DscIndices": "Sources Release .gz .bz2",
+            "Contents": ".gz .bz2",
+            "Origin": "RedHat",
+            "Description": "",
+            "Architectures": "amd64 armhf i386 source",
+            "Suite": "stable",
+            "Components": "main",
+        },
+        "ceph": {
+            "Description": "Ceph distributed file system",
+        },
+    }
+
+The ``defaults`` key is used for any project that doesn't have it's own explicitly defined key. You can add keys that
+match with projects you are storing in chacra to override the default values.
+
 about the name
 ==============
 `chakra` is a quechua word to refer to a small farm in the outskirts, dedicated
