@@ -19,14 +19,23 @@ class ArchController(object):
     def __init__(self, arch):
         self.arch = arch
         self.project = models.Project.get(request.context['project_id'])
-        request.context['arch'] = self.arch
         self.distro = request.context['distro']
         self.distro_version = request.context['distro_version']
         self.ref = request.context['ref']
+        request.context['arch'] = self.arch
 
     @expose(generic=True, template='json')
     def index(self):
         if self.arch not in self.project.archs:
+            abort(404)
+
+        binaries = self.project.binaries.filter_by(
+            distro=self.distro,
+            distro_version=self.distro_version,
+            ref=self.ref,
+            arch=self.arch).all()
+
+        if not binaries:
             abort(404)
 
         resp = {}
