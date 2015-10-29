@@ -22,7 +22,6 @@ class ArchController(object):
         request.context['arch'] = self.arch
         self.distro = request.context['distro']
         self.distro_version = request.context['distro_version']
-        self.arch = request.context['arch']
         self.ref = request.context['ref']
 
     @expose(generic=True, template='json')
