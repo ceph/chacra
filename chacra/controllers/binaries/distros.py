@@ -56,10 +56,21 @@ class DistroController(object):
             abort(404)
         resp = {}
 
-        for version in self.project.distro_versions:
-            archs = [b.arch for b in models.Binary.filter_by(project=self.project, distro_version=version, distro=self.distro_name, ref=self.ref).all()]
-            if archs:
-                resp[version] = list(set(archs))
+        binaries = models.Binary.filter_by(
+            project=self.project,
+            distro=self.distro_name,
+            ref=self.ref).all()
+
+        distro_versions = set([b.distro_version for b in binaries])
+
+        for distro_version in distro_versions:
+            resp[distro_version] = list(
+                set(
+                    [b.arch for b in binaries if b.distro_version == distro_version]
+                )
+            )
+        if not resp:
+            abort(404)
         return resp
 
     @index.when(method='POST', template='json')
