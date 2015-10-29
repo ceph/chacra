@@ -39,6 +39,20 @@ class TestBinaryController(object):
         )
         assert result.status_int == 201
 
+    def test_archs_is_not_found(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        # post to a different distro but same arch
+        result = session.app.post(
+            '/binaries/ceph/giant/ceph/el7/x86_64/',
+            params={'force': 1},
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        result = session.app.get(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            expect_errors=True
+        )
+        assert result.status_int == 404
+
     def test_single_binary_file_can_be_downloaded(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
