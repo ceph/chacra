@@ -30,3 +30,12 @@ class TestRefController(object):
         session.commit()
         result = session.app.get('/binaries/ceph/master/')
         assert result.json.keys() == ['centos', 'ubuntu']
+
+    def test_get_ref_with_distinct_distros(self, session):
+        p = Project('ceph')
+        Binary('ceph-1.0.0.rpm', p, ref='master', distro='centos', distro_version='el6', arch='i386')
+        # note how we are using a different ref
+        Binary('ceph-1.0.0.deb', p, ref='firefly', distro='ubuntu', distro_version='trusty', arch='i386')
+        session.commit()
+        result = session.app.get('/binaries/ceph/master/')
+        assert result.json.keys() == ['centos']

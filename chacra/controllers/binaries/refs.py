@@ -16,8 +16,22 @@ class RefController(object):
         if self.ref_name not in self.project.refs:
             abort(404)
         resp = {}
-        for distro in self.project.distros:
-            resp[distro] = list(set([b.distro_version for b in models.Binary.filter_by(project=self.project, distro=distro).all()]))
+        binaries = models.Binary.filter_by(
+            project=self.project,
+            ref=self.ref_name).all()
+
+        distros = set([b.distro for b in binaries])
+
+        for distro in distros:
+            resp[distro] = list(
+                set(
+                    [b.distro_version for b in binaries if b.distro == distro ]
+                )
+            )
+
+        if not resp:
+            abort(404)
+
         return resp
 
     @index.when(method='POST', template='json')
