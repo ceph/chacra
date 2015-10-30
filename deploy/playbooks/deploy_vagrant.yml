@@ -16,3 +16,4 @@
      binary_root: "/opt/binaries"
      repos_root: "/opt/repos"
      branch: "master"
+     development_server: true
