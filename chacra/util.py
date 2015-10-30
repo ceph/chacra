@@ -157,7 +157,7 @@ def makedirs(path):
             raise
 
 
-def render_mako_template(template_name, context):
+def render_mako_template(template_name, data):
     """
     Will render the given mako template and return it as a string.
 
@@ -166,16 +166,17 @@ def render_mako_template(template_name, context):
     #TODO: should this path be configurable?
     template_dir = os.path.join(os.path.dirname(__file__), "templates")
     engine = MakoRenderer(template_dir, ExtraNamespace())
-    return engine.render(template_name, context)
+    return engine.render(template_name, data)
 
 
 def create_distributions_file(project_name, distributions_path):
     """
     Will create a project specific distributions file to be used by reprepo.
     """
-    data = conf.distributions['defaults']
-    project_overrides = conf.distributions.get("project_name", {})
-    data.update(project_overrides)
+    data = dict()
+    data['data'] = conf.distributions['defaults']
+    project_overrides = conf.distributions.get(project_name, {})
+    data['data'].update(project_overrides)
     data["distributions"] = DISTRIBUTIONS
     contents = render_mako_template("distributions", data)
     with open(distributions_path, "w") as f:
