@@ -83,3 +83,21 @@ polling_cycle = 15
 # Once a "create repo" task is called, how many seconds (if any) to wait before actually
 # creating the repository
 quiet_time = 30
+
+
+# Use this to define how distributions files will be created per project
+distributions = {
+    "defaults": {
+        "DebIndices": "Packages Release . .gz .bz2",
+        "DscIndices": "Sources Release .gz .bz2",
+        "Contents": ".gz .bz2",
+        "Origin": "RedHat",
+        "Description": "",
+        "Architectures": "amd64 armhf i386 source",
+        "Suite": "stable",
+        "Components": "main",
+    },
+    "ceph": {
+        "Description": "Ceph distributed file system",
+    },
+}
