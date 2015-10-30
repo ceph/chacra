@@ -85,4 +85,5 @@
   sudo: true
   action: service name=nginx state=started
   register: nginx_was_running
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'trusty'
   failed_when: nginx_was_running.changed
