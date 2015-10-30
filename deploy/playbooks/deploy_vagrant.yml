@@ -15,5 +15,6 @@
      restart_app: true
      binary_root: "/opt/binaries"
      repos_root: "/opt/repos"
+     distributions_root: "/opt/distributions"
      branch: "master"
      development_server: true

@@ -60,6 +60,7 @@
   with_items:
     - "{{ binary_root }}"
     - "{{ repos_root }}"
+    - "{{ distributions_root }}"
 
 - include: postgresql.yml
   tags:
