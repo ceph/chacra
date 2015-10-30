@@ -169,15 +169,25 @@ def render_mako_template(template_name, data):
     return engine.render(template_name, data)
 
 
+def get_distributions_file_context(project_name):
+    """
+    Using conf.distributions build the context needed
+    to render the project specific distributions file.
+    """
+    data = dict()
+    dist_config = conf.distributions.to_dict()
+    data['data'] = dist_config.get('defaults', {})
+    project_overrides = dist_config.get(project_name, {})
+    data['data'].update(project_overrides)
+    data["distributions"] = DISTRIBUTIONS
+    return data
+
+
 def create_distributions_file(project_name, distributions_path):
     """
     Will create a project specific distributions file to be used by reprepo.
     """
-    data = dict()
-    data['data'] = conf.distributions['defaults']
-    project_overrides = conf.distributions.get(project_name, {})
-    data['data'].update(project_overrides)
-    data["distributions"] = DISTRIBUTIONS
+    data = get_distributions_file_context(project_name)
     contents = render_mako_template("distributions", data)
     with open(distributions_path, "w") as f:
         try:
