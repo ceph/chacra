@@ -194,7 +194,7 @@ def reprepro_confdir(project_name):
     If the configuration directory or distributions file do not exist, they
     will be created.
     """
-    confdir_path = "/etc/distributions/%s" % project_name
+    confdir_path = "/opt/distributions/%s" % project_name
     distributions_path = os.path.join(confdir_path, "distributions")
     if not os.path.exists(distributions_path):
         makedirs(confdir_path)
