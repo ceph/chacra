@@ -227,10 +227,14 @@ class TestGetBinaries(object):
 
 class TestRepreproCommand(object):
 
-    def test_deb_binary(self, session):
+    def setup(self):
+        self.p = models.Project('ceph')
+
+    def test_deb_binary(self, session, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
         binary = models.Binary(
             'ceph-1.1.deb',
-            None,
+            self.p,
             ref='firefly',
             distro='ubuntu',
             distro_version='trusty',
@@ -239,10 +243,11 @@ class TestRepreproCommand(object):
         command = util.reprepro_command('/path', binary)
         assert command[-3] == 'includedeb'
 
-    def test_deb_dsc(self, session):
+    def test_deb_dsc(self, session, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
         binary = models.Binary(
             'ceph-1.1.dsc',
-            None,
+            self.p,
             ref='firefly',
             distro='ubuntu',
             distro_version='trusty',
@@ -251,10 +256,11 @@ class TestRepreproCommand(object):
         command = util.reprepro_command('/path', binary)
         assert command[-3] == 'includedsc'
 
-    def test_deb_changes(self, session):
+    def test_deb_changes(self, session, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
         binary = models.Binary(
             'ceph-1.1.changes',
-            None,
+            self.p,
             ref='firefly',
             distro='ubuntu',
             distro_version='trusty',
@@ -262,3 +268,48 @@ class TestRepreproCommand(object):
             )
         command = util.reprepro_command('/path', binary)
         assert command[-3] == 'include'
+
+
+class TestGetDistributionsFileContext(object):
+
+    def setup(self):
+        self.distro_conf = {
+            "defaults": {
+                "foo": "bar",
+                "bar": "baz",
+            },
+            "ceph": {
+                "name": "ceph",
+            },
+        }
+        pecan.conf.distributions = self.distro_conf
+
+    def test_top_level_keys_exist(self, session):
+        result = util.get_distributions_file_context("ceph")
+        assert "data" in result
+        assert "distributions" in result
+
+    def test_field_addition(self, session):
+        result = util.get_distributions_file_context("ceph")
+        assert "name" in result["data"]
+        assert result["data"]["name"] == "ceph"
+
+    def test_project_doesnt_exist(self, session):
+        result = util.get_distributions_file_context("ceph-deploy")
+        assert len(result["data"]) == 2
+        assert "foo" in result["data"]
+        assert "bar" in result["data"]
+
+    def test_adds_new_field(self, session):
+        self.distro_conf["ceph"]["test"] = "foo"
+        pecan.conf.distributions = self.distro_conf
+        result = util.get_distributions_file_context("ceph")
+        assert "test" in result["data"]
+        assert result['data']['test'] == "foo"
+
+    def test_field_override(self, session):
+        self.distro_conf["ceph"]["foo"] = "blarg"
+        pecan.conf.distributions = self.distro_conf
+        result = util.get_distributions_file_context("ceph")
+        assert "foo" in result["data"]
+        assert result['data']['foo'] == "blarg"
