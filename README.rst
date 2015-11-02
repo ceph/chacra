@@ -395,8 +395,11 @@ by using the following configuration::
         },
     }
 
-The ``defaults`` key is used for any project that doesn't have it's own explicitly defined key. You can add keys that
-match with projects you are storing in chacra to override the default values.
+The ``defaults`` key is used for any project that doesn't have it's own explicitly defined key. This key isn't required,
+but it can be usueful when you have many projects with similar values in their distributions files.
+
+If you want to add keys or modify keys that exist in ``defaults`` for a specific project, add that project name as
+a key of ``distributions`` and define the keys you'd need to override or add there.
 
 about the name
 ==============
