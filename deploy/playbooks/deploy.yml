@@ -14,5 +14,4 @@
      ansible_ssh_port: 2222
      binary_root: "/opt/binaries"
      repos_root: "/opt/repos"
-     distributions_root: "/opt/distributions"
      branch: "master"
