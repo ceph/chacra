@@ -71,6 +71,7 @@ sqlalchemy = {
 }
 
 binary_root = '/tmp/'
+distributions_root = '/tmp/'
 
 # When True it will set the headers so that Nginx can serve the download
 # instead of Pecan.
@@ -78,3 +79,20 @@ delegate_downloads = False
 
 api_user = 'admin'
 api_key = 'secret'
+
+# Use this to define how distributions files will be created per project
+distributions = {
+    "defaults": {
+        "DebIndices": "Packages Release . .gz .bz2",
+        "DscIndices": "Sources Release .gz .bz2",
+        "Contents": ".gz .bz2",
+        "Origin": "RedHat",
+        "Description": "",
+        "Architectures": "amd64 armhf i386 source",
+        "Suite": "stable",
+        "Components": "main",
+    },
+    "ceph": {
+        "Description": "Ceph distributed file system",
+    },
+}

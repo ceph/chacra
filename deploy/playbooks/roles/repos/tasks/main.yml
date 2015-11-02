@@ -12,9 +12,3 @@
   with_items:
     - reprepro
     - createrepo
-
-- name: Upload debian distributions file for use with reprepro
-  sudo: yes
-  template:
-    src: distributions
-    dest: /etc/distributions

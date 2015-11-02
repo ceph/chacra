@@ -67,6 +67,7 @@ delegate_downloads = True
 # location for storing uploaded binaries
 binary_root = "{{ binary_root }}"
 repos_root = "{{ repos_root }}"
+distributions_root = "%(confdir)s/distributions"
 
 # Celery options
 # How often (in seconds) the database should be queried for repos that need to
@@ -86,6 +87,24 @@ repos = {
         'combined': ['wheezy', 'trusty', 'precise']
    },
     '__force_dict__': True,
+}
+
+
+# Use this to define how distributions files will be created per project
+distributions = {
+    "defaults": {
+        "DebIndices": "Packages Release . .gz .bz2",
+        "DscIndices": "Sources Release .gz .bz2",
+        "Contents": ".gz .bz2",
+        "Origin": "RedHat",
+        "Description": "",
+        "Architectures": "amd64 armhf i386 source",
+        "Suite": "stable",
+        "Components": "main",
+    },
+    "ceph": {
+        "Description": "Ceph distributed file system",
+    },
 }
 
 # production database configurations are imported from prod_db.py

@@ -25,6 +25,12 @@ The ``binary_root`` is a required configuration item, it defines where binaries
 live so that when a new binary is POSTed the service will use this path to save
 the binary to.
 
+distributions_root
+^^^^^^^^^^^^^^^^^^
+
+The ``distributions_root`` is a required configuration item, it defines where the
+project specific distributions files will be stored when creating debian repositories.
+
 credentials
 ^^^^^^^^^^^
 The POST and DELETE HTTP methods are protected by default using basic HTTP
@@ -367,6 +373,33 @@ is usually included in other repos, it could be disabled like::
             'disabled': True
         }
     }
+
+Configuring distributions
+-------------------------
+Creating a debian repository requires a distributions file be created. Chacra will create these for each project
+by using the following configuration::
+
+    distributions = {
+       "defaults": {
+            "DebIndices": "Packages Release . .gz .bz2",
+            "DscIndices": "Sources Release .gz .bz2",
+            "Contents": ".gz .bz2",
+            "Origin": "RedHat",
+            "Description": "",
+            "Architectures": "amd64 armhf i386 source",
+            "Suite": "stable",
+            "Components": "main",
+        },
+        "ceph": {
+            "Description": "Ceph distributed file system",
+        },
+    }
+
+The ``defaults`` key is used for any project that doesn't have it's own explicitly defined key. This key isn't required,
+but it can be usueful when you have many projects with similar values in their distributions files.
+
+If you want to add keys or modify keys that exist in ``defaults`` for a specific project, add that project name as
+a key of ``distributions`` and define the keys you'd need to override or add there.
 
 about the name
 ==============

@@ -2,7 +2,10 @@ import os
 import errno
 import logging
 from pecan import conf
+from pecan.templating import MakoRenderer, ExtraNamespace
+
 from chacra import models
+from chacra.constants import DISTRIBUTIONS
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +157,63 @@ def makedirs(path):
             raise
 
 
+def render_mako_template(template_name, data):
+    """
+    Will render the given mako template and return it as a string.
+
+    The template_name must exist in chacra/templates.
+    """
+    #TODO: should this path be configurable?
+    template_dir = os.path.join(os.path.dirname(__file__), "templates")
+    engine = MakoRenderer(template_dir, ExtraNamespace())
+    return engine.render(template_name, data)
+
+
+def get_distributions_file_context(project_name):
+    """
+    Using conf.distributions build the context needed
+    to render the project specific distributions file.
+    """
+    data = dict()
+    dist_config = conf.distributions.to_dict()
+    data['data'] = dist_config.get('defaults', {})
+    project_overrides = dist_config.get(project_name, {})
+    data['data'].update(project_overrides)
+    data["distributions"] = DISTRIBUTIONS
+    return data
+
+
+def create_distributions_file(project_name, distributions_path):
+    """
+    Will create a project specific distributions file to be used by reprepo.
+    """
+    data = get_distributions_file_context(project_name)
+    contents = render_mako_template("distributions", data)
+    with open(distributions_path, "w") as f:
+        try:
+            f.write(contents)
+        except (OSError, IOError):
+            logger.exception('Could not create %s' % distributions_path)
+            raise
+
+
+def reprepro_confdir(project_name):
+    """
+    Will return the path to an existing project specific configuration directory
+    which will contain a distributions file for that project.
+
+    If the configuration directory or distributions file do not exist, they
+    will be created.
+    """
+    confdir_path = os.path.join(conf.distributions_root, project_name)
+    distributions_path = os.path.join(confdir_path, "distributions")
+    if not os.path.exists(distributions_path):
+        makedirs(confdir_path)
+        create_distributions_file(project_name, distributions_path)
+
+    return confdir_path
+
+
 def reprepro_command(repository_path, binary):
     """
     Depending on the filetype we are dealin the reprepro command will need to
@@ -171,7 +231,7 @@ def reprepro_command(repository_path, binary):
     include_flag = include_flags[binary.extension]
     return [
         'reprepro',
-        '--confdir', '/etc',
+        '--confdir', reprepro_confdir(binary.project.name),
         '-b', repository_path,
         '-C', 'main',
         '--ignore=wrongdistribution',

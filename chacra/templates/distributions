@@ -1,0 +1,7 @@
+% for distro in distributions:
+Codename: ${ distro }
+% for key, value in data.iteritems():
+${key}: ${value}
+% endfor
+
+% endfor
