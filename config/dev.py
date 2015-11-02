@@ -66,6 +66,7 @@ sqlalchemy = {
 # location for storing uploaded binaries
 binary_root = '%(confdir)s/public'
 repos_root = '%(confdir)s/repos'
+distributions_root = '%(confdir)s/distributions'
 
 # When True it will set the headers so that Nginx can serve the download
 # instead of Pecan.

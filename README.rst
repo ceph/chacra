@@ -25,6 +25,12 @@ The ``binary_root`` is a required configuration item, it defines where binaries
 live so that when a new binary is POSTed the service will use this path to save
 the binary to.
 
+distributions_root
+^^^^^^^^^^^^^^^^^^
+
+The ``distributions_root`` is a required configuration item, it defines where the
+project specific distributions files will be stored when creating debian repositories.
+
 credentials
 ^^^^^^^^^^^
 The POST and DELETE HTTP methods are protected by default using basic HTTP
