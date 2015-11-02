@@ -33,6 +33,32 @@
   action: file src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
   sudo: true
 
+- name: ensure ssl certs directory
+  action: file dest=/etc/ssl/certs state=directory
+  sudo: true
+
+- name: ensure ssl private directory
+  action: file dest=/etc/ssl/private state=directory
+  sudo: true
+
+- name: check for SSL cert
+  stat: path=/etc/ssl/certs/{{ ansible_fqdn }}-bundled.crt
+  ignore_errors: true
+  register: ssl_cert
+
+- name: create self-signed SSL cert
+  command: openssl req -new -nodes -x509 -subj "/C=US/ST=Oregon/L=Portland/O=IT/CN=${app_name}" -days 3650 -keyout /etc/ssl/private/{{ ansible_fqdn }}.key -out /etc/ssl/certs/{{ ansible_fqdn }}-bundled.crt -extensions v3_ca creates=/etc/nginx/ssl/{{ ansible_fqdn }}-bundled.crt
+  when: development_server and ssl_cert.stat.exists == false
+  sudo: true
+  notify: restart nginx
+
+- name: make sure permissions are correct for crt
+  file:
+    path: /etc/ssl/certs/{{ ansible_fqdn }}-bundled.crt
+    mode: 0777
+  when: development_server
+  sudo: true
+
 - name: ensure nginx is restarted
   sudo: true
   action: service name=nginx state=restarted
