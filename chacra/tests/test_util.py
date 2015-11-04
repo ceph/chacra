@@ -139,6 +139,22 @@ class TestGetExtraRepos(object):
         result = util.get_extra_repos('ceph', 'firefly',  repo_config=conf)
         assert result == {'ceph-deploy': ['all']}
 
+    def test_matching_project_ref_and_all_refs(self):
+        # all versions of ceph-deploy for this repo, and just the 'firefly'
+        # release of ceph-release.
+        conf = {
+            'ceph': {
+                'all': {
+                    'ceph-deploy': ['all'],
+                },
+                'firefly': {
+                    'ceph-release': ['firefly']
+                    }
+                }
+            }
+        result = util.get_extra_repos('ceph', 'firefly',  repo_config=conf)
+        assert result == {'ceph-deploy': ['all'], 'ceph-release': ['firefly']}
+
 
 class TestCombined(object):
 
