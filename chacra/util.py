@@ -92,10 +92,22 @@ def get_extra_repos(project, ref=None, repo_config=None):
     if not project_config:
         logging.debug('%s has no configuration for extra repositories', project)
         return {}
-    extras = project_config.get(project_ref) or project_config.get('all', {})
-    if not extras:
+    # check first for 'all', if present, process that first:
+    all_refs = project_config.get('all', {})
+    distinct_ref = {}
+    # now check for a distinct ref if we were asked for one:
+    if ref is not None:
+        distinct_ref = project_config.get(ref, {})
+
+    # now that both have been check, combine them so that they can be processed
+    # as one large dictionary, note that key from distinct refs will be
+    # overwritten by 'all' refs, that is: 'all' has more importance than
+    # distinct, this is assumed as a configuration oversight by the user.
+    distinct_ref.update(all_refs)
+
+    if not distinct_ref:
         logger.warning('%s has no matching repositories for ref: %s', project, project_ref)
-    return extras
+    return distinct_ref
 
 
 def get_extra_binaries(project_name, distro, distro_version, distro_versions=None, ref=None):
