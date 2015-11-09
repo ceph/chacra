@@ -39,6 +39,19 @@ class TestBinaryController(object):
         )
         assert result.status_int == 201
 
+    def test_put_is_not_allowed(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        result = session.app.put(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
+            expect_errors=True,
+        )
+        assert result.status_int == 405
+
     def test_archs_is_not_found(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)
         # post to a different distro but same arch
