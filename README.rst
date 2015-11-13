@@ -401,6 +401,17 @@ but it can be usueful when you have many projects with similar values in their d
 If you want to add keys or modify keys that exist in ``defaults`` for a specific project, add that project name as
 a key of ``distributions`` and define the keys you'd need to override or add there.
 
+Authentication
+==============
+
+If authentication is configured, you can use the following flags to curl:
+
+curl --basic -u myuser -k -F "file=@ceph-deploy-1.5.28-0.noarch.rpm" https://chacra.example.com/binaries/ceph/test/centos/10/x86_64/
+
+You should also investigate https://pypi.python.org/pypi/chacractl, a client
+that wraps the chacra API and handles authentication in a configuration file,
+etc.
+
 about the name
 ==============
 `chakra` is a quechua word to refer to a small farm in the outskirts, dedicated
