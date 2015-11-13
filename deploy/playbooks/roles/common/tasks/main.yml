@@ -54,7 +54,7 @@
     virtualenv: "{{ app_home }}"
   notify: restart app
 
-- name: ensure file paths are set properly
+- name: ensure writable file paths are set properly
   sudo: true
   file:
     path: "{{ item }}"
