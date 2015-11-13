@@ -61,6 +61,14 @@
   when: development_server
   sudo: true
 
+- name: make sure permissions are correct for key
+  file:
+    path: /etc/ssl/private/{{ ansible_fqdn }}.key
+    owner: root
+    group: root
+    mode: 0600
+  sudo: true
+
 - name: ensure nginx is restarted
   sudo: true
   action: service name=nginx state=restarted
