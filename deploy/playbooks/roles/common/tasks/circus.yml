@@ -11,7 +11,9 @@
   file:
     path: /etc/circus
     state: directory
-    owner: "{{ ansible_ssh_user }}"
+    owner: root
+    group: root
+    mode: 0755
     recurse: yes
   sudo: true
 
@@ -30,6 +32,9 @@
   template:
     src: circus.conf
     dest: /etc/init/circus.conf
+    owner: root
+    group: root
+    mode: 0644
   sudo: true
   register: circus_service
 
