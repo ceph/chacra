@@ -56,9 +56,13 @@
   sudo: yes
 
 - name: create the prod_db config file with the db password
+  sudo: yes
   template:
     src: ../templates/prod_db.py.j2
     dest: "{{ app_home }}/src/{{ app_name }}/prod_db.py"
+    owner: root
+    group: "{{ app_user }}"
+    mode: 0640
   notify:
     - restart app
     - restart celery
@@ -66,9 +70,13 @@
 
 # this needs to be here because it needs the new db password
 - name: create the prod alembic.ini file
+  sudo: yes
   template:
     src: ../templates/alembic-prod.ini.j2
     dest: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
+    owner: root
+    group: "{{ app_user }}"
+    mode: 0640
 
 - name: check if database for app needs populating
   # this should be configurable/optional in the playbook
@@ -80,6 +88,7 @@
   changed_when: "database_is_populated.rc != 0"
 
 - name: populate the database for {{ app_name }}
+  sudo: yes
   when: "database_is_populated.rc == 1"
   command: "{{ app_home }}/bin/pecan populate {{ app_home }}/src/{{ app_name }}/prod.py"
   environment:

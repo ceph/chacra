@@ -1,6 +1,7 @@
 ---
 
 - name: install circus in virtualenv
+  sudo: true
   pip: name={{ item }} state=present virtualenv={{ app_home }}
   with_items:
     - circus
@@ -21,12 +22,21 @@
   file:
     path: /var/log/circus
     state: directory
-    owner: "{{ ansible_ssh_user }}"
+    owner: "{{ app_user }}"
+    group: root
+    mode: 0755
     recurse: yes
   sudo: true
 
 - name: ensure {{ app_home }}/log exists
-  file: path="{{ app_home }}/log" state=directory
+  sudo: true
+  file:
+    path: "{{ app_home }}/log"
+    state: directory
+    owner: "{{ app_user }}"
+    group: root
+    mode: 0755
+    recurse: yes
 
 - name: install circus.conf init file
   template:
