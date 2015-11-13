@@ -4,8 +4,9 @@
   sudo: yes
   file:
     path: "{{ app_home }}"
-    owner: "{{ ansible_ssh_user }}"
-    group: "{{ ansible_ssh_user }}"
+    owner: root
+    group: root
+    mode: 0755
     state: directory
     recurse: yes
   register: app_home_created
