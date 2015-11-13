@@ -1,4 +1,13 @@
 ---
+
+- name: install nginx package
+  sudo: true
+  apt:
+    name: nginx
+    state: present
+  tags:
+    - packages
+
 - name: ensure sites-available for nginx
   file: path=/etc/nginx/sites-available state=directory
   sudo: true
