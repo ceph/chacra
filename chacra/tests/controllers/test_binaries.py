@@ -286,3 +286,12 @@ class TestBinaryController(object):
         response = session.app.get('/binaries/ceph/giant/ceph/el6/x86_64/').json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
         assert result.startswith('a5725e467')
+
+    def test_head_requests_are_allowed(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/ceph/el6/x86_64/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        response = session.app.head('/binaries/ceph/giant/ceph/el6/x86_64/')
+        assert response.status_int == 200
