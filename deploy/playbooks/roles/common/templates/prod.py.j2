@@ -87,6 +87,10 @@ repos = {
         'infernalis': {
             'ceph-release': ['infernalis'],
         },
+        # when more 'testing' refs are built, we need to add them here as well
+        'testing': {
+            'ceph': ['jewel-rc'],
+        },
         'combined': ['wheezy', 'trusty', 'precise']
    },
     '__force_dict__': True,
