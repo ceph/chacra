@@ -20,7 +20,7 @@ class DistroController(object):
             abort(404)
         resp = []
 
-        for repo in self.project.built_repos.filter_by(distro=self.distro_name).all():
+        for repo in self.project.built_repos.filter_by(distro=self.distro_name, ref=self.ref).all():
             resp.append(repo.distro_version)
         return list(set(resp))
 
