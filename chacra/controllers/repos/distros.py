@@ -22,7 +22,7 @@ class DistroController(object):
 
         for repo in self.project.built_repos.filter_by(distro=self.distro_name).all():
             resp.append(repo.distro_version)
-        return resp
+        return list(set(resp))
 
     @index.when(method='POST', template='json')
     def index_post(self):
