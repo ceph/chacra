@@ -68,7 +68,10 @@ class RepoController(object):
             )
         # completely remove the path to the repository
         logger.info('removing repository path: %s', self.repo.path)
-        shutil.rmtree(self.repo.path)
+        try:
+            shutil.rmtree(self.repo.path)
+        except OSError:
+            logger.warning("could not remove repo path: %s", self.repo.path)
 
         # mark the repo so that celery picks it up
         self.repo.needs_update = True
