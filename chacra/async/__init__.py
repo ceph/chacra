@@ -82,6 +82,12 @@ def create_deb_repo(repo_id):
     # Determine paths for this repository
     paths = util.repo_paths(repo)
 
+    # Before doing work that might take very long to complete, set the repo
+    # path in the object and mark needs_update as False
+    repo.path = paths['absolute']
+    repo.needs_update = False
+    models.commit()
+
     # determine if other repositories might need to be queried to add extra
     # binaries (repos are tied to binaries which are all related with  refs,
     # archs, distros, and distro versions.
@@ -143,11 +149,6 @@ def create_deb_repo(repo_id):
             except subprocess.CalledProcessError:
                 logger.exception('failed to add binary %s', binary.name)
 
-    # Finally, set the repo path in the object and mark needs_update as False
-    repo.path = paths['absolute']
-    repo.needs_update = False
-    models.commit()
-
 
 @app.task(base=SQLATask)
 def create_rpm_repo(repo_id):
@@ -163,6 +164,12 @@ def create_rpm_repo(repo_id):
     # Determine paths for this repository
     paths = util.repo_paths(repo)
     repo_dirs = [os.path.join(paths['absolute'], d) for d in directories]
+
+    # Before doing work that might take very long to complete, set the repo
+    # path in the object and mark needs_update as False
+    repo.path = paths['absolute']
+    repo.needs_update = False
+    models.commit()
 
     # this is safe to do, behind the scenes it is just trying to create them if
     # they don't exist and it will include the 'absolute' path
@@ -196,11 +203,6 @@ def create_rpm_repo(repo_id):
 
     for d in repo_dirs:
         subprocess.check_call(['createrepo', d])
-
-    # Finally, set the repo path in the object and mark needs_update as False
-    repo.path = paths['absolute']
-    repo.needs_update = False
-    models.commit()
 
 
 app.conf.update(
