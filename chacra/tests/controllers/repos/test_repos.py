@@ -214,6 +214,25 @@ class TestRepoCRUDOperations(object):
         assert os.path.exists(path) is False
         assert result.json['needs_update'] is True
 
+    def test_recreate_invalid_path(self, session, tmpdir):
+        path = str(tmpdir)
+        invalid_path = os.path.join(path, 'invalid_path')
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = invalid_path
+        session.commit()
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/recreate",
+            params={}
+        )
+        assert os.path.exists(path) is True
+        assert result.json['needs_update'] is True
+
     def test_recreate_head(self, session, tmpdir):
         p = Project('foobar')
         repo = Repo(
