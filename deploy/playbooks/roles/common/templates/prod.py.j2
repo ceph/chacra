@@ -81,8 +81,12 @@ quiet_time = 20
 repos = {
     'ceph': {
         'all': {
-            'ceph-deploy': ['all'],
-            'radosgw-agent': ['all'],
+            # both ceph-deploy and radosgw-agent production builds should go
+            # into the "ref" master because otherwise we would be forced to
+            # list every "vN.N.N" ref here to avoid getting cruft like "test"
+            # builds
+            'ceph-deploy': ['master'],
+            'radosgw-agent': ['master'],
         },
         'infernalis': {
             'ceph-release': ['infernalis'],
