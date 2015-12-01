@@ -29,7 +29,7 @@ class ArchController(object):
         abort(405)
 
     @index.when(method='HEAD', template='json')
-    def index_get(self):
+    def index_head(self):
         if self.arch not in self.project.archs:
             abort(404)
 
