@@ -18,6 +18,14 @@ class TestArchController(object):
         result = session.app.get('/binaries/ceph/giant/centos/el6/x86_64/')
         assert result.json['ceph-1.0.0.rpm']
 
+    def test_arch_not_found_with_head(self, session):
+        project = Project('ceph')
+        Binary('ceph-1.0.0.rpm', project, ref='giant', distro='centos', distro_version='el6', arch='x86_64')
+        session.commit()
+        result = session.app.head(
+            '/binaries/ceph/giant/centos/el7/x86_64/', expect_errors=True)
+        assert result.status_int == 404
+
     def test_single_arch_should_have_one_item(self, session):
         p = Project('ceph')
         Binary('ceph-9.0.0-0.el6.x86_64.rpm', p, ref='giant', distro='centos', distro_version='el6', arch='x86_64')
