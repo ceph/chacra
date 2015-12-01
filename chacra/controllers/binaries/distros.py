@@ -37,6 +37,9 @@ class DistroVersionController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
+        if request.method in  ['HEAD', 'GET']:
+            if self.distro_version not in self.project.distro_versions:
+                abort(404)
         return ArchController(name), remainder
 
 
