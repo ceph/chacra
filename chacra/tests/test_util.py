@@ -240,6 +240,33 @@ class TestGetBinaries(object):
         result = util.get_extra_binaries('ceph', 'ubuntu', 'trusty', ref='master')
         assert len(result) == 1
 
+    def test_ref_matches_binaries_from_distro_versions(self, session):
+        models.Binary(
+            'ceph-1.0.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='precise',
+            arch='all',
+            )
+        models.Binary(
+            'ceph-1.0.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+
+        models.commit()
+        result = util.get_extra_binaries(
+            'ceph',
+            'ubuntu',
+            'trusty',
+            distro_versions=['precise', 'trusty'],
+            ref='firefly')
+        assert len(result) == 2
+
 
 class TestRepreproCommand(object):
 
