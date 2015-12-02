@@ -139,10 +139,9 @@ def get_extra_binaries(project_name, distro, distro_version, distro_versions=Non
         for r in repo_query.all():
             binaries += [b for b in r.binaries]
     else:
-        # further filter by using ref, also return as a list
-        repo = repo_query.filter_by(ref=ref).first()
-        if repo:
-            binaries = [b for b in repo.binaries]
+        # further filter by using ref but looking for all matching repos
+        for r in repo_query.filter_by(ref=ref).all():
+            binaries += [b for b in r.binaries]
     logger.info('%d matched binaries found', len(binaries))
     return binaries
 
