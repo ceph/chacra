@@ -145,11 +145,10 @@ def create_deb_repo(repo_id):
             continue
         for command in commands:
             logger.info('running command: %s', ' '.join(command))
-            else:
-                try:
-                    subprocess.check_call(command)
-                except subprocess.CalledProcessError:
-                    logger.exception('failed to add binary %s', binary.name)
+            try:
+                subprocess.check_call(command)
+            except subprocess.CalledProcessError:
+                logger.exception('failed to add binary %s', binary.name)
 
 
 @app.task(base=SQLATask)
