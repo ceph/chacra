@@ -135,19 +135,23 @@ def create_deb_repo(repo_id):
         if binary.extension == 'changes':
             continue
         try:
-            command = util.reprepro_command(paths['absolute'], binary)
+            commands = util.reprepro_commands(
+                paths['absolute'],
+                binary,
+                distro_versions=combined_versions)
         except KeyError:  # probably a tar.gz or similar file that should not be added directly
             continue
-        try:
-            logger.info('running command: %s', ' '.join(command))
-        except TypeError:
-            logger.exception('was not able to add binary: %s', binary)
-            continue
-        else:
+        for command in commands:
             try:
-                subprocess.check_call(command)
-            except subprocess.CalledProcessError:
-                logger.exception('failed to add binary %s', binary.name)
+                logger.info('running command: %s', ' '.join(command))
+            except TypeError:
+                logger.exception('was not able to add binary: %s', binary)
+                continue
+            else:
+                try:
+                    subprocess.check_call(command)
+                except subprocess.CalledProcessError:
+                    logger.exception('failed to add binary %s', binary.name)
 
 
 @app.task(base=SQLATask)
