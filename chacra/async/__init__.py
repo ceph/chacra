@@ -138,7 +138,9 @@ def create_deb_repo(repo_id):
             commands = util.reprepro_commands(
                 paths['absolute'],
                 binary,
-                distro_versions=combined_versions)
+                distro_versions=combined_versions,
+                fallback_version=repo.distro_version
+            )
         except KeyError:  # probably a tar.gz or similar file that should not be added directly
             continue
         for command in commands:
