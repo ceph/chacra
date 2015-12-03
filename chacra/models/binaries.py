@@ -109,6 +109,23 @@ class Binary(Base):
             last = self.created
         return util.last_seen(last)
 
+    @property
+    def is_generic(self):
+        """
+        Generic binaries are built without a specific target distribution version. They should
+        work in any version/release which requires the repository-creation mechanism to special case
+        them as repositories may be combined and require us to add them to different distributions.
+        Specifically, we match the distro version to:
+
+        * generic
+        * universal
+        * any
+        """
+        target_versions = ['generic', 'universal', 'any']
+        if self.distro_version in target_versions:
+            return True
+        return False
+
     def __json__(self):
         return dict(
             name=self.name,
