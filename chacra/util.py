@@ -254,7 +254,8 @@ def reprepro_command(repository_path, binary, distro_version=None):
     ]
 
 
-def reprepro_commands(repository_path, binary, distro_versions=None):
+def reprepro_commands(repository_path, binary,
+        distro_versions=None, fallback_version=None):
     """
     When a generic (non-distro-version-specific) DEB binary is built it can't
     be added with reprepro as-is because internal chacra mechanisms infer the
@@ -274,13 +275,30 @@ def reprepro_commands(repository_path, binary, distro_versions=None):
     * universal
     * any
 
-
     Instead of returning a single command (as a list so that it can be consumed
     with Popen) it will return all possible commands if ``distro_versions`` is
     used or just a single item in a list if none are passed.
     """
+    if binary.is_generic:
+        if not distro_versions:
+            if fallback_version:
+                distro_versions = [fallback_version]
+            else:
+                # at this point we don't have either distro_versions or
+                # a fallback and the binary is generic which means we will be
+                # unable to add it back to the repos, so give up with
+                # a warning.
+                logger.warning(
+                    "%s is generic but no fallback or distro versions where defined"
+                )
+                logger.warning("no reprepro command will be issued")
+                return []
+    else:
+        # since this is not a generic binary, use its own distro_version to
+        # create the reprepro command
+        distro_versions = [binary.distro_version]
+
     commands = []
-    distro_versions = distro_versions or [binary.distro_version]
     for distro_version in distro_versions:
         commands.append(
             reprepro_command(
