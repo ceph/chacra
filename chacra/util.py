@@ -252,3 +252,41 @@ def reprepro_command(repository_path, binary, distro_version=None):
         include_flag, distro_version,
         binary.path
     ]
+
+
+def reprepro_commands(repository_path, binary, distro_versions=None):
+    """
+    When a generic (non-distro-version-specific) DEB binary is built it can't
+    be added with reprepro as-is because internal chacra mechanisms infer the
+    distro version of the repo looking into the metadata associated with the
+    binary.
+
+    A binary like ceph-deploy_1.5.30_all.deb that lives in a path like
+    ceph-deploy/master/debian/universal/all/ will generate a reprepro command
+    that attempts to add the binary to a repo using "universal" as the distro
+    version, which doesn't exist.
+
+    This is only a problem with generic binaries, so this helper function will
+    try to detect this by matching the distro version to a few values allowed
+    for generic builds:
+
+    * generic
+    * universal
+    * any
+
+
+    Instead of returning a single command (as a list so that it can be consumed
+    with Popen) it will return all possible commands if ``distro_versions`` is
+    used or just a single item in a list if none are passed.
+    """
+    commands = []
+    distro_versions = distro_versions or [binary.distro_version]
+    for distro_version in distro_versions:
+        commands.append(
+            reprepro_command(
+                repository_path,
+                binary,
+                distro_version=distro_version
+            )
+        )
+    return commands
