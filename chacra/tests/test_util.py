@@ -313,6 +313,96 @@ class TestRepreproCommand(object):
         assert command[-3] == 'include'
 
 
+class TestRepreproCommands(object):
+
+    def setup(self):
+        self.p = models.Project('ceph')
+
+    def test_no_distro_versions_binary_non_generic(self, session, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
+        binary = models.Binary(
+            'ceph-1.1.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+        commands = util.reprepro_commands('/path', binary)
+        command = commands[0]
+        assert len(commands) == 1
+        assert 'trusty' in command
+
+    def test_multiple_distro_versions_non_generic(self, session, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
+        binary = models.Binary(
+            'ceph-1.1.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+        commands = util.reprepro_commands(
+            '/path',
+            binary,
+            distro_versions= ['precise', 'trusty', 'wheezy'])
+        command = commands[0]
+        assert len(commands) == 1
+        assert 'trusty' in command
+
+    def test_no_distro_versions_binary_no_fallback_generic(self, session, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
+        binary = models.Binary(
+            'ceph-1.1.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='generic',
+            arch='all',
+            )
+        commands = util.reprepro_commands('/path', binary)
+        assert commands == []
+
+    def test_no_distro_versions_binary_with_fallback_generic(self, session, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
+        binary = models.Binary(
+            'ceph-1.1.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='generic',
+            arch='all',
+            )
+        commands = util.reprepro_commands('/path', binary, fallback_version='jessie')
+        command = commands[0]
+        assert len(commands) == 1
+        assert 'jessie' in command
+
+    def test_distro_versions_binary_with_fallback_generic(self, session, tmpdir):
+        distro_versions = ['trusty', 'wheezy', 'precise']
+        pecan.conf.distributions_root = str(tmpdir)
+        binary = models.Binary(
+            'ceph-1.1.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='generic',
+            arch='all',
+            )
+        commands = util.reprepro_commands(
+            '/path',
+            binary,
+            distro_versions=distro_versions,
+            fallback_version='jessie'
+        )
+        assert len(commands) == 3
+        # this is a poor use of assert here, but we are trying to ensure that
+        # all distro_versions were used correctly, if something fails here it
+        # means that they didn't get added to the reprepro command
+        for c in commands:
+            assert c[-2] in distro_versions
+
 class TestGetDistributionsFileContext(object):
 
     def setup(self):
