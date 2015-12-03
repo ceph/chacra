@@ -144,11 +144,7 @@ def create_deb_repo(repo_id):
         except KeyError:  # probably a tar.gz or similar file that should not be added directly
             continue
         for command in commands:
-            try:
-                logger.info('running command: %s', ' '.join(command))
-            except TypeError:
-                logger.exception('was not able to add binary: %s', binary)
-                continue
+            logger.info('running command: %s', ' '.join(command))
             else:
                 try:
                     subprocess.check_call(command)
