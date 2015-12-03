@@ -225,13 +225,14 @@ def reprepro_confdir(project_name):
     return confdir_path
 
 
-def reprepro_command(repository_path, binary):
+def reprepro_command(repository_path, binary, distro_version=None):
     """
-    Depending on the filetype we are dealin the reprepro command will need to
+    Depending on the filetype we are dealing the reprepro command will need to
     change to accommodate for its inclusion in a DEB repository. This is
     specifically meant to handle both .dsc and .changes files which need to be
     treaded differently.
     """
+    distro_version = distro_version or binary.distro_version
     include_flags = {
         'deb': 'includedeb',
         'dsc': 'includedsc',
