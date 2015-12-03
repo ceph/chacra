@@ -135,15 +135,16 @@ def create_deb_repo(repo_id):
         if binary.extension == 'changes':
             continue
         try:
-            command = util.reprepro_command(paths['absolute'], binary)
+            commands = util.reprepro_commands(
+                paths['absolute'],
+                binary,
+                distro_versions=combined_versions,
+                fallback_version=repo.distro_version
+            )
         except KeyError:  # probably a tar.gz or similar file that should not be added directly
             continue
-        try:
+        for command in commands:
             logger.info('running command: %s', ' '.join(command))
-        except TypeError:
-            logger.exception('was not able to add binary: %s', binary)
-            continue
-        else:
             try:
                 subprocess.check_call(command)
             except subprocess.CalledProcessError:

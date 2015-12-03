@@ -225,13 +225,14 @@ def reprepro_confdir(project_name):
     return confdir_path
 
 
-def reprepro_command(repository_path, binary):
+def reprepro_command(repository_path, binary, distro_version=None):
     """
-    Depending on the filetype we are dealin the reprepro command will need to
+    Depending on the filetype we are dealing the reprepro command will need to
     change to accommodate for its inclusion in a DEB repository. This is
     specifically meant to handle both .dsc and .changes files which need to be
     treaded differently.
     """
+    distro_version = distro_version or binary.distro_version
     include_flags = {
         'deb': 'includedeb',
         'dsc': 'includedsc',
@@ -248,6 +249,62 @@ def reprepro_command(repository_path, binary):
         '--ignore=wrongdistribution',
         '--ignore=wrongversion',
         '--ignore=undefinedtarget',
-        include_flag, binary.distro_version,
+        include_flag, distro_version,
         binary.path
     ]
+
+
+def reprepro_commands(repository_path, binary,
+        distro_versions=None, fallback_version=None):
+    """
+    When a generic (non-distro-version-specific) DEB binary is built it can't
+    be added with reprepro as-is because internal chacra mechanisms infer the
+    distro version of the repo looking into the metadata associated with the
+    binary.
+
+    A binary like ceph-deploy_1.5.30_all.deb that lives in a path like
+    ceph-deploy/master/debian/universal/all/ will generate a reprepro command
+    that attempts to add the binary to a repo using "universal" as the distro
+    version, which doesn't exist.
+
+    This is only a problem with generic binaries, so this helper function will
+    try to detect this by matching the distro version to a few values allowed
+    for generic builds:
+
+    * generic
+    * universal
+    * any
+
+    Instead of returning a single command (as a list so that it can be consumed
+    with Popen) it will return all possible commands if ``distro_versions`` is
+    used or just a single item in a list if none are passed.
+    """
+    if binary.is_generic:
+        if not distro_versions:
+            if fallback_version:
+                distro_versions = [fallback_version]
+            else:
+                # at this point we don't have either distro_versions or
+                # a fallback and the binary is generic which means we will be
+                # unable to add it back to the repos, so give up with
+                # a warning.
+                logger.warning(
+                    "%s is generic but no fallback or distro versions where defined"
+                )
+                logger.warning("no reprepro command will be issued")
+                return []
+    else:
+        # since this is not a generic binary, use its own distro_version to
+        # create the reprepro command
+        distro_versions = [binary.distro_version]
+
+    commands = []
+    for distro_version in distro_versions:
+        commands.append(
+            reprepro_command(
+                repository_path,
+                binary,
+                distro_version=distro_version
+            )
+        )
+    return commands

@@ -95,11 +95,9 @@ repos = {
         'testing': {
             'ceph': ['jewel-rc'],
         },
-        # 'universal' is a naming convention used by the Ceph CI to build DEB
-        # binaries that are not distro-version-dependant. That is: they are
-        # built in some Debian/Ubuntu box but they can work on any since they
-        # are not tied to the distribution version.
-        'combined': ['wheezy', 'trusty', 'precise', 'universal']
+        # note: 'universal' binaries will be included to all these distro
+        # versions since they do not belong to any one in particular.
+        'combined': ['wheezy', 'trusty', 'precise']
    },
     '__force_dict__': True,
 }
