@@ -7,7 +7,7 @@ A REST API for storing and retrieving specific versions and architectures of
 The URL structure is very simple and allows to be explicit about what the type
 and version of a given binary package the API is providing::
 
-    /bianries/{package_name}/{version}/{distribution}/{distro_release}/{architecture}/$binary
+    /binaries/{package_name}/{version}/{distribution}/{distro_release}/{architecture}/$binary
 
 So for a CentOS 7 x86_64 package for Ceph the url could look like::
 
