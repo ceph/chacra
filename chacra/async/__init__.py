@@ -94,6 +94,17 @@ def create_deb_repo(repo_id):
     conf_extra_repos = util.get_extra_repos(repo.project.name, repo.ref)
     combined_versions = util.get_combined_repos(repo.project.name)
     extra_binaries = []
+
+    # See if there are any generic/universal binaries so that they can be
+    # automatically added.
+    for binary in util.get_extra_binaries(
+            repo.project.name,
+            repo.distro,
+            None,
+            distro_versions=['generic', 'universal', 'any'],
+            ref=repo.ref):
+        extra_binaries.append(binary)
+
     for project_name, project_refs in conf_extra_repos.items():
         for ref in project_refs:
             logger.info('fetching binaries for project: %s, ref: %s', project_name, ref)
