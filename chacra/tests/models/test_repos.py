@@ -29,3 +29,12 @@ class TestRepoModification(object):
         session.commit()
 
         assert initial_timestamp < repo.modified.time()
+
+    def test_created_no_binaries_is_not_generic(self, session):
+        repo = Repo(
+            self.p,
+            ref='firefly',
+            distro='centos',
+            distro_version='7',
+            )
+        assert repo.is_generic is False
