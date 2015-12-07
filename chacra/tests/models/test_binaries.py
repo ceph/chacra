@@ -144,3 +144,31 @@ class TestBinaryModification(object):
             arch='amd64',
             )
         assert repo.type == 'deb'
+
+
+class TestGenericBinaries(object):
+
+    def setup(self):
+        self.p = Project('ceph')
+
+    def test_binary_is_generic(self, session):
+        binary = Binary(
+            'ceph-1.0.deb',
+            self.p,
+            ref='hammer',
+            distro='debian',
+            distro_version='generic',
+            arch='amd64',
+            )
+        assert binary.repo.is_generic is True
+
+    def test_binary_is_not_generic(self, session):
+        binary = Binary(
+            'ceph-1.0.deb',
+            self.p,
+            ref='hammer',
+            distro='debian',
+            distro_version='wheezy',
+            arch='amd64',
+            )
+        assert binary.repo.is_generic is False
