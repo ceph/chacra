@@ -53,6 +53,13 @@ class Repo(Base):
             size=self.size,
         )
 
+    @property
+    def is_generic(self):
+        for binary in self.binaries:
+            if binary.is_generic:
+                return True
+        return False
+
 
 # listen for timestamp modifications
 listen(Repo, 'before_insert', update_timestamp)
