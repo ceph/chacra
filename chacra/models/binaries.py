@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
+from sqlalchemy.exc import InvalidRequestError
 from chacra.models import Base, update_timestamp
 from chacra.models.repos import Repo
 from chacra.controllers import util
@@ -92,7 +93,8 @@ class Binary(Base):
                 self.distro,
                 self.distro_version
             )
-        repo.needs_update = True
+        # only needs_update when binary is not generic
+        repo.needs_update = not self.is_generic
         return repo
 
     def __repr__(self):
@@ -169,8 +171,18 @@ def generate_checksum(mapper, connection, target):
 
 def update_repo(mapper, connection, target):
     try:
+        if target.repo.is_generic:
+            return
+    except (AttributeError, InvalidRequestError):
+        # SQLA might not have finished flushing the object
+        # so it really doesn't know if it is a generic one or not
+        # so do not update anything
+        return
+    try:
         target.repo.needs_update = True
     except AttributeError:
+        # target may be None in certain cases, and we don't care which one
+        # triggered it because there is nothing we need to do
         pass
 
 # listen for checksum changes
