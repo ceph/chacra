@@ -123,7 +123,7 @@ logical operators can be used, like ``>=`` for example.
 
 In its most simple form a query would look like::
 
-    /search/?name=ceph
+    /search/?name=ceph_10.0.0_el6.x86_64.rpm
 
 Successful responses will return an array of items found along with metadata
 about locations.
