@@ -1,6 +1,7 @@
 import pecan
 import os
 from chacra.models import Project, Binary
+from chacra.controllers import search
 
 
 class TestSearchController(object):
@@ -37,3 +38,18 @@ class TestSearchController(object):
         session.commit()
         result = session.app.get('/search/?distro=centos')
         assert len(result.json) == 2
+
+
+class TestLikeSearch(object):
+
+    def setup(self):
+        self.controller = search.SearchController()
+
+    def test_search_like_name(self, session):
+        project = Project('ceph')
+        Binary('ceph-1.0.0.rpm', project, ref='giant', distro='centos', distro_version='el6', arch='x86_64')
+        Binary('radosgw-agent-1.0.0.rpm', project, ref='giant', distro='centos', distro_version='el7', arch='x86_64')
+        session.commit()
+        result = session.app.get('/search/?name-like=ceph')
+        assert len(result.json) == 1
+        assert result.json[0]['name'] == 'ceph-1.0.0.rpm'
