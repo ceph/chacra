@@ -14,7 +14,7 @@ class SearchController(object):
                 'built_by': Binary.built_by,
                 'size': Binary.size,
                 'name': Binary.name,
-                'name-like': Binary.name.like,
+                'name-has': Binary.name.like,
         }
 
     @expose('json')
@@ -36,15 +36,15 @@ class SearchController(object):
 
     def filter_binary(self, key, value, query=None):
         filter_obj = self.filters[key]
-        # for *-like search only
+        # for *-has search only
         search_value = '%{value}%'.format(value=value)
 
         # query will exist if multiple filters are being applied, e.g. by name
         # and by distro but otherwise it will be None
         if query:
-            if key.endswith('-like'):
+            if key.endswith('-has'):
                 return query.filter(filter_obj(search_value))
             return query.filter(filter_obj == value)
-        if key.endswith('-like'):
+        if key.endswith('-has'):
             return Binary.query.filter(filter_obj(search_value))
         return Binary.query.filter(filter_obj == value)
