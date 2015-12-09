@@ -125,8 +125,8 @@ In its most simple form a query would look like::
 
     /search/?name=ceph
 
-Search terms don't need to be unique and successful responses will return an
-array of items found along with metadata about locations.
+Successful responses will return an array of items found along with metadata
+about locations.
 
 The supported query parameters are:
 
@@ -137,6 +137,18 @@ The supported query parameters are:
 * ``built_by``
 * ``size``
 * ``name``
+
+These require to have exact matches. For example a query like
+``?distro=CentOS`` would not return binaries that have a ``centos`` distro
+value.
+
+Search terms that allow more flexiblity are:
+
+* ``name-has``
+
+The ``-has`` connotation means that any part of the binary name (in this case)
+can have that value. For example a query like ``?name-has=deploy`` would match
+a binary like ``ceph-deploy_1.5.21_all.deb``.
 
 
 HTTP Responses:
