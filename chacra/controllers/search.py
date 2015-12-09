@@ -14,7 +14,7 @@ class SearchController(object):
                 'built_by': Binary.built_by,
                 'size': Binary.size,
                 'name': Binary.name,
-                'name-like': Binary.name.like,
+                'name-has': Binary.name.like,
         }
 
     @expose('json')
@@ -31,10 +31,20 @@ class SearchController(object):
             if k not in self.filters:
                 return error('/errors/not_allowed', 'invalid query params: %s' % k)
             if k in self.filters:
-                query = self.filter_binary(self.filters[k], v, query)
+                query = self.filter_binary(k, v, query)
         return query
 
     def filter_binary(self, key, value, query=None):
+        filter_obj = self.filters[key]
+        # for *-has search only
+        search_value = '%{value}%'.format(value=value)
+
+        # query will exist if multiple filters are being applied, e.g. by name
+        # and by distro but otherwise it will be None
         if query:
-            return query.filter(key == value)
-        return Binary.query.filter(key == value)
+            if key.endswith('-has'):
+                return query.filter(filter_obj(search_value))
+            return query.filter(filter_obj == value)
+        if key.endswith('-has'):
+            return Binary.query.filter(filter_obj(search_value))
+        return Binary.query.filter(filter_obj == value)
