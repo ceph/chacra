@@ -374,8 +374,8 @@ instance that is creating the repositories.
 # TODO: Maybe allow for URLs as well? That way packages could come from another source?
 
 
-Disabling per project
----------------------
+Disabling repositories
+----------------------
 Automatic repository creation can be disabled (on by default) in the
 configuration for repos. In the case of a project like ``ceph-deploy`` that
 is usually included in other repos, it could be disabled like::
@@ -385,6 +385,13 @@ is usually included in other repos, it could be disabled like::
             'disabled': True
         }
     }
+
+And it can also be disabled if a repository is not configured with::
+
+    disable_unconfigured_repos = True
+
+A repository is considered as *unconfigured* if it doesn't have an entry in the
+``repos`` dictionary.
 
 Configuring distributions
 -------------------------
