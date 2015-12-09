@@ -446,3 +446,32 @@ class TestGetDistributionsFileContext(object):
         result = util.get_distributions_file_context("ceph")
         assert "foo" in result["data"]
         assert result['data']['foo'] == "blarg"
+
+
+class TestRepositoryIsDisabled(object):
+
+    def test_nothing_is_configured(self):
+        assert util.repository_is_disabled('foo') is False
+
+    def test_project_explicitly_disabled(self):
+        pecan.conf.repos = {'foo': {'disabled': True}}
+        assert util.repository_is_disabled('foo') is True
+
+    def test_unconfigured_repo_with_disabled_repos(self):
+        pecan.conf.disable_unconfigured_repos = True
+        pecan.conf.repos = {'bar': {'disabled': True}}
+        assert util.repository_is_disabled('foo') is False
+
+    def test_unconfigured_with_repos_explicitly_enabled(self):
+        pecan.conf.disable_unconfigured_repos = True
+        pecan.conf.repos = {'bar': {'disabled': True}}
+        assert util.repository_is_disabled('bar') is True
+
+    def test_unconfigured_with_repos_explicitly_disabled(self):
+        pecan.conf.disable_unconfigured_repos = True
+        pecan.conf.repos = {'bar': {'disabled': False}}
+        assert util.repository_is_disabled('bar') is False
+
+    def test_repo_configured_but_not_project(self):
+        pecan.conf.repos = {'foo': {'disabled': True}}
+        assert util.repository_is_disabled('bar') is False
