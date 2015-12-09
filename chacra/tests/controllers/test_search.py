@@ -50,6 +50,6 @@ class TestLikeSearch(object):
         Binary('ceph-1.0.0.rpm', project, ref='giant', distro='centos', distro_version='el6', arch='x86_64')
         Binary('radosgw-agent-1.0.0.rpm', project, ref='giant', distro='centos', distro_version='el7', arch='x86_64')
         session.commit()
-        result = session.app.get('/search/?name-like=ceph')
+        result = session.app.get('/search/?name-has=ceph')
         assert len(result.json) == 1
         assert result.json[0]['name'] == 'ceph-1.0.0.rpm'
