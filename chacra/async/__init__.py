@@ -78,6 +78,9 @@ def create_deb_repo(repo_id):
     # TODO: Is it possible we can get an ID that doesn't exist anymore?
     repo = models.Repo.get(repo_id)
     logger.info("processing repository: %s", repo)
+    if util.repository_is_disabled(repo.project.name):
+        logger.info("will not process repository: %s", repo)
+        return
 
     # Determine paths for this repository
     paths = util.repo_paths(repo)
@@ -172,6 +175,9 @@ def create_rpm_repo(repo_id):
     # TODO: Is it possible we can get an ID that doesn't exist anymore?
     repo = models.Repo.get(repo_id)
     logger.info("processing repository: %s", repo)
+    if util.repository_is_disabled(repo.project.name):
+        logger.info("will not process repository: %s", repo)
+        return
 
     # Determine paths for this repository
     paths = util.repo_paths(repo)
