@@ -308,3 +308,32 @@ def reprepro_commands(repository_path, binary,
             )
         )
     return commands
+
+def repository_is_disabled(project_name, repo_config=None):
+    repo_config = repo_config or getattr(conf, 'repos', {})
+    disable_unconfigured_repos = getattr(conf, 'disable_unconfigured_repos', False)
+    logger.debug('checking if repository should be disabled for project: %s', project_name)
+    if disable_unconfigured_repos:
+        logger.debug('repository creation for unconfigured repos is disabled')
+        # check if the repo exists in the repo configuration and it is not
+        # disabled there
+        if repo_config.get(project_name):
+            # it exists, but it may be explicitly disabled
+            if repo_config[project_name].get('disabled'):
+                logger.info('project: %s is explicitly disabled in config, will skip repo creation', project_name)
+                return True
+            # it exists but it is not explicitly disabled
+            else:
+                logger.info('project: %s is explicitly enabled in config, repo will be created/updated', project_name)
+                return False
+        logger.info('project: %s is unconfigured, will skip repo creation', project_name)
+        return True
+    if repo_config.get(project_name, {}).get('disabled', False):
+        logger.info('project: %s is explicitly disabled in config, will skip repo creation', project_name)
+        return True
+    if not repo_config:
+        logger.info('no specific repo configuration found, will create repo for project: %s', project_name)
+        return False
+    # if unconfigured repos are not disabled and no repo is configured this
+    # means this should not be disabled
+    return False
