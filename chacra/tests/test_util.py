@@ -450,6 +450,14 @@ class TestGetDistributionsFileContext(object):
 
 class TestRepositoryIsDisabled(object):
 
+    def teardown(self):
+        from pecan import configuration
+        configuration.set_config(
+            dict(configuration.initconf()),
+            overwrite=True
+        )
+        os.environ.pop('PECAN_CONFIG', None)
+
     def test_nothing_is_configured(self):
         assert util.repository_is_disabled('foo') is False
 
@@ -460,7 +468,7 @@ class TestRepositoryIsDisabled(object):
     def test_unconfigured_repo_with_disabled_repos(self):
         pecan.conf.disable_unconfigured_repos = True
         pecan.conf.repos = {'bar': {'disabled': True}}
-        assert util.repository_is_disabled('foo') is False
+        assert util.repository_is_disabled('foo') is True
 
     def test_unconfigured_with_repos_explicitly_enabled(self):
         pecan.conf.disable_unconfigured_repos = True
