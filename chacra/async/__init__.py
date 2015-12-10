@@ -96,7 +96,7 @@ def create_deb_repo(repo_id):
     extra_binaries = []
 
     # See if there are any generic/universal binaries so that they can be
-    # automatically added.
+    # automatically added from the current project
     for binary in util.get_extra_binaries(
             repo.project.name,
             repo.distro,
@@ -116,6 +116,16 @@ def create_deb_repo(repo_id):
                 ref=ref if ref != 'all' else None
             )
             extra_binaries += found_binaries
+
+            # See if there are any generic/universal binaries so that they can be
+            # automatically added from projects coming from extra repos
+            for binary in util.get_extra_binaries(
+                    project_name,
+                    repo.distro,
+                    None,
+                    distro_versions=['generic', 'universal', 'any'],
+                    ref=ref if ref != 'all' else None):
+                extra_binaries.append(binary)
 
     # check for the option to 'combine' repositories with different
     # debian/ubuntu versions
