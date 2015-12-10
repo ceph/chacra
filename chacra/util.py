@@ -327,7 +327,7 @@ def repository_is_disabled(project_name, repo_config=None):
                 logger.info('project: %s is explicitly enabled in config, repo will be created/updated', project_name)
                 return False
         logger.info('project: %s is unconfigured, will skip repo creation', project_name)
-        return False
+        return True
     if repo_config.get(project_name, {}).get('disabled', False):
         logger.info('project: %s is explicitly disabled in config, will skip repo creation', project_name)
         return True
