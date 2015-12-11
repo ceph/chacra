@@ -19,8 +19,6 @@ class ProjectController(object):
 
     @expose('json')
     def index(self):
-        if request.method == 'POST':
-            error('/errors/not_allowed', 'POST requests to this url are not allowed')
         return self.project
 
     @expose()
