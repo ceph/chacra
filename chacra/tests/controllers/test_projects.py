@@ -31,6 +31,12 @@ class TestProjectsController(object):
         assert result.status_int == 200
         assert len(json) == 20
 
+    def test_create_project(self, session):
+        session.app.post('/binaries/rhcs-ceph/')
+        result = session.app.get('/binaries/rhcs-ceph/')
+        assert result.status_int == 200
+        assert result.json == {}
+
 
 class TestProjectController(object):
 

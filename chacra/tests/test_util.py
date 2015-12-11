@@ -5,6 +5,7 @@ import pytest
 import pecan
 from chacra import util
 from chacra import models
+from chacra.tests import conftest
 
 
 source_rpms = [
@@ -451,12 +452,7 @@ class TestGetDistributionsFileContext(object):
 class TestRepositoryIsDisabled(object):
 
     def teardown(self):
-        from pecan import configuration
-        configuration.set_config(
-            dict(configuration.initconf()),
-            overwrite=True
-        )
-        os.environ.pop('PECAN_CONFIG', None)
+        conftest.reload_config()
 
     def test_nothing_is_configured(self):
         assert util.repository_is_disabled('foo') is False

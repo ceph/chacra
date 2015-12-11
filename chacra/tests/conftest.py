@@ -23,6 +23,25 @@ def config_file():
     return os.path.join(here, 'config.py')
 
 
+def reload_config():
+    from pecan import configuration
+    conf = configuration.conf_from_file(config_file())
+    config = configuration.conf_from_file(config_file()).to_dict()
+
+    # Add the appropriate connection string to the app config.
+    config['sqlalchemy'] = {
+        'url': '%s/%s' % (BIND, DBNAME),
+        'encoding': 'utf-8',
+        'poolclass': NullPool
+    }
+
+    configuration.set_config(
+        config,
+        overwrite=True
+    )
+    _db.init_model()
+
+
 @pytest.fixture(scope='session')
 def app(request):
     config = configuration.conf_from_file(config_file()).to_dict()
