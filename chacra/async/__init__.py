@@ -153,7 +153,7 @@ def create_deb_repo(repo_id):
 
     all_binaries = extra_binaries + [b for b in repo.binaries]
 
-    for binary in all_binaries:
+    for binary in set(all_binaries):
         # XXX This is really not a good alternative but we are not going to be
         # using .changes for now although we can store it.
         if binary.extension == 'changes':
