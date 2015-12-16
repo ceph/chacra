@@ -479,3 +479,40 @@ class TestRepositoryIsDisabled(object):
     def test_repo_configured_but_not_project(self):
         pecan.conf.repos = {'foo': {'disabled': True}}
         assert util.repository_is_disabled('bar') is False
+
+
+class TestRelatedProjects(object):
+
+    def setup(self):
+        self.conf = dict()
+
+    def test_nothing_is_related(self):
+        self.conf['ceph'] = {
+            'firefly': {'ceph-deploy': ['all']}
+        }
+        result = util.get_related_projects('radosgw-agent', repo_config=self.conf)
+        assert result == {}
+
+    def test_project_is_related_with_distinct_refs(self):
+        self.conf['ceph'] = {
+            'firefly': {'ceph-deploy': ['all']}
+        }
+        result = util.get_related_projects('ceph-deploy', repo_config=self.conf)
+        assert result == {'ceph': ['firefly']}
+
+    def test_project_is_related_with_all_refs(self):
+        self.conf['ceph'] = {
+            'all': {'ceph-deploy': ['master']},
+            'firefly': {'ceph-release': ['firefly']}
+        }
+        result = util.get_related_projects('ceph-deploy', repo_config=self.conf)
+        assert result == {'ceph': ['all']}
+
+    def test_project_is_related_multiple_refs(self):
+        self.conf['ceph'] = {
+            'hammer': {'ceph-deploy': ['master']},
+            'firefly': {'ceph-deploy': ['master']}
+        }
+        result = util.get_related_projects('ceph-deploy', repo_config=self.conf)
+        assert sorted(result['ceph']) == sorted(['hammer',  'firefly'])
+
