@@ -5,7 +5,7 @@ from pecan import response
 from pecan.secure import secure
 from pecan import expose, abort, request
 from chacra.models import Binary
-from chacra import models
+from chacra import models, util
 from chacra.controllers import error
 from chacra.controllers.binaries import BinaryController
 from chacra.auth import basic_auth
@@ -94,6 +94,39 @@ class ArchController(object):
             )
         else:
             self.binary.path = full_path
+
+        # check if this binary is interesting for other configured projects,
+        # and if so, then mark those other repos so that they can be re-built
+        related_projects = util.get_related_projects(self.project.name)
+        repos = []
+        for project_name, refs in related_projects.items():
+            p = models.Project.filter_by(name=project_name).first()
+            repo_query = []
+            if refs == ['all']:
+                # we need all the repos available
+                repo_query = models.Repo.filter_by(project=p).all()
+            else:
+                for ref in refs:
+                    repo_query = models.Repo.filter_by(project=p, ref=ref).all()
+            if repo_query:
+                for r in repo_query:
+                    repos.append(r)
+
+        if not repos:
+            # there are no repositories associated with this project, so go ahead
+            # and create one so that it can be queried by the celery task later
+            repo = models.Repo(
+                self.project,
+                self.ref,
+                self.distro,
+                self.distro_version
+            )
+            repo.needs_update = True
+
+        else:
+            for repo in repos:
+                repo.needs_update = True
+
         return dict()
 
     def create_directory(self):
