@@ -101,6 +101,8 @@ class ArchController(object):
         repos = []
         for project_name, refs in related_projects.items():
             p = models.Project.filter_by(name=project_name).first()
+            if not p:
+                p = models.Project(name=project_name)
             repo_query = []
             if refs == ['all']:
                 # we need all the repos available
@@ -116,7 +118,7 @@ class ArchController(object):
             # there are no repositories associated with this project, so go ahead
             # and create one so that it can be queried by the celery task later
             repo = models.Repo(
-                self.project,
+                p,
                 self.ref,
                 self.distro,
                 self.distro_version
