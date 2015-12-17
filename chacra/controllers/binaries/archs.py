@@ -101,9 +101,7 @@ class ArchController(object):
         repos = []
         projects = []
         for project_name, refs in related_projects.items():
-            p = models.Project.filter_by(name=project_name).first()
-            if not p:
-                p = models.Project(name=project_name)
+            p = models.projects.get_or_create(name=project_name)
             projects.append(p)
             repo_query = []
             if refs == ['all']:
