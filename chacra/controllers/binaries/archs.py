@@ -97,6 +97,11 @@ class ArchController(object):
 
         # check if this binary is interesting for other configured projects,
         # and if so, then mark those other repos so that they can be re-built
+        self.mark_related_repos()
+
+        return dict()
+
+    def mark_related_repos(self):
         related_projects = util.get_related_projects(self.project.name)
         repos = []
         projects = []
@@ -129,8 +134,6 @@ class ArchController(object):
         else:
             for repo in repos:
                 repo.needs_update = True
-
-        return dict()
 
     def create_directory(self):
         end_part = request.url.split('binaries/')[-1].rstrip('/')
