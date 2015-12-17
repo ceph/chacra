@@ -295,3 +295,64 @@ class TestBinaryController(object):
         )
         response = session.app.head('/binaries/ceph/giant/ceph/el6/x86_64/')
         assert response.status_int == 200
+
+
+class TestRelatedProjects(object):
+
+    def test_marks_nonexsitent_related_project(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        pecan.conf.repos = {
+            'ceph': {
+                'all': {'ceph-deploy': ['master']}
+            },
+            '__force_dict__': True,
+        }
+        session.app.post(
+            '/binaries/ceph-deploy/master/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        project = Project.filter_by(name='ceph').first()
+        # should've create the ceph project because it didn't exist
+        assert project is not None
+        repo = Repo.filter_by(project=project).first()
+        assert repo.needs_update is True
+
+    def test_marks_existing_related_project(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        pecan.conf.repos = {
+            'ceph': {
+                'all': {'ceph-deploy': ['master']}
+            },
+            '__force_dict__': True,
+        }
+        Project(name='ceph')
+        session.commit()
+        session.app.post(
+            '/binaries/ceph-deploy/master/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        project = Project.filter_by(name='ceph').first()
+        assert project is not None
+        repo = Repo.filter_by(project=project).first()
+        assert repo.needs_update is True
+
+    def test_marks_multiple_projects(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        pecan.conf.repos = {
+            'ceph': {
+                'all': {'ceph-deploy': ['master']},
+            },
+            'rhcs': {
+                'all': {'ceph-deploy': ['master']},
+            },
+            '__force_dict__': True,
+        }
+        session.commit()
+        session.app.post(
+            '/binaries/ceph-deploy/master/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        ceph_project = Project.filter_by(name='ceph').first()
+        rhcs_project = Project.filter_by(name='rhcs').first()
+        assert Repo.filter_by(project=ceph_project).first().needs_update is True
+        assert Repo.filter_by(project=rhcs_project).first().needs_update is True

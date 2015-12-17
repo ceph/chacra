@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import errno
 import logging
@@ -56,6 +57,37 @@ def repo_paths(repo):
     paths['absolute'] = os.path.join(paths['root'], paths['relative'])
 
     return paths
+
+
+def get_related_projects(project, repo_config=None):
+    """
+    Find out if ``project`` of a given ``ref`` might be needed in repositories
+    for other projects (defined via configuration).
+    """
+    matches = defaultdict(list)
+    repo_config = repo_config or getattr(conf, 'repos', {})
+    if not repo_config:
+        return {}
+    for project_name in repo_config.keys():
+        project_configuration = repo_config[project_name]
+        project_refs = project_configuration.keys()
+        for project_ref in project_refs:
+            # 'combined' is not a ref, it is an option
+            if project_ref == 'combined':
+                continue
+            ref_configuration = project_configuration[project_ref]
+            related_projects = ref_configuration.keys()
+            if project in related_projects:
+                if project_ref == 'all':
+                    matches[project_name] = ['all']
+                    # no need to continue because we need to use all
+                    # refs
+                    break
+                else:
+                    # otherwise append it, we might have other distinct refs
+                    # we care about
+                    matches[project_name].append(project_ref)
+    return matches
 
 
 def get_combined_repos(project, repo_config=None):
