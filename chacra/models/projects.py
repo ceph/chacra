@@ -60,3 +60,10 @@ class Project(Base):
                 )
             )
         return json_
+
+
+def get_or_create(name, **kw):
+    project = Project.filter_by(name=name).first()
+    if not project:
+        project = Project(name=name)
+    return project
