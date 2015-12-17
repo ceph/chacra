@@ -72,6 +72,9 @@ def get_related_projects(project, repo_config=None):
         project_configuration = repo_config[project_name]
         project_refs = project_configuration.keys()
         for project_ref in project_refs:
+            # 'combined' is not a ref, it is an option
+            if project_ref == 'combined':
+                continue
             ref_configuration = project_configuration[project_ref]
             related_projects = ref_configuration.keys()
             if project in related_projects:
