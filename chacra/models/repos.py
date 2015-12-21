@@ -60,6 +60,14 @@ class Repo(Base):
                 return True
         return False
 
+    def infer_type(self):
+        """
+        Sometimes a repo may not know what 'type' it is (a deb or rpm)
+        so this goes looking at its binaries for an answer
+        """
+        for binary in self.binaries:
+            return binary._get_repo_type()
+
 
 # listen for timestamp modifications
 listen(Repo, 'before_insert', update_timestamp)
