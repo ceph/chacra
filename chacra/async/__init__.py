@@ -88,6 +88,7 @@ def create_deb_repo(repo_id):
     if util.repository_is_disabled(repo.project.name):
         logger.info("will not process repository: %s", repo)
         repo.needs_update = False
+        models.commit()
         return
 
     # Determine paths for this repository
