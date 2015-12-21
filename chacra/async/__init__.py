@@ -64,7 +64,14 @@ def poll_repos():
                     (r.id,),
                     countdown=pecan.conf.quiet_time)
             else:
-                logger.warning('got a repository with an unkown type: %s', r)
+                _type = r.infer_type()
+                if _type is None:
+                    logger.warning('failed to infer repository type')
+                    logger.warning('got a repository with an unknown type: %s', r)
+                else:
+                    logger.warning('inferred repo type as: %s', _type)
+                    r.type = _type
+                    models.commit()
 
     logger.info('completed repo polling')
 
