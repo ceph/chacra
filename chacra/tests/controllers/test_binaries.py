@@ -356,3 +356,19 @@ class TestRelatedProjects(object):
         rhcs_project = Project.filter_by(name='rhcs').first()
         assert Repo.filter_by(project=ceph_project).first().needs_update is True
         assert Repo.filter_by(project=rhcs_project).first().needs_update is True
+
+    def test_marks_nonexsitent_related_project_type(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        pecan.conf.repos = {
+            'ceph': {
+                'all': {'ceph-deploy': ['master']}
+            },
+            '__force_dict__': True,
+        }
+        session.app.post(
+            '/binaries/ceph-deploy/master/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        project = Project.filter_by(name='ceph').first()
+        repo = Repo.filter_by(project=project).first()
+        assert repo.type == 'rpm'
