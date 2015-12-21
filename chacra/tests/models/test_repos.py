@@ -1,4 +1,4 @@
-from chacra.models import Project, Repo
+from chacra.models import Project, Repo, Binary
 
 
 class TestRepoModification(object):
@@ -38,3 +38,33 @@ class TestRepoModification(object):
             distro_version='7',
             )
         assert repo.is_generic is False
+
+
+class TestInferType(object):
+
+    def setup(self):
+        self.p = Project('ceph')
+
+    def test_rpm_is_inferred(self, session):
+        binary = Binary(
+            'ceph-1.0.rpm',
+            self.p,
+            distro='centos',
+            distro_version='7',
+            arch='x86_64',
+            )
+        session.commit()
+        repo = Repo.get(1)
+        assert repo.infer_type() == 'rpm'
+
+    def test_deb_is_inferred(self, session):
+        binary = Binary(
+            'ceph-1.0.deb',
+            self.p,
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='x86_64',
+            )
+        session.commit()
+        repo = Repo.get(1)
+        assert repo.infer_type() == 'deb'
