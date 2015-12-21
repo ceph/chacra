@@ -87,7 +87,7 @@ class ArchController(object):
             arch = request.context['arch']
             ref = request.context['ref']
 
-            Binary(
+            self.binary = Binary(
                 self.binary_name, self.project, arch=arch,
                 distro=distro, distro_version=distro_version,
                 ref=ref, path=path, size=os.path.getsize(path)
@@ -130,10 +130,13 @@ class ArchController(object):
                     self.distro_version
                 )
                 repo.needs_update = True
+                repo.type = self.binary._get_repo_type()
 
         else:
             for repo in repos:
                 repo.needs_update = True
+                if repo.type is None:
+                    repo.type = self.binary._get_repo_type()
 
     def create_directory(self):
         end_part = request.url.split('binaries/')[-1].rstrip('/')

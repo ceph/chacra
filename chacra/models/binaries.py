@@ -60,18 +60,22 @@ class Binary(Base):
     def extension(self):
         return self.name.split('.')[-1]
 
-    def _set_repo_type(self):
+    def _get_repo_type(self):
         extension_map = {
             'rpm': 'rpm',
             'deb': 'deb',
             'dsc': 'deb',
             'changes': 'deb'
         }
+
+        # XXX This is very naive, but 'deb' repos are the only ones that
+        # will have .tar or .tar.gz or just .gz extensions for source
+        # files, so fallback to that
+        return extension_map.get(self.extension, 'deb')
+
+    def _set_repo_type(self):
         if self.repo.type is None:
-            # XXX This is very naive, but 'deb' repos are the only ones that
-            # will have .tar or .tar.gz or just .gz extensions for source
-            # files, so fallback to that
-            self.repo.type = extension_map.get(self.extension, 'deb')
+            self.repo.type = self._get_repo_type()
 
     def _get_or_create_repo(self):
         """
