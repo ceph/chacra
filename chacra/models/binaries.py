@@ -135,6 +135,7 @@ class Binary(Base):
     def __json__(self):
         return dict(
             name=self.name,
+            project=self.project.name,
             created=self.created,
             modified=self.modified,
             signed=self.signed,
