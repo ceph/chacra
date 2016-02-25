@@ -53,6 +53,10 @@ def poll_repos():
     """
     logger.info('polling repos....')
     for r in models.Repo.query.filter_by(needs_update=True).all():
+        # this repo is being processed, do not pile up and try to get it
+        # processed again until it is done doing work
+        if r.is_updating:
+            continue
         if r.needs_update:
             logger.info("repo %s needs to be updated/created", r)
             if r.type == 'rpm':
@@ -95,8 +99,10 @@ def create_deb_repo(repo_id):
     paths = util.repo_paths(repo)
 
     # Before doing work that might take very long to complete, set the repo
-    # path in the object and mark needs_update as False
+    # path in the object, mark needs_update as False, and mark it as being
+    # updated so we prevent piling up if other binaries are being posted
     repo.path = paths['absolute']
+    repo.is_updating = True
     repo.needs_update = False
     models.commit()
 
@@ -183,6 +189,10 @@ def create_deb_repo(repo_id):
             except subprocess.CalledProcessError:
                 logger.error('failed to add binary %s', binary.name)
 
+    logger.info("finished processing repository: %s", repo)
+    repo.is_updating = False
+    models.commit()
+
 
 @app.task(base=SQLATask)
 def create_rpm_repo(repo_id):
@@ -206,6 +216,7 @@ def create_rpm_repo(repo_id):
     # Before doing work that might take very long to complete, set the repo
     # path in the object and mark needs_update as False
     repo.path = paths['absolute']
+    repo.is_updating = True
     repo.needs_update = False
     models.commit()
 
@@ -241,6 +252,10 @@ def create_rpm_repo(repo_id):
 
     for d in repo_dirs:
         subprocess.check_call(['createrepo', d])
+
+    logger.info("finished processing repository: %s", repo)
+    repo.is_updating = False
+    models.commit()
 
 
 app.conf.update(
