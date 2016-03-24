@@ -22,6 +22,36 @@ stdout_stream.filename=/var/log/circus/celery-stdout.log
 stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/celery-stderr.log
 
+[watcher:celery-worker2]
+cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker2.%h
+working_dir=/opt/chacra/src/chacra/chacra
+
+stdout_stream.class = FileStream
+stdout_stream.filename=/var/log/circus/celery-stdout2.log
+
+stderr_stream.class = FileStream
+stderr_stream.filename=/var/log/circus/celery-stderr2.log
+
+[watcher:celery-worker3]
+cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker3.%h
+working_dir=/opt/chacra/src/chacra/chacra
+
+stdout_stream.class = FileStream
+stdout_stream.filename=/var/log/circus/celery-stdout.log
+
+stderr_stream.class = FileStream
+stderr_stream.filename=/var/log/circus/celery-stderr.log
+
+[watcher:celery-worker4]
+cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker4.%h
+working_dir=/opt/chacra/src/chacra/chacra
+
+stdout_stream.class = FileStream
+stdout_stream.filename=/var/log/circus/celery-stdout.log
+
+stderr_stream.class = FileStream
+stderr_stream.filename=/var/log/circus/celery-stderr.log
+
 [watcher:celerybeat]
 cmd = {{ app_home }}/bin/celery -A async beat --loglevel=info
 working_dir={{ app_home }}/src/{{ app_name }}/{{ app_name }}
@@ -32,5 +62,5 @@ stdout_stream.filename=/var/log/circus/celerybeat-stdout.log
 stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/celerybeat-stderr.log
 
-[env:celery,celerybeat]
+[env:celery,celery-worker2,celery-worker3,celery-worker4,celerybeat]
 PECAN_CONFIG = {{ app_home }}/src/{{ app_name }}/prod.py
