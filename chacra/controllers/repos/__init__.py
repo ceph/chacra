@@ -54,6 +54,7 @@ class RepoController(object):
             )
         # Just mark the repo so that celery picks it up
         self.repo.needs_update = True
+        self.repo.is_updating = False
         return self.repo
 
     @secure(basic_auth)
@@ -75,4 +76,5 @@ class RepoController(object):
 
         # mark the repo so that celery picks it up
         self.repo.needs_update = True
+        self.repo.is_updating = False
         return self.repo
