@@ -4,7 +4,7 @@
   command: "{{ app_home }}/bin/circusctl restart {{ app_name }}"
 
 - name: restart celery
-  command: "{{ app_home }}/bin/circusctl restart celery"
+  command: "{{ app_home }}/bin/circusctl restart celery celery-worker2 celery-worker3 celery-worker4"
 
 - name: restart celery beat
   command: "{{ app_home }}/bin/circusctl restart celerybeat"
