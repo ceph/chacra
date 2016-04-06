@@ -30,14 +30,17 @@ class ArchController(object):
 
     @index.when(method='HEAD', template='json')
     def index_head(self):
-        if self.arch not in self.project.archs:
+        binaries = self.project.binaries.filter_by(
+            distro=self.distro,
+            distro_version=self.distro_version,
+            ref=self.ref,
+            arch=self.arch).all()
+
+        if not binaries:
             abort(404)
 
     @index.when(method='GET', template='json')
     def index_get(self):
-        if self.arch not in self.project.archs:
-            abort(404)
-
         binaries = self.project.binaries.filter_by(
             distro=self.distro,
             distro_version=self.distro_version,
