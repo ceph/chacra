@@ -12,4 +12,5 @@ DISTRIBUTIONS = [
     'utopic',
     'vivid',
     'wily',
+    'xenial',
 ]
