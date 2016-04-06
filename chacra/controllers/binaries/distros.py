@@ -52,17 +52,15 @@ class DistroController(object):
 
     @expose('json', generic=True)
     def index(self):
-        # TODO: Improve this duplication here (and spread to other controllers)
-        if self.distro_name not in self.project.distros:
-            abort(404)
-        if self.ref not in self.project.refs:
-            abort(404)
         resp = {}
 
         binaries = models.Binary.filter_by(
             project=self.project,
             distro=self.distro_name,
             ref=self.ref).all()
+
+        if not binaries:
+            abort(404)
 
         distro_versions = set([b.distro_version for b in binaries])
 
