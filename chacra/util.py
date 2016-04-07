@@ -252,7 +252,9 @@ def reprepro_confdir(project_name):
     distributions_path = os.path.join(confdir_path, "distributions")
     if not os.path.exists(distributions_path):
         makedirs(confdir_path)
-        create_distributions_file(project_name, distributions_path)
+    # we need to recreate this everytime to account for changes
+    # in the configuration
+    create_distributions_file(project_name, distributions_path)
 
     return confdir_path
 
