@@ -69,6 +69,22 @@ class TestDistroController(object):
         assert result.status_int == 200
         assert len(result.json) == 1
 
+    def test_refs_should_not_pollute_others(self, session):
+        p = Project('ceph')
+        Binary('ceph-1.0.0.deb', p, ref='master', distro='ubuntu', distro_version='precise', arch='i386')
+        Binary('ceph-1.0.0.deb', p, ref='jewel', distro='ubuntu', distro_version='xenial', arch='arm64')
+        session.commit()
+        result = session.app.head('/binaries/ceph/master/ubuntu/xenial/arm64/', expect_errors=True)
+        assert result.status_int == 404
+
+    def test_distros_should_not_pollute_others(self, session):
+        p = Project('ceph')
+        Binary('ceph-1.0.0.deb', p, ref='master', distro='ubuntu', distro_version='precise', arch='i386')
+        Binary('ceph-1.0.0.deb', p, ref='jewel', distro='debian', distro_version='xenial', arch='arm64')
+        session.commit()
+        result = session.app.head('/binaries/ceph/master/debian/', expect_errors=True)
+        assert result.status_int == 404
+
     def test_single_distro_should_have_a_name(self, session):
         p = Project('ceph')
         Binary('ceph-1.0.0.deb', p, ref='master', distro='ubuntu', distro_version='12.04', arch='i386')
