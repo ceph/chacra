@@ -13,7 +13,7 @@ stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/{{ app_name }}-stderr.log
 
 [watcher:celery]
-cmd = {{ app_home }}/bin/celery -A async worker --loglevel=info
+cmd = {{ app_home }}/bin/celery -A async worker --loglevel=info -Q poll_repos
 working_dir={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 
 stdout_stream.class = FileStream
@@ -23,7 +23,7 @@ stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/celery-stderr.log
 
 [watcher:celery-worker2]
-cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker2.%h
+cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker2.%h -Q build_repos
 working_dir=/opt/chacra/src/chacra/chacra
 
 stdout_stream.class = FileStream
@@ -33,7 +33,7 @@ stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/celery-stderr2.log
 
 [watcher:celery-worker3]
-cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker3.%h
+cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker3.%h -Q build_repos
 working_dir=/opt/chacra/src/chacra/chacra
 
 stdout_stream.class = FileStream
@@ -43,7 +43,7 @@ stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/celery-stderr.log
 
 [watcher:celery-worker4]
-cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker4.%h
+cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker4.%h -Q build_repos
 working_dir=/opt/chacra/src/chacra/chacra
 
 stdout_stream.class = FileStream
