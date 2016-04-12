@@ -62,11 +62,15 @@ def poll_repos():
             if r.type == 'rpm':
                 create_rpm_repo.apply_async(
                     (r.id,),
-                    countdown=pecan.conf.quiet_time)
+                    countdown=pecan.conf.quiet_time,
+                    queue='build_repos',
+                    )
             elif r.type == 'deb':
                 create_deb_repo.apply_async(
                     (r.id,),
-                    countdown=pecan.conf.quiet_time)
+                    countdown=pecan.conf.quiet_time,
+                    queue='build_repos',
+                    )
             else:
                 _type = r.infer_type()
                 if _type is None:
