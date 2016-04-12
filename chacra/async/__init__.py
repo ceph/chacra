@@ -264,6 +264,7 @@ app.conf.update(
             'task': 'async.poll_repos',
             'schedule': timedelta(
                 seconds=pecan.conf.polling_cycle),
+            'options': {'queue' : 'poll_repos'}
         },
     },
 )
