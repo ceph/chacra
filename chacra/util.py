@@ -84,9 +84,13 @@ def get_related_projects(project, repo_config=None):
                     # refs
                     break
                 else:
-                    # otherwise append it, we might have other distinct refs
-                    # we care about
-                    matches[project_name].append(project_ref)
+                    # otherwise append it, we might have other distinct refs we
+                    # care about. Take special care of avoiding a circular
+                    # reference by not including the same related project as
+                    # the parent one.
+
+                    if project != project_name:
+                        matches[project_name].append(project_ref)
     return matches
 
 
