@@ -32,6 +32,8 @@ def infer_arch_directory(rpm_binary):
         return 'SRPMS'
     elif name.endswith('x86_64.rpm'):
         return 'x86_64'
+    elif name.endswith('aarch64.rpm'):
+        return 'aarch64'
     elif 'noarch' in name.lower():
         return 'noarch'
     return 'noarch'
