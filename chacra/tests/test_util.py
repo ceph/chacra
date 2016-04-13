@@ -481,6 +481,37 @@ class TestRepositoryIsDisabled(object):
         assert util.repository_is_disabled('bar') is False
 
 
+# This is almost verbatim to the prod configuration, useful to catch errors
+# that simpler configurations might not see, like 'ceph' being included as
+# a project and as a related project of the 'testing' ref
+
+repos_conf = {
+    'ceph': {
+        'all': {
+            # both ceph-deploy and radosgw-agent production builds should go
+            # into the "ref" master because otherwise we would be forced to
+            # list every "vN.N.N" ref here to avoid getting cruft like "test"
+            # builds
+            'ceph-deploy': ['master'],
+            'radosgw-agent': ['master'],
+        },
+        'infernalis': {
+            'ceph-release': ['infernalis'],
+        },
+        'jewel': {
+            'ceph-release': ['jewel'],
+        },
+        # when more 'testing' refs are built, we need to add them here as well
+        'testing': {
+            'ceph': ['jewel-rc'],
+        },
+        # note: 'universal' binaries will be included to all these distro
+        # versions since they do not belong to any one in particular.
+        'combined': ['wheezy', 'trusty', 'precise', 'jessie', 'xenial']
+   },
+}
+
+
 class TestRelatedProjects(object):
 
     def setup(self):
@@ -507,6 +538,10 @@ class TestRelatedProjects(object):
         }
         result = util.get_related_projects('ceph-deploy', repo_config=self.conf)
         assert result == {'ceph': ['all']}
+
+    def test_project_is_not_related_when_repeated(self):
+        result = util.get_related_projects('ceph', repo_config=repos_conf)
+        assert result == {}
 
     def test_project_is_related_multiple_refs(self):
         self.conf['ceph'] = {
