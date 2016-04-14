@@ -26,6 +26,15 @@ x64_rpms = [
     'ceph-deploy.X86_64.rpm',
 ]
 
+aarch64_rpms = [
+    "%s-%s.aarch64.rpm" % (
+        ''.join(random.choice(string.ascii_letters) for _ in range(10)),
+        '.'.join(random.choice(string.digits) for _ in range(3))
+    ) for i in range(10)
+] + [
+    'ceph-deploy.aarch64.rpm',
+]
+
 noarch = [
     "%s-%s.noarch.rpm" % (
         ''.join(random.choice(string.ascii_letters) for _ in range(10)),
@@ -64,6 +73,11 @@ class TestRepoDirectory(object):
     def test_undetermined(self, binary):
         result = util.infer_arch_directory(binary)
         assert result == 'noarch'
+
+    @pytest.mark.parametrize('binary', aarch64_rpms)
+    def test_undetermined(self, binary):
+        result = util.infer_arch_directory(binary)
+        assert result == 'aarch64'
 
 
 class TestRepoPaths(object):
