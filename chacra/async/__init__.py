@@ -203,7 +203,7 @@ def create_rpm_repo(repo_id):
     """
     Go create or update repositories with specific IDs.
     """
-    directories = ['SRPMS', 'noarch', 'x86_64']
+    directories = ['SRPMS', 'noarch', 'x86_64', 'aarch64']
     # get the root path for storing repos
     # TODO: Is it possible we can get an ID that doesn't exist anymore?
     repo = models.Repo.get(repo_id)
