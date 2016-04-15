@@ -1,14 +1,24 @@
 ---
 
-- name: "ensure a home for {{ app_name }}"
-  sudo: yes
-  file: path={{ app_home }} owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} state=directory recurse=yes
-  register: app_home_created
-
 - name: Update apt cache
   apt:
     update_cache: yes
   sudo: yes
+
+- include: nginx.yml
+  tags:
+    - nginx
+
+- name: "ensure a home for {{ app_name }}"
+  sudo: yes
+  file:
+    path: "{{ app_home }}"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+    recurse: yes
+  register: app_home_created
 
 - name: install ssl system requirements
   sudo: yes
@@ -26,36 +36,47 @@
     - packages
 
 - name: Create a virtualenv with latest pip.
+  sudo: true
   pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade'
 
 - name: "pip+git install {{ app_name }} into virtualenv."
+  sudo: true
   pip: name='git+https://github.com/ceph/chacra@{{ branch }}#egg=chacra' virtualenv={{ app_home }}
   changed_when: False
 
 - name: create the prod config file
-  action: template src=../templates/prod.py.j2 dest={{ app_home }}/src/{{ app_name }}/prod.py
+  sudo: true
+  template:
+    src: '../templates/prod.py.j2'
+    dest: "{{ app_home }}/src/{{ app_name }}/prod.py"
 
 - name: create the prod api credentials file
+  sudo: true
   template:
     src: prod_api_creds.py.j2
     dest: "{{ app_home }}/src/{{ app_name }}/prod_api_creds.py"
+    owner: root
+    group: "{{ app_user }}"
+    mode: 0640
   when: (api_key is defined or api_user is defined) or
         (app_home_created is defined and app_home_created|changed)
 
 - name: install python requirements in virtualenv
+  sudo: true
   pip:
     requirements: "{{ app_home }}/src/{{ app_name }}/requirements.txt"
     state: present
     virtualenv: "{{ app_home }}"
   notify: restart app
 
-- name: ensure file paths are set properly
+- name: ensure writable file paths are set properly
   sudo: true
   file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ ansible_ssh_user }}"
-    group: "{{ ansible_ssh_user }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: 0755
     recurse: yes
   with_items:
     - "{{ binary_root }}"
@@ -68,10 +89,6 @@
 - include: circus.yml
   tags:
     - circus
-
-- include: nginx.yml
-  tags:
-    - nginx
 
 # nginx should be up and running by now, there is a bug with Ubuntu 14.04 and
 # nginx where nginx is using the old init scripts and the 'service' command

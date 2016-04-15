@@ -1,4 +1,13 @@
 ---
+
+- name: install nginx package
+  sudo: true
+  apt:
+    name: nginx
+    state: present
+  tags:
+    - packages
+
 - name: ensure sites-available for nginx
   file: path=/etc/nginx/sites-available state=directory
   sudo: true
@@ -55,8 +64,18 @@
 - name: make sure permissions are correct for crt
   file:
     path: /etc/ssl/certs/{{ ansible_fqdn }}-bundled.crt
-    mode: 0777
+    owner: root
+    group: root
+    mode: 0644
   when: development_server
+  sudo: true
+
+- name: make sure permissions are correct for key
+  file:
+    path: /etc/ssl/private/{{ ansible_fqdn }}.key
+    owner: root
+    group: root
+    mode: 0600
   sudo: true
 
 - name: ensure nginx is restarted

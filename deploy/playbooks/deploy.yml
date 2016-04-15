@@ -16,3 +16,4 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: false
+     app_user: "nginx"
