@@ -179,9 +179,6 @@ class BinaryController(object):
 
         destination = os.path.join(dir_path, self.binary_name)
         with open(destination, 'wb') as f:
-            try:
-                f.write(file_obj.getvalue())
-            except AttributeError:
-                f.write(file_obj.read())
+            f.write(file_obj.read())
         # return the full path to the saved object:
         return destination
