@@ -4,6 +4,7 @@ import pecan
 from pecan import response
 from pecan.secure import secure
 from pecan import expose, abort, request
+from webob.static import FileIter
 from chacra.models import Binary
 from chacra import models, util
 from chacra.controllers import error
@@ -160,8 +161,12 @@ class ArchController(object):
             response.status = 201
 
         destination = os.path.join(dir_path, self.binary_name)
+
         with open(destination, 'wb') as f:
-            f.write(file_obj.read())
+            file_iterable = FileIter(file_obj)
+            for chunk in file_iterable:
+                f.write(chunk)
+
         # return the full path to the saved object:
         return destination
 
