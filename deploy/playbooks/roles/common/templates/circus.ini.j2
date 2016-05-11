@@ -23,7 +23,7 @@ stderr_stream.class = FileStream
 stderr_stream.filename=/var/log/circus/celery-stderr.log
 
 [watcher:celery-worker2]
-cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker2.%h -Q build_repos
+cmd = /opt/chacra/bin/celery -A async worker --loglevel=info -n worker2.%h -Q build_repos,celery
 working_dir=/opt/chacra/src/chacra/chacra
 
 stdout_stream.class = FileStream
