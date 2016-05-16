@@ -20,6 +20,34 @@ class TestRepoApiController(object):
         assert result.json["distro"] == "ubuntu"
         assert result.json["ref"] == "firefly"
 
+    def test_repo_is_not_updating(self, session):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.get('/repos/foobar/firefly/ubuntu/trusty/')
+        assert result.status_int == 200
+        assert result.json["is_updating"] is False
+
+    def test_repo_type(self, session):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.get('/repos/foobar/firefly/ubuntu/trusty/')
+        assert result.status_int == 200
+        assert result.json["type"] is None
+
     def test_distro_version_does_not_exist(self, session):
         p = Project('foobar')
         repo = Repo(
