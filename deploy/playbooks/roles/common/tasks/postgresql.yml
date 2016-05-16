@@ -61,7 +61,6 @@
     dest: "{{ app_home }}/src/{{ app_name }}/prod_db.py"
   notify:
     - restart app
-    - restart celery
 
 # this needs to be here because it needs the new db password
 - name: create the prod alembic.ini file
