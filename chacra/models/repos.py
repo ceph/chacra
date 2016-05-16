@@ -51,6 +51,8 @@ class Repo(Base):
             modified=self.modified,
             signed=self.signed,
             needs_update=self.needs_update,
+            is_updating=self.is_updating,
+            type=self.type,
             size=self.size,
         )
 
