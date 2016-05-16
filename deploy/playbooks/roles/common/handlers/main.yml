@@ -2,10 +2,12 @@
 
 - name: restart app
   command: "{{ app_home }}/bin/circusctl restart {{ app_name }}"
+  register: app_restart
 
 - name: restart celery
   command: "{{ app_home }}/bin/circusctl restart celery"
   register: celery_worker
+  when: app_restart.changed
 
 - name: "restart celery worker 2"
   command: "{{ app_home }}/bin/circusctl restart celery-worker2"
