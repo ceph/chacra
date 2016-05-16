@@ -2,10 +2,12 @@
 
 - name: restart app
   command: "{{ app_home }}/bin/circusctl restart {{ app_name }}"
+  register: app_restart
 
 - name: restart celery
   command: "{{ app_home }}/bin/circusctl restart celery"
   register: celery_worker
+  when: app_restart.changed
 
 - name: "restart celery worker 2"
   command: "{{ app_home }}/bin/circusctl restart celery-worker2"
@@ -14,14 +16,17 @@
 
 - name: "restart celery worker 3"
   command: "{{ app_home }}/bin/circusctl restart celery-worker3"
+  register: celery_worker_3
   when: celery_worker_2.changed
 
 - name: "restart celery worker 4"
   command: "{{ app_home }}/bin/circusctl restart celery-worker4"
+  register: celery_worker_4
   when: celery_worker_3.changed
 
 - name: restart celery beat
   command: "{{ app_home }}/bin/circusctl restart celerybeat"
+  when: celery_worker_4.changed
 
 - name: restart nginx
   sudo: yes

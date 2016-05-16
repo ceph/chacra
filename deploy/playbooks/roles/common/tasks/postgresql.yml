@@ -33,7 +33,7 @@
 
 - name: Make {{ app_name }} user
   postgresql_user:
-    name: "{{ app_name }}" 
+    name: "{{ app_name }}"
     password: "{{ db_password.stdout }}"
     role_attr_flags: SUPERUSER
     login_user: postgres
@@ -61,8 +61,6 @@
     dest: "{{ app_home }}/src/{{ app_name }}/prod_db.py"
   notify:
     - restart app
-    - restart celery
-    - restart celery beat
 
 # this needs to be here because it needs the new db password
 - name: create the prod alembic.ini file
