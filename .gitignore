@@ -18,3 +18,8 @@ pip-log.txt
 .coverage
 .tox
 htmlcov
+.cache
+
+# development files
+dev.db
+celerybeat-schedule
