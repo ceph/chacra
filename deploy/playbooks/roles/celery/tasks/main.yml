@@ -28,9 +28,3 @@
     name: rabbitmq-server
     state: started
     enabled: yes
-
-- name: ensure circus is running
-  sudo: yes
-  service:
-    name: circus
-    state: started 
