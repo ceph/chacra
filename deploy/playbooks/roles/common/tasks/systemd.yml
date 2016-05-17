@@ -2,10 +2,12 @@
 
 - name: install the systemd unit file for chacra
   template: src=systemd/chacra.service.j2 dest=/etc/systemd/system/chacra.service
+  sudo: true
   notify:
      - reload systemd
 
 - name: install the systemd unit file for celery
   template: src=systemd/chacra-celery.service.j2 dest=/etc/systemd/system/chacra-celery.service
+  sudo: true
   notify:
      - reload systemd
