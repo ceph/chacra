@@ -11,3 +11,7 @@
 - name: restart celery
   service: name=chacra-celery state=restarted enabled=yes
   when: app_restart.changed
+
+- name: restart nginx
+  sudo: yes
+  action: service name=nginx state=restarted
