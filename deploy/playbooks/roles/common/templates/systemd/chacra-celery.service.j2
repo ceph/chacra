@@ -1,3 +1,4 @@
+# {{ ansible_managed }}
 [Unit]
 Description=chacra celery service
 After=network.target rabbitmq-server.service
@@ -5,10 +6,10 @@ Requires=rabbitmq-server.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/celery -A async worker --loglevel=info
+ExecStart={{ app_home }}/bin/celery -A async worker --loglevel=info
 EnvironmentFile=/etc/conf.d/chacra-celery
 User=chacra
-WorkingDirectory=/opt/chacra
+WorkingDirectory={{ app_home }}
 StandardOutput=journal
 StandardError=journal
 ExecStart=/bin/sh '${CELERY_BIN} multi start $CELERYD_NODES \
