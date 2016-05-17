@@ -1,0 +1,16 @@
+[Unit]
+Description=chacra gunicorn service
+After=network.target chacra-celery.service
+Requires=chacra-celery.service
+
+[Service]
+Type=simple
+ExecStart=/opt/chacra/bin/gunicorn_pecan -w 10 -t 300 /opt/chacra/src/chacra/config.py
+EnvironmentFile=-/etc/conf.d/chacra
+User=chacra
+WorkingDirectory=/opt/chacra/src/chacra
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
