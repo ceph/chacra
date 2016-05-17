@@ -3,8 +3,9 @@ PECAN_CONFIG = {{ app_home }}/src/{{ app_name }}/prod.py
 
 # See
 # http://docs.celeryproject.org/en/latest/tutorials/daemonizing.html#available-options
-CELERY_APP="proj"
-CELERYD_NODES="worker"
+# http://docs.celeryproject.org/en/latest/reference/celery.bin.multi.html
+CELERY_APP="async"
+CELERYD_NODES="4 -Q:1 poll_repos,celery -Q:2-4 build_repos"
 CELERYD_OPTS=""
 CELERY_BIN="{{ app_home }}/bin/celery"
 CELERYD_PID_FILE="/var/run/celery/%n.pid"
