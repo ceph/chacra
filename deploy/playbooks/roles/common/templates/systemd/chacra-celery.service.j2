@@ -6,7 +6,6 @@ Requires=rabbitmq-server.service
 
 [Service]
 Type=simple
-ExecStart={{ app_home }}/bin/celery -A async worker --loglevel=info
 EnvironmentFile=/etc/conf.d/chacra-celery
 User=chacra
 WorkingDirectory={{ app_home }}
