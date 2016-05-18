@@ -6,14 +6,14 @@ Requires=rabbitmq-server.service
 
 [Service]
 Type=forking
-EnvironmentFile=/etc/conf.d/chacra-sysconfig
+EnvironmentFile=/etc/default/chacra-sysconfig
 User={{ ansible_ssh_user }}
 WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 StandardOutput=journal
 StandardError=journal
-ExecStart={{ app_home }}/bin/celery multi start 4 -Q:1 poll_repos,celery -Q:2-4 build_repos -A async --logfile=/var/log/celery/%n%I.log --pidfile=%n.pid
-ExecStop={{ app_home }}/bin/celery multi stopwait 4 -Q:1 poll_repos,celery -Q:2-4 build_repos --pidfile=%n.pid
-ExecReload={{ app_home }}/bin/celery multi restart 4 -Q:1 poll_repos,celery -Q:2-4 build_repos -A async --logfile=/var/log/celery/%n%I.log --pidfile=%n.pid
+ExecStart={{ app_home }}/bin/celery multi start 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async --logfile=/var/log/celery/%n%I.log
+ExecStop={{ app_home }}/bin/celery multi stopwait 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos --pidfile=%n.pid
+ExecReload={{ app_home }}/bin/celery multi restart 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async --logfile=/var/log/celery/%n%I.log
 
 [Install]
 WantedBy=multi-user.target

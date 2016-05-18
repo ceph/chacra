@@ -7,7 +7,7 @@ Requires=chacra-celery.service
 [Service]
 Type=simple
 ExecStart={{ app_home }}/bin/gunicorn_pecan -w 10 -t 300 {{ app_home }}/src/{{ app_name }}/prod.py
-EnvironmentFile=-/etc/conf.d/{{ app_name }}-sysconfig
+EnvironmentFile=-/etc/default/{{ app_name }}-sysconfig
 User={{ ansible_ssh_user }}
 WorkingDirectory={{ app_home }}/src/{{ app_name }}
 StandardOutput=journal
