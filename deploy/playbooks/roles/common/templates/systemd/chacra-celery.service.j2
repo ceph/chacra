@@ -6,19 +6,14 @@ Requires=rabbitmq-server.service
 
 [Service]
 Type=simple
-EnvironmentFile=/etc/conf.d/chacra-celery
+EnvironmentFile=/etc/conf.d/chacra-sysconfig
 User=chacra
-WorkingDirectory={{ app_home }}
+WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 StandardOutput=journal
 StandardError=journal
-ExecStart=/bin/sh '${CELERY_BIN} multi start $CELERYD_NODES \
-	-A $CELERY_APP --logfile=${CELERYD_LOG_FILE} \
-	--pidfile=${CELERYD_PID_FILE} $CELERYD_OPTS'
-ExecStop=/bin/sh '${CELERY_BIN} multi stopwait $CELERYD_NODES \
-	--pidfile=${CELERYD_PID_FILE}'
-ExecReload=/bin/sh '${CELERY_BIN} multi restart $CELERYD_NODES \
-	-A $CELERY_APP --pidfile=${CELERYD_PID_FILE} --logfile=${CELERYD_LOG_FILE} \
-	--loglevel="${CELERYD_LOG_LEVEL}" $CELERYD_OPTS'
+ExecStart={{ app_home }}/bin/celery multi start 4 -Q:1 poll_repos,celery -Q:2-4 build_repos -A async --logfile=/var/log/celery/%n%I.log --pidfile=%n.pid
+ExecStop={{ app_home }}/bin/celery multi stopwait 4 -Q:1 poll_repos,celery -Q:2-4 build_repos --pidfile=%n.pid
+ExecReload={{ app_home }}/bin/celery multi restart 4 -Q:1 poll_repos,celery -Q:2-4 build_repos -A async --logfile=/var/log/celery/%n%I.log --pidfile=%n.pid
 
 [Install]
 WantedBy=multi-user.target
