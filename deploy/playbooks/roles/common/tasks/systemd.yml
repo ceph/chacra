@@ -9,7 +9,7 @@
   file: path=/etc/default state=directory
 
 - name: install the systemd configuration file for celery
-  template: src=systemd/chacra.sysconfig.j2 dest=/etc/conf.d/chacra-sysconfig
+  template: src=systemd/chacra.sysconfig.j2 dest=/etc/default/chacra
   sudo: true
 
 - name: install the systemd unit file for chacra
