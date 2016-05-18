@@ -5,9 +5,9 @@ After=network.target rabbitmq-server.service
 Requires=rabbitmq-server.service
 
 [Service]
-Type=simple
+Type=forking
 EnvironmentFile=/etc/conf.d/chacra-sysconfig
-User=chacra
+User={{ ansible_ssh_user }}
 WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 StandardOutput=journal
 StandardError=journal
