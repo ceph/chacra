@@ -6,7 +6,7 @@ Requires=rabbitmq-server.service
 
 [Service]
 Type=forking
-EnvironmentFile=/etc/default/chacra-sysconfig
+EnvironmentFile=/etc/default/chacra
 User={{ ansible_ssh_user }}
 WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 StandardOutput=journal
