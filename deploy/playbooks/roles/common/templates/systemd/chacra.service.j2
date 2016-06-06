@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+[Unit]
+Description=chacra gunicorn service
+After=network.target chacra-celery.service
+Requires=chacra-celery.service
+
+[Service]
+Type=simple
+ExecStart={{ app_home }}/bin/gunicorn_pecan -w 10 -t 300 {{ app_home }}/src/{{ app_name }}/prod.py
+EnvironmentFile=-/etc/default/{{ app_name }}
+User={{ ansible_ssh_user }}
+WorkingDirectory={{ app_home }}/src/{{ app_name }}
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

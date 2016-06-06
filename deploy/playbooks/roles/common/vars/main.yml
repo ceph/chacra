@@ -7,7 +7,7 @@ system_packages:
   - g++
   - gcc
   - libpq-dev
-  - postgresql-9.3
+  - postgresql
   - postgresql-common
   - postgresql-contrib
   - python-psycopg2

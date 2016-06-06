@@ -65,9 +65,9 @@
   tags:
     - postgres
 
-- include: circus.yml
+- include: systemd.yml
   tags:
-    - circus
+    - systemd
 
 - include: nginx.yml
   tags:
