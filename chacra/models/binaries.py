@@ -184,7 +184,8 @@ def update_repo(mapper, connection, target):
         # so do not update anything
         return
     try:
-        target.repo.needs_update = True
+        if util.repository_is_automatic(target.project.name):
+            target.repo.needs_update = True
     except AttributeError:
         # target may be None in certain cases, and we don't care which one
         # triggered it because there is nothing we need to do
