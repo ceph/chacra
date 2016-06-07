@@ -98,6 +98,7 @@ def create_deb_repo(repo_id):
     if util.repository_is_disabled(repo.project.name):
         logger.info("will not process repository: %s", repo)
         repo.needs_update = False
+        repo.is_queued = False
         models.commit()
         return
 
@@ -109,6 +110,7 @@ def create_deb_repo(repo_id):
     # updated so we prevent piling up if other binaries are being posted
     repo.path = paths['absolute']
     repo.is_updating = True
+    repo.is_queued = False
     repo.needs_update = False
     models.commit()
 
@@ -213,6 +215,7 @@ def create_rpm_repo(repo_id):
     if util.repository_is_disabled(repo.project.name):
         logger.info("will not process repository: %s", repo)
         repo.needs_update = False
+        repo.is_queued = False
         return
 
     # Determine paths for this repository
@@ -223,6 +226,7 @@ def create_rpm_repo(repo_id):
     # path in the object and mark needs_update as False
     repo.path = paths['absolute']
     repo.is_updating = True
+    repo.is_queued = False
     repo.needs_update = False
     models.commit()
 
