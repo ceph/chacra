@@ -52,13 +52,14 @@ def poll_repos():
 
     """
     logger.info('polling repos....')
-    for r in models.Repo.query.filter_by(needs_update=True).all():
+    for r in models.Repo.query.filter_by(needs_update=True, is_queued=False).all():
         # this repo is being processed, do not pile up and try to get it
         # processed again until it is done doing work
         if r.is_updating:
             continue
         if r.needs_update:
             logger.info("repo %s needs to be updated/created", r)
+            r.is_queued = True
             if r.type == 'rpm':
                 create_rpm_repo.apply_async(
                     (r.id,),
@@ -79,7 +80,8 @@ def poll_repos():
                 else:
                     logger.warning('inferred repo type as: %s', _type)
                     r.type = _type
-                    models.commit()
+
+            models.commit()
 
     logger.info('completed repo polling')
 
@@ -96,6 +98,7 @@ def create_deb_repo(repo_id):
     if util.repository_is_disabled(repo.project.name):
         logger.info("will not process repository: %s", repo)
         repo.needs_update = False
+        repo.is_queued = False
         models.commit()
         return
 
@@ -107,6 +110,7 @@ def create_deb_repo(repo_id):
     # updated so we prevent piling up if other binaries are being posted
     repo.path = paths['absolute']
     repo.is_updating = True
+    repo.is_queued = False
     repo.needs_update = False
     models.commit()
 
@@ -211,6 +215,7 @@ def create_rpm_repo(repo_id):
     if util.repository_is_disabled(repo.project.name):
         logger.info("will not process repository: %s", repo)
         repo.needs_update = False
+        repo.is_queued = False
         return
 
     # Determine paths for this repository
@@ -221,6 +226,7 @@ def create_rpm_repo(repo_id):
     # path in the object and mark needs_update as False
     repo.path = paths['absolute']
     repo.is_updating = True
+    repo.is_queued = False
     repo.needs_update = False
     models.commit()
 

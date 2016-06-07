@@ -18,6 +18,7 @@ class Repo(Base):
     signed = Column(Boolean(), default=False)
     needs_update = Column(Boolean(), default=True)
     is_updating = Column(Boolean(), default=False)
+    is_queued = Column(Boolean(), default=False)
     type = Column(String(12))
     size = Column(Integer, default=0)
 
