@@ -1,5 +1,13 @@
 ---
 
+- name: "Build hosts file"
+  sudo: yes
+  lineinfile: dest=/etc/hosts regexp=".*{{ fqdn }}$" line="127.0.1.1 {{ fqdn }}" state=present
+
+- name: Set Hostname with hostname command
+  sudo: yes
+  hostname: name="{{ fqdn }}"
+
 - name: "ensure a home for {{ app_name }}"
   sudo: yes
   file: path={{ app_home }} owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} state=directory recurse=yes
