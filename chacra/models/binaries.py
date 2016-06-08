@@ -97,8 +97,9 @@ class Binary(Base):
                 self.distro,
                 self.distro_version
             )
-        # only needs_update when binary is not generic
-        repo.needs_update = not self.is_generic
+        # only needs_update when binary is not generic and automatic repos
+        # are configured for this project
+        repo.needs_update = not self.is_generic and util.repository_is_automatic(self.project.name)
         return repo
 
     def __repr__(self):
