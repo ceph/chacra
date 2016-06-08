@@ -17,3 +17,4 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: true
+     fqdn: "localhost"
