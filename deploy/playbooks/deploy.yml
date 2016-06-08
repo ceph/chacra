@@ -1,7 +1,7 @@
 ---
 
 - hosts: all
-  user: admin
+  user: ubuntu
   roles:
     - common
     - repos
@@ -16,3 +16,4 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: false
+     fqdn: "chacra.ceph.com"
