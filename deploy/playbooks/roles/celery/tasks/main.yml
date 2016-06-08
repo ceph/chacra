@@ -8,7 +8,7 @@
 - name: add the rabbitmq public key
   sudo: yes
   apt_key:
-    url: "https://www.rabbitmq.com/rabbitmq-signing-key-public.asc"
+    url: "https://www.rabbitmq.com/rabbitmq-release-signing-key.asc"
     state: present
 
 - name: update the apt cache
