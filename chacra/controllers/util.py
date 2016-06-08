@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
+import logging
 from pecan import conf
+
+logger = logging.getLogger(__name__)
 
 
 def repository_is_automatic(project_name, repo_config=None):
