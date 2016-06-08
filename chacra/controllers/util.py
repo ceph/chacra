@@ -1,4 +1,19 @@
 from datetime import datetime, timedelta
+import logging
+from pecan import conf
+
+logger = logging.getLogger(__name__)
+
+
+def repository_is_automatic(project_name, repo_config=None):
+    repo_config = repo_config or getattr(conf, 'repos', {})
+    logger.debug('checking if repository is automatic for project: %s', project_name)
+    # every repo is automatic by default unless explicitly configured otherwise
+    if repo_config.get(project_name, {}).get('automatic', True):
+        logger.info('project: %s is configured for automatic repositories', project_name)
+        return True
+    logger.info('project: %s has automatic repository feature disabled', project_name)
+    return False
 
 
 def last_seen(timestamp):

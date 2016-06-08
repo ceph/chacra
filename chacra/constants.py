@@ -14,3 +14,10 @@ DISTRIBUTIONS = [
     'wily',
     'xenial',
 ]
+
+# These are reserved keys that will be ignored when processing repos. Otherwise
+# they would be treated as refs.
+REPO_OPTION_KEYS = (
+    'combined',
+    'automatic',
+)

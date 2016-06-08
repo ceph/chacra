@@ -8,6 +8,7 @@ from webob.static import FileIter
 from chacra.models import Binary
 from chacra import models, util
 from chacra.controllers import error
+from chacra.controllers.util import repository_is_automatic
 from chacra.controllers.binaries import BinaryController
 from chacra.auth import basic_auth
 
@@ -133,12 +134,12 @@ class ArchController(object):
                     self.distro,
                     self.distro_version
                 )
-                repo.needs_update = True
+                repo.needs_update = repository_is_automatic(project.name)
                 repo.type = self.binary._get_repo_type()
 
         else:
             for repo in repos:
-                repo.needs_update = True
+                repo.needs_update = repository_is_automatic(repo.project.name)
                 if repo.type is None:
                     repo.type = self.binary._get_repo_type()
 

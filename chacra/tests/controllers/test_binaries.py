@@ -382,3 +382,63 @@ class TestRelatedProjects(object):
         project = Project.filter_by(name='ceph').first()
         repo = Repo.filter_by(project=project).first()
         assert repo.type == 'rpm'
+
+
+class TestAutomaticRepos(object):
+    # these are not unittests :(
+
+    def test_skips_marking_needs_update_on_related_repos(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        pecan.conf.repos = {
+            'ceph': {
+                'automatic': False,
+                'all': {'ceph-deploy': ['master']}
+            },
+            '__force_dict__': True,
+        }
+        session.app.post(
+            '/binaries/ceph-deploy/master/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        project = Project.filter_by(name='ceph').first()
+        repo = Repo.filter_by(project=project).first()
+        # newly created repos will default to ``needs_update`` as ``True``,
+        # revert so we can test if disabling automatic repos works
+        repo.needs_update = False
+        session.commit()
+
+        session.app.post(
+            '/binaries/ceph-deploy/master/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_10.0.0-0.el6.x86_64.rpm', 'newer version')]
+        )
+        project = Project.filter_by(name='ceph').first()
+        repo = Repo.filter_by(project=project).first()
+        assert repo.needs_update is False
+
+
+    def test_skips_marking_needs_update(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        pecan.conf.repos = {
+            'ceph-deploy': {
+                'automatic': False,
+            },
+            '__force_dict__': True,
+        }
+        session.app.post(
+            '/binaries/ceph-deploy/master/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+        project = Project.filter_by(name='ceph-deploy').first()
+        repo = Repo.filter_by(project=project).first()
+        # newly created repos will default to ``needs_update`` as ``True``,
+        # revert so we can test if disabling automatic repos works
+        repo.needs_update = False
+        session.commit()
+
+        session.app.post(
+            '/binaries/ceph-deploy/master/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_10.0.0-0.el6.x86_64.rpm', 'newer version')]
+        )
+        project = Project.filter_by(name='ceph-deploy').first()
+        repo = Repo.filter_by(project=project).first()
+        assert repo.needs_update is False

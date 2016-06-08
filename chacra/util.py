@@ -6,7 +6,7 @@ from pecan import conf
 from pecan.templating import MakoRenderer, ExtraNamespace
 
 from chacra import models
-from chacra.constants import DISTRIBUTIONS
+from chacra.constants import DISTRIBUTIONS, REPO_OPTION_KEYS
 
 logger = logging.getLogger(__name__)
 
@@ -74,8 +74,8 @@ def get_related_projects(project, repo_config=None):
         project_configuration = repo_config[project_name]
         project_refs = project_configuration.keys()
         for project_ref in project_refs:
-            # 'combined' is not a ref, it is an option
-            if project_ref == 'combined':
+            # only process refs, not configuration options
+            if project_ref in REPO_OPTION_KEYS:
                 continue
             ref_configuration = project_configuration[project_ref]
             related_projects = ref_configuration.keys()

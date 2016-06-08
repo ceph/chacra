@@ -97,8 +97,9 @@ class Binary(Base):
                 self.distro,
                 self.distro_version
             )
-        # only needs_update when binary is not generic
-        repo.needs_update = not self.is_generic
+        # only needs_update when binary is not generic and automatic repos
+        # are configured for this project
+        repo.needs_update = not self.is_generic and util.repository_is_automatic(self.project.name)
         return repo
 
     def __repr__(self):
@@ -184,7 +185,8 @@ def update_repo(mapper, connection, target):
         # so do not update anything
         return
     try:
-        target.repo.needs_update = True
+        if util.repository_is_automatic(target.project.name):
+            target.repo.needs_update = True
     except AttributeError:
         # target may be None in certain cases, and we don't care which one
         # triggered it because there is nothing we need to do
