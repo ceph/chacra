@@ -53,6 +53,7 @@ class Repo(Base):
             signed=self.signed,
             needs_update=self.needs_update,
             is_updating=self.is_updating,
+            is_queued=self.is_queued,
             type=self.type,
             size=self.size,
         )
