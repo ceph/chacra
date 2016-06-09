@@ -302,8 +302,9 @@ HTTP Responses:
 
 Automatic Repositories
 ======================
-This service provides automatic repository creation per distribution version,
-with optional handling of *combined* repositories in the case of DEB packages.
+This service provides automatic repository creation per distribution version
+(enabled by default), with optional handling of *combined* repositories in the
+case of DEB packages.
 
 The default repository structure URL looks like::
 
@@ -376,9 +377,9 @@ instance that is creating the repositories.
 
 Disabling repositories
 ----------------------
-Automatic repository creation can be disabled (on by default) in the
-configuration for repos. In the case of a project like ``ceph-deploy`` that
-is usually included in other repos, it could be disabled like::
+Repository creation can be disabled (on by default) in the configuration for
+repos. In the case of a project like ``ceph-deploy`` that is usually included
+in other repos, it could be disabled like::
 
     repos = {
         'ceph-deploy': {
@@ -392,6 +393,26 @@ And it can also be disabled if a repository is not configured with::
 
 A repository is considered as *unconfigured* if it doesn't have an entry in the
 ``repos`` dictionary.
+
+
+Disabling Automatic Repositories
+--------------------------------
+This is a special kind of behavior where a new binary uploaded will trigger
+a repository to be created (or updated). If a project is of interest to other
+projects (e.g. project1 binaries should be included in project2) this can
+trigger unwanted behavior.
+
+Or if a build process is uploading several binaries at the same time, it might
+be desirable to wait for repo creation until the very end.
+
+To disable this automatic behavior, and similar to disabling repositories, the
+configuration can be done per project::
+
+    repos = {
+        'ceph-deploy': {
+            'automatic': False
+        }
+    }
 
 Configuring distributions
 -------------------------
