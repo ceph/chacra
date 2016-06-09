@@ -28,3 +28,7 @@
     name: rabbitmq-server
     state: started
     enabled: yes
+
+- name: enable web management for rabbit
+  sudo: yes
+  command: rabbitmq-plugins enable rabbitmq_management
