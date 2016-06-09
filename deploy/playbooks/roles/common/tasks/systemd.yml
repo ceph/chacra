@@ -23,3 +23,9 @@
   sudo: true
   notify:
      - reload systemd
+
+- name: install the systemd unit file for celerybeat
+  template: src=systemd/chacra-celerybeat.service.j2 dest=/etc/systemd/system/chacra-celerybeat.service
+  sudo: true
+  notify:
+     - reload systemd
