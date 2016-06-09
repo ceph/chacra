@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+[Unit]
+Description=chacra celerybeat service
+After=network.target rabbitmq-server.service
+Requires=rabbitmq-server.service
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/chacra
+User={{ ansible_ssh_user }}
+WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
+StandardOutput=journal
+StandardError=journal
+ExecStart={{ app_home }}/bin/celery -A async beat --loglevel=info
+
+[Install]
+WantedBy=multi-user.target
