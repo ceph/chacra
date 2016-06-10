@@ -87,6 +87,7 @@ class Binary(Base):
         # try to find one that matches our needs first
         repo = Repo.query.filter_by(
             ref=self.ref,
+            sha1=self.sha1,
             distro=self.distro,
             distro_version=self.distro_version,
             project=self.project).first()
@@ -97,7 +98,8 @@ class Binary(Base):
                 self.project,
                 self.ref,
                 self.distro,
-                self.distro_version
+                self.distro_version,
+                sha1=self.sha1
             )
         # only needs_update when binary is not generic and automatic repos
         # are configured for this project

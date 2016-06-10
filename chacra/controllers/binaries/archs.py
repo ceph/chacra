@@ -24,6 +24,7 @@ class ArchController(object):
         self.distro = request.context['distro']
         self.distro_version = request.context['distro_version']
         self.ref = request.context['ref']
+        self.sha1 = request.context['sha1']
         request.context['arch'] = self.arch
 
     @expose(generic=True, template='json')
@@ -36,6 +37,7 @@ class ArchController(object):
             distro=self.distro,
             distro_version=self.distro_version,
             ref=self.ref,
+            sha1=self.sha1,
             arch=self.arch).all()
 
         if not binaries:
@@ -47,6 +49,7 @@ class ArchController(object):
             distro=self.distro,
             distro_version=self.distro_version,
             ref=self.ref,
+            sha1=self.sha1,
             arch=self.arch).all()
 
         if not binaries:
@@ -57,6 +60,7 @@ class ArchController(object):
                 distro=self.distro,
                 distro_version=self.distro_version,
                 ref=self.ref,
+                sha1=self.sha1,
                 arch=self.arch).all():
             resp[b.name] = b
         return resp
@@ -65,7 +69,7 @@ class ArchController(object):
         return Binary.filter_by(
             name=name, project=self.project, arch=self.arch,
             distro=self.distro, distro_version=self.distro_version,
-            ref=self.ref
+            ref=self.ref, sha1=self.sha1
         ).first()
 
     @secure(basic_auth)
@@ -91,11 +95,12 @@ class ArchController(object):
             distro_version = request.context['distro_version']
             arch = request.context['arch']
             ref = request.context['ref']
+            sha1 = request.context['sha1']
 
             self.binary = Binary(
                 self.binary_name, self.project, arch=arch,
                 distro=distro, distro_version=distro_version,
-                ref=ref, path=path, size=os.path.getsize(path)
+                ref=ref, sha1=sha1, path=path, size=os.path.getsize(path)
             )
         else:
             self.binary.path = full_path
@@ -132,7 +137,8 @@ class ArchController(object):
                     project,
                     self.ref,
                     self.distro,
-                    self.distro_version
+                    self.distro_version,
+                    sha1=self.sha1,
                 )
                 repo.needs_update = repository_is_automatic(project.name)
                 repo.type = self.binary._get_repo_type()

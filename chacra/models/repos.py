@@ -26,12 +26,13 @@ class Repo(Base):
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', backref=backref('repos', lazy='dynamic'))
 
-    def __init__(self, project, ref, distro, distro_version):
+    def __init__(self, project, ref, distro, distro_version, **kwargs):
         self.project = project
         self.ref = ref
         self.distro = distro
         self.distro_version = distro_version
         self.modified = datetime.datetime.utcnow()
+        self.sha1 = kwargs.get("sha1")
 
     def __repr__(self):
         try:
