@@ -12,6 +12,7 @@ class Repo(Base):
     id = Column(Integer, primary_key=True)
     path = Column(String(256))
     ref = Column(String(256), index=True)
+    sha1 = Column(String(256), index=True)
     distro = Column(String(256), nullable=False, index=True)
     distro_version = Column(String(256), nullable=False, index=True)
     modified = Column(DateTime, index=True)
@@ -34,9 +35,10 @@ class Repo(Base):
 
     def __repr__(self):
         try:
-            return "<Repo {}/{}/{}/{}>".format(
+            return "<Repo {}/{}/{}/{}/{}>".format(
                 self.project.name,
                 self.ref,
+                self.sha1,
                 self.distro,
                 self.distro_version,
             )
@@ -48,6 +50,7 @@ class Repo(Base):
             path=self.path,
             project_name=self.project.name,
             ref=self.ref,
+            sha1=self.sha1,
             distro=self.distro,
             distro_version=self.distro_version,
             modified=self.modified,

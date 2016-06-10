@@ -17,6 +17,7 @@ class Binary(Base):
     name = Column(String(256), nullable=False, index=True)
     path = Column(String(256))
     ref = Column(String(256), index=True)
+    sha1 = Column(String(256), index=True)
     distro = Column(String(256), nullable=False, index=True)
     distro_version = Column(String(256), nullable=False, index=True)
     arch = Column(String(256), nullable=False, index=True)
@@ -39,6 +40,7 @@ class Binary(Base):
         'distro_version',
         'arch',
         'ref',
+        'sha1',
         'built_by',
         'size',
     ]
@@ -149,6 +151,7 @@ class Binary(Base):
             checksum=self.checksum,
             arch=self.arch,
             ref=self.ref,
+            sha1=self.sha1,
         )
 
 
