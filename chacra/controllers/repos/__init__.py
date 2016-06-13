@@ -21,11 +21,13 @@ class RepoController(object):
         self.project = Project.get(request.context['project_id'])
         self.distro_name = request.context['distro']
         self.ref = request.context['ref']
+        self.sha1 = request.context['sha1']
         request.context['distro_version'] = self.distro_version
         self.repo = self.project.built_repos.filter_by(
             distro=self.distro_name,
             distro_version=self.distro_version,
             ref=self.ref,
+            sha1=self.sha1,
         ).first()
 
     @expose('json', generic=True)

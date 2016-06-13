@@ -1,7 +1,7 @@
 from chacra.models import Project, Repo
 
 
-class TestRefController(object):
+class TestSHA1Controller(object):
 
     def test_get_single_project(self, session):
         p = Project('foobar')
@@ -14,12 +14,12 @@ class TestRefController(object):
         )
         repo.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/')
+        result = session.app.get('/repos/foobar/firefly/head/')
         assert result.status_int == 200
         assert len(result.json) == 1
-        assert result.json == {"head": ["ubuntu"]}
+        assert result.json == {"ubuntu": ["trusty"]}
 
-    def test_ref_does_not_exist(self, session):
+    def test_sha1_does_not_exist(self, session):
         p = Project('foobar')
         repo = Repo(
             p,
@@ -30,10 +30,10 @@ class TestRefController(object):
         )
         repo.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/hammer/', expect_errors=True)
+        result = session.app.get('/repos/foobar/firefly/sha1/', expect_errors=True)
         assert result.status_int == 404
 
-    def test_ref_has_no_built_repos(self, session):
+    def test_sha1_has_no_built_repos(self, session):
         p = Project('foobar')
         Repo(
             p,
@@ -43,10 +43,10 @@ class TestRefController(object):
             sha1="head",
         )
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/', expect_errors=True)
+        result = session.app.get('/repos/foobar/firefly/head/', expect_errors=True)
         assert result.status_int == 404
 
-    def test_do_not_show_sha1_without_built_repos(self, session):
+    def test_do_not_show_distro_without_built_repos(self, session):
         p = Project('foobar')
         repo = Repo(
             p,
@@ -64,12 +64,12 @@ class TestRefController(object):
         )
         repo.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/')
+        result = session.app.get('/repos/foobar/firefly/head/')
         assert result.status_int == 200
         assert len(result.json) == 1
-        assert result.json == {"head": ["ubuntu"]}
+        assert result.json == {"ubuntu": ["trusty"]}
 
-    def test_multiple_sha1_with_built_repos(self, session):
+    def test_multiple_distros_with_built_repos(self, session):
         p = Project('foobar')
         repo = Repo(
             p,
@@ -83,12 +83,12 @@ class TestRefController(object):
             "firefly",
             "centos",
             "7",
-            sha1="sha1",
+            sha1="head",
         )
         repo.path = "some_path"
         repo2.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/')
+        result = session.app.get('/repos/foobar/firefly/head/')
         assert result.status_int == 200
         assert len(result.json) == 2
-        assert result.json == {"head": ["ubuntu"], "sha1": ['centos']}
+        assert result.json == {"ubuntu": ["trusty"], "centos": ['7']}

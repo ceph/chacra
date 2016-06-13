@@ -42,6 +42,10 @@ class Project(Base):
         return list(set([r.ref for r in self.built_repos.all()]))
 
     @property
+    def repo_sha1s(self):
+        return list(set([r.sha1 for r in self.built_repos.all()]))
+
+    @property
     def repo_distros(self):
         return list(set([r.distro for r in self.built_repos.all()]))
 

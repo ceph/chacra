@@ -1,7 +1,7 @@
 from pecan import expose, abort, request
 from chacra.models import Project
 from chacra.controllers import error
-from chacra.controllers.repos.distros import DistroController
+from chacra.controllers.repos.sha1s import SHA1Controller
 
 
 class RefController(object):
@@ -16,10 +16,14 @@ class RefController(object):
         if self.ref_name not in self.project.repo_refs:
             abort(404)
         resp = {}
-        for distro in self.project.repo_distros:
-            resp[distro] = list(set(
-                [b.distro_version for b in
-                    self.project.built_repos.filter_by(distro=distro).all()]
+        sha1s = list(set(
+            [r.sha1 for r in
+                self.project.built_repos.filter_by(ref=self.ref_name).all()]
+        ))
+        for sha1 in sha1s:
+            resp[sha1] = list(set(
+                [b.distro for b in
+                    self.project.built_repos.filter_by(ref=self.ref_name, sha1=sha1).all()]
             ))
         return resp
 
@@ -30,4 +34,4 @@ class RefController(object):
 
     @expose()
     def _lookup(self, name, *remainder):
-        return DistroController(name), remainder
+        return SHA1Controller(name), remainder
