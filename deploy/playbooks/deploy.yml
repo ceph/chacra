@@ -6,6 +6,7 @@
     - common
     - repos
     - celery
+    - statsd
   vars:
      app_name: "chacra"
      use_ssl: true
@@ -17,3 +18,9 @@
      branch: "master"
      development_server: false
      fqdn: "chacra.ceph.com"
+
+     # graphite reporting for statsd
+     graphite_host: "shaman.ceph.com"
+     # this *must* be passed in as an extra-vars option if wanting
+     # to report to the production graphite instance
+     graphite_api_key: false
