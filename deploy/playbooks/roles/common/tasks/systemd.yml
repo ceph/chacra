@@ -29,3 +29,15 @@
   sudo: true
   notify:
      - reload systemd
+
+- name: ensure chacra is enabled and running
+  sudo: true
+  service: name=chacra state=running enabled=yes
+
+- name: ensure chacra-celery is enabled and running
+  sudo: true
+  service: name=chacra-celery state=running enabled=yes
+
+- name: ensure chacra-celerybeat is enabled and running
+  sudo: true
+  service: name=chacra-celerybeat state=running enabled=yes
