@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+[Unit]
+Description=statsd service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node stats.js {{ app_home }}/src/statsd/localConfig.js
+User={{ ansible_ssh_user }}
+WorkingDirectory={{ app_home }}/src/statsd
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

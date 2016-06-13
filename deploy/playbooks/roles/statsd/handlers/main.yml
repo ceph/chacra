@@ -1,0 +1,10 @@
+---
+
+- name: restart statsd
+  sudo: yes
+  service: name=statsd state=restarted enabled=yes
+
+- name: reload systemd
+  sudo: yes
+  sudo: yes
+  command: systemctl daemon-reload

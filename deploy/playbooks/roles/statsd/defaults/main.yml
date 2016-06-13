@@ -1,0 +1,9 @@
+---
+
+statsd_debug: 'false'
+statsd_version: v0.8.0
+statsd_port: 8125
+
+graphite_port: 2003
+graphite_host: localhost
+delete_idle_stats: 'false'
