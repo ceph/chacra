@@ -1,12 +1,18 @@
 {
     port: {{ statsd_port }}
     ,backends: [
-        {% if graphite_host -%}
+        {% if graphite_host %}
           './backends/graphite',
-        {% endif -%}
+        {% endif %}
     ]
 {% if statsd_debug == 'true' %}
     ,debug: {{ statsd_debug }}
+{% endif %}
+{% if graphite_api_key %}
+    graphite
+        {
+            globalPrefix: "{{ graphite_api_key }}"
+        }
 {% endif %}
 {% if graphite_host %}
     ,graphiteHost: "{{ graphite_host }}"
