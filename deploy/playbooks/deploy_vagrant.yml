@@ -6,6 +6,7 @@
     - common
     - repos
     - celery
+    - statsd
   vars:
      app_name: "chacra"
      use_ssl: true
