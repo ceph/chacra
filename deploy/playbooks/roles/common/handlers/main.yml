@@ -10,8 +10,13 @@
   sudo: yes
   service: name=chacra state=restarted enabled=yes
 
-- name: restart celery
+- name: restart chacra-celery
   service: name=chacra-celery state=restarted enabled=yes
+  sudo: yes
+  when: app_restart.changed
+
+- name: restart chacra-celerybeat
+  service: name=chacra-celerybeat state=restarted enabled=yes
   sudo: yes
   when: app_restart.changed
 
