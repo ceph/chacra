@@ -11,7 +11,6 @@
 - name: "ensure a home for {{ app_name }}"
   sudo: yes
   file: path={{ app_home }} owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} state=directory recurse=yes
-  register: app_home_created
 
 - name: Update apt cache
   apt:
@@ -47,8 +46,7 @@
   template:
     src: prod_api_creds.py.j2
     dest: "{{ app_home }}/src/{{ app_name }}/prod_api_creds.py"
-  when: (api_key is defined or api_user is defined) or
-        (app_home_created is defined and app_home_created|changed)
+  when: api_key is defined and api_user is defined
 
 - name: install python requirements in virtualenv
   pip:
