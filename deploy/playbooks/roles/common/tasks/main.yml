@@ -55,7 +55,10 @@
     requirements: "{{ app_home }}/src/{{ app_name }}/requirements.txt"
     state: present
     virtualenv: "{{ app_home }}"
-  notify: restart app
+  notify:
+    - restart app
+    - restart chacra-celery
+    - restart chacra-celerybeat
 
 - name: ensure file paths are set properly
   sudo: true
