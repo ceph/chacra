@@ -18,3 +18,16 @@ class TestAppendSuffix(object):
     def test_gets_suffix_appended_with_dotted_paths(self):
         result = metrics.append_suffix('chacra.async', 'add_rpms')
         assert result == 'chacra.async.add_rpms'
+
+
+class TestGetPrefix(object):
+
+    def test_with_secret(self, fake):
+        conf = fake(graphite_api_key='1234')
+        result = metrics.get_prefix(conf=conf, host='local')
+        assert result == '1234.local'
+
+    def test_no_secret(self, fake):
+        conf = fake()
+        result = metrics.get_prefix(conf=conf, host='local')
+        assert result == 'local'
