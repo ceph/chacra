@@ -9,7 +9,8 @@ class TestDistroVersionController(object):
         Binary('ceph-1.0.1.deb', p, ref='master', distro='ubuntu', distro_version='trusty', arch='i386')
         session.commit()
         result = session.app.get('/binaries/ceph/master/ubuntu/trusty/')
-        assert result.json == {u'i386': [u'ceph-1.0.1.deb', u'ceph-1.0.0.deb']}
+        assert result.json.keys() == ["i386"]
+        assert set(result.json["i386"]) == set([u'ceph-1.0.0.deb', u'ceph-1.0.1.deb'])
 
 
 class TestDistroController(object):
