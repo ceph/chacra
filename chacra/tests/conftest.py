@@ -14,6 +14,8 @@ from chacra.tests import util
 import pytest
 
 
+
+
 DBNAME = 'chacratest'
 BIND = 'postgresql+psycopg2://localhost'
 
@@ -40,6 +42,15 @@ def reload_config():
         overwrite=True
     )
     _db.init_model()
+
+
+@pytest.fixture
+def fake():
+    class Fake(object):
+        def __init__(self, *a, **kw):
+            for k, v, in kw.items():
+                setattr(self, k, v)
+    return Fake
 
 
 @pytest.fixture(scope='session')
