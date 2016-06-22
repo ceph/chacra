@@ -44,6 +44,11 @@ prevail)::
 
     secret.chacra1.custom.path
 
+
+..note:: All these assume a local statsd instance running, so there is no need
+to provide a connection object. If there is ever a need to customize the
+connection, it will need to be provided here.
+
 """
 
 import socket
@@ -62,7 +67,7 @@ def short_hostname(socket):
 def get_prefix(conf=None, host=None):
     host = host or short_hostname()
     conf = conf or pecan.conf
-    secret = getattr(conf, 'graphite_secret', None)
+    secret = getattr(conf, 'graphite_api_key', None)
 
     if secret:
         prefix = "%s.%s" % (secret, host)
