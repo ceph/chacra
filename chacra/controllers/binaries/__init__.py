@@ -118,9 +118,9 @@ class BinaryController(object):
     @secure(basic_auth)
     @index.when(method='PUT', template='json')
     def index_put(self):
-        contents = request.PUT.get('file', False)
+        contents = request.POST.get('file', False)
         if contents is False:
-            error('/errors/invalid/', 'no file object found in "file" param in PUT request')
+            error('/errors/invalid/', 'no file object found in "file" param in POST request')
         file_obj = contents.file
         # this looks odd, path is not changing, but we need to 'ping' the object by
         # re-saving the attribute so that the listener can update the checksum and modified
