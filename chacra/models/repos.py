@@ -65,6 +65,15 @@ class Repo(Base):
                 return True
         return False
 
+    @property
+    def metric_name(self):
+        return "repos.%s.%s.%s.%s" % (
+            self.project.name,
+            self.ref,
+            self.distro,
+            self.distro_version,
+        )
+
     def infer_type(self):
         """
         Sometimes a repo may not know what 'type' it is (a deb or rpm)
