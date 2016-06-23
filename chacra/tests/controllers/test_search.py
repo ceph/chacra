@@ -1,5 +1,3 @@
-import pecan
-import os
 from chacra.models import Project, Binary
 from chacra.controllers import search
 

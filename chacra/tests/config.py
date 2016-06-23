@@ -1,4 +1,4 @@
-from pecan.hooks import TransactionHook, RequestViewerHook
+from pecan.hooks import TransactionHook
 from chacra import models
 
 

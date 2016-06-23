@@ -1,4 +1,4 @@
-from chacra.models import Project, Binary, Repo
+from chacra.models import Project, Repo
 
 
 class TestProjectsController(object):
@@ -90,7 +90,7 @@ class TestProjectController(object):
         assert result.status_int == 404
 
     def test_project_has_no_built_repos(self, session):
-        p = Project('foobar')
+        Project('foobar')
         result = session.app.get('/repos/foobar/', expect_errors=True)
         assert result.status_int == 404
 
@@ -115,7 +115,7 @@ class TestProjectController(object):
         assert len(result.json) == 1
         assert result.json == {"firefly": ["ubuntu"]}
 
-    def test_do_not_show_refs_without_built_repos(self, session):
+    def test_show_multiple_refs_with_built_repos(self, session):
         p = Project('foobar')
         repo = Repo(
             p,
