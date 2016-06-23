@@ -56,12 +56,13 @@ import pecan
 import statsd
 
 
-def short_hostname(socket):
+def short_hostname(_socket=None):
     """
     Obtains remote hostname of the socket and cuts off the domain part
     of its FQDN.
     """
-    return socket.gethostname().split('.', 1)[0]
+    _socket = _socket or socket
+    return _socket.gethostname().split('.', 1)[0]
 
 
 def get_prefix(conf=None, host=None):

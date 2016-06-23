@@ -18,7 +18,7 @@ setup(
         "sqlalchemy",
         "psycopg2",
         "pecan-notario",
-        "statsd",
+        "python-statsd",
     ],
     test_suite='chacra',
     zip_safe=False,
