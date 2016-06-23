@@ -5,7 +5,7 @@ class TestHostname(object):
 
     def test_gets_short_hostname(self, fake):
         socket = fake(gethostname=lambda: 'chacra.ceph.com')
-        result = metrics.short_hostname(socket=socket)
+        result = metrics.short_hostname(_socket=socket)
         assert result == 'chacra'
 
 
