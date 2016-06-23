@@ -6,4 +6,4 @@ pecan-notario
 celery[librabbitmq]
 alembic
 ipython
-statsd
+python-statsd
