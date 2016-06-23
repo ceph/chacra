@@ -14,6 +14,7 @@ app = {
     'modules': ['chacra'],
     'static_root': '%(confdir)s/public',
 #    'default_renderer': 'json',
+    'guess_content_type_from_ext': False,
     'hooks': [
         TransactionHook(
             models.start,
