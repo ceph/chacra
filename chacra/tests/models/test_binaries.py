@@ -79,7 +79,7 @@ class TestBinaryModification(object):
         assert binary.repo.distro_version == '7'
 
     def test_binary_reuse_repo_object(self, session):
-        repo = Repo(self.p, 'hammer', 'centos', '7')
+        Repo(self.p, 'hammer', 'centos', '7')
         session.commit()
         binary = Binary(
             'ceph-1.0.rpm',
@@ -97,7 +97,7 @@ class TestBinaryModification(object):
     def test_binary_sets_repo_type(self, session):
         repo = Repo(self.p, 'hammer', 'centos', '7')
         session.commit()
-        binary = Binary(
+        Binary(
             'ceph-1.0.rpm',
             self.p,
             ref='hammer',

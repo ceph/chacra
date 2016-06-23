@@ -14,8 +14,6 @@ from chacra.tests import util
 import pytest
 
 
-
-
 DBNAME = 'chacratest'
 BIND = 'postgresql+psycopg2://localhost'
 
@@ -27,7 +25,6 @@ def config_file():
 
 def reload_config():
     from pecan import configuration
-    conf = configuration.conf_from_file(config_file())
     config = configuration.conf_from_file(config_file()).to_dict()
 
     # Add the appropriate connection string to the app config.

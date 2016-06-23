@@ -1,7 +1,6 @@
 from pecan import expose, abort, request
 from chacra.models import Project
 from chacra.models.repos import Repo
-from chacra import models
 from chacra.controllers import error
 from chacra.controllers.repos.refs import RefController
 

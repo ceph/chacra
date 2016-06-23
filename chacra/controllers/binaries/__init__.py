@@ -7,7 +7,6 @@ from webob.static import FileIter
 from chacra.models import Binary, Project
 from chacra.controllers import error
 from chacra.auth import basic_auth
-from chacra.util import repo_paths
 
 logger = logging.getLogger(__name__)
 

@@ -75,7 +75,7 @@ class TestRepoDirectory(object):
         assert result == 'noarch'
 
     @pytest.mark.parametrize('binary', aarch64_rpms)
-    def test_undetermined(self, binary):
+    def test_aarch64_rpm(self, binary):
         result = util.infer_arch_directory(binary)
         assert result == 'aarch64'
 

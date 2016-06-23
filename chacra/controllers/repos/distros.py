@@ -1,5 +1,5 @@
 from pecan import expose, abort, request
-from chacra.models import Project, Binary
+from chacra.models import Project
 from chacra.controllers import error
 from chacra.controllers.repos import RepoController
 
