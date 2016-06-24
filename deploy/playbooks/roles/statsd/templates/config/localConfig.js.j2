@@ -9,7 +9,7 @@
     ,debug: {{ statsd_debug }}
 {% endif %}
 {% if graphite_api_key %}
-    graphite
+    ,graphite:
         {
             globalPrefix: "{{ graphite_api_key }}"
         }
