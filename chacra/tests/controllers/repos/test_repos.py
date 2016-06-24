@@ -20,6 +20,20 @@ class TestRepoApiController(object):
         assert result.json["distro"] == "ubuntu"
         assert result.json["ref"] == "firefly"
 
+    def test_repo_is_not_queued(self, session):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.get('/repos/foobar/firefly/ubuntu/trusty/')
+        assert result.status_int == 200
+        assert result.json["is_queued"] is False
+
     def test_repo_is_not_updating(self, session):
         p = Project('foobar')
         repo = Repo(
@@ -208,6 +222,7 @@ class TestRepoCRUDOperations(object):
             params={}
         )
         assert result.json['needs_update'] is True
+        assert result.json['is_queued'] is False
 
     def test_update_head(self, session, tmpdir):
         p = Project('foobar')
@@ -241,6 +256,29 @@ class TestRepoCRUDOperations(object):
         )
         assert os.path.exists(path) is False
         assert result.json['needs_update'] is True
+        assert result.json['is_queued'] is False
+
+    def test_recreate_and_requeue(self, session, tmpdir):
+        path = str(tmpdir)
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+        )
+        repo.path = path
+        session.commit()
+        repo = Repo.get(1)
+        repo.is_queued = True
+        session.commit()
+        result = session.app.post_json(
+            "/repos/foobar/firefly/ubuntu/trusty/recreate",
+            params={}
+        )
+        assert os.path.exists(path) is False
+        assert result.json['needs_update'] is True
+        assert result.json['is_queued'] is False
 
     def test_recreate_invalid_path(self, session, tmpdir):
         path = str(tmpdir)
