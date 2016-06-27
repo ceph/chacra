@@ -7,6 +7,7 @@ from celery.signals import worker_init
 from chacra import models
 
 
+
 @worker_init.connect
 def bootstrap_pecan(signal, sender):
     try:
@@ -39,7 +40,7 @@ def configure_celerybeat():
     app.conf.update(
         CELERYBEAT_SCHEDULE={
             'poll-repos': {
-                'task': 'async.recurring.poll_repos',
+                'task': 'chacra.async.recurring.poll_repos',
                 'schedule': timedelta(
                     seconds=seconds),
                 'options': {'queue': 'poll_repos'}
