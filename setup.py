@@ -19,6 +19,7 @@ setup(
         "psycopg2",
         "pecan-notario",
         "python-statsd",
+        "requests",
     ],
     test_suite='chacra',
     zip_safe=False,
