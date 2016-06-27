@@ -25,17 +25,26 @@ def bootstrap_pecan(signal, sender):
 app = Celery(
     'chacra.async',
     broker='amqp://guest@localhost//',
-    include=['chacra.async.rpm', 'chacra.async.deb', 'chacra.async.recurring']
+    include=['chacra.async.rpm', 'chacra.async.debian', 'chacra.async.recurring']
 )
 
 
-app.conf.update(
-    CELERYBEAT_SCHEDULE={
-        'poll-repos': {
-            'task': 'async.recurring.poll_repos',
-            'schedule': timedelta(
-                seconds=pecan.conf.polling_cycle),
-            'options': {'queue': 'poll_repos'}
+def configure_celerybeat():
+    try:
+        seconds = pecan.conf.polling_cycle
+    except AttributeError:
+        bootstrap_pecan(None, None)
+        seconds = pecan.conf.polling_cycle
+
+    app.conf.update(
+        CELERYBEAT_SCHEDULE={
+            'poll-repos': {
+                'task': 'async.recurring.poll_repos',
+                'schedule': timedelta(
+                    seconds=seconds),
+                'options': {'queue': 'poll_repos'}
+            },
         },
-    },
-)
+    )
+
+configure_celerybeat()
