@@ -46,6 +46,7 @@ class Repo(Base):
     def __json__(self):
         return dict(
             path=self.path,
+            project_name=self.project.name,
             ref=self.ref,
             distro=self.distro,
             distro_version=self.distro_version,
