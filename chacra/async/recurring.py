@@ -3,7 +3,7 @@ import pecan
 import requests
 from celery import shared_task
 from chacra import models
-from chacra.async import base, debian, rpm
+from chacra.async import base, debian, rpm, post_queued
 import logging
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ def poll_repos():
         if r.needs_update:
             logger.info("repo %s needs to be updated/created", r)
             r.is_queued = True
+            post_queued(r)
             if r.type == 'rpm':
                 rpm.create_rpm_repo.apply_async(
                     (r.id,),
