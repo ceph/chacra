@@ -1,4 +1,6 @@
+import os
 import pecan
+import requests
 from celery import shared_task
 from chacra import models
 from chacra.async import base, debian, rpm
@@ -46,3 +48,40 @@ def poll_repos():
             models.commit()
 
     logger.info('completed repo polling')
+
+
+@shared_task(acks_late=True, bind=True, default_retry_delay=30)
+def callback(self, json, project_name):
+    """
+    Send a callback to a remote HTTP service. Useful in cases where it is
+    needed to advertise the current state of building repositories (since it is
+    a time consuming process).
+
+    ``acks_late`` will wait until after the task has been acknowledged (not
+    before, which is the default) giving a more robust behavior along with
+    retrying.
+
+    There is no ``max_retries`` explicitly set because the default (retry
+    3 times) is good enough.
+
+    ``default_retry_delay`` is changed to 30 seconds. The default is 3 minutes
+    which is too long for this callback.
+
+    .. note:: The use of ``self`` is odd for a function, but this is achieved
+    byt the ``bind=True`` so that this task gets access to the task type
+    instance
+
+    More detailed information can be found at:
+
+    http://docs.celeryproject.org/en/latest/userguide/tasks.html#retrying
+    """
+    if not getattr(pecan.conf.callback_url, False):
+        return
+    url = os.path.join(pecan.conf.callback_url, project_name, '')
+    user = pecan.conf.callback_user
+    key = pecan.conf.callback_key
+
+    try:
+        requests.post(url, body=json, auth=(user, key))
+    except requests.HTTPError as exc:
+        raise self.retry(exc=exc)
