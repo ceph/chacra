@@ -81,6 +81,8 @@ delegate_downloads = False
 api_user = 'admin'
 api_key = 'secret'
 
+polling_cycle = 30
+
 # Use this to define how distributions files will be created per project
 distributions = {
     "defaults": {
