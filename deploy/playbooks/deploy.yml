@@ -24,3 +24,6 @@
      # this *must* be passed in as an extra-vars option if wanting
      # to report to the production graphite instance
      # graphite_api_key: '1234-asdf-1234'
+
+     # callbacks
+     callback_url: "https://shaman.ceph.com/api/repos/"
