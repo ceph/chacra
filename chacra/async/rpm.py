@@ -1,7 +1,7 @@
 import os
 from celery import shared_task
 from chacra import models
-from chacra.async import base
+from chacra.async import base, post_ready, post_building
 from chacra import util
 from chacra.metrics import Counter, Timer
 import logging
@@ -19,6 +19,7 @@ def create_rpm_repo(repo_id):
     # get the root path for storing repos
     # TODO: Is it possible we can get an ID that doesn't exist anymore?
     repo = models.Repo.get(repo_id)
+    post_building(repo)
     timer = Timer(__name__, suffix="create.rpm.%s" % repo.metric_name)
     counter = Counter(__name__, suffix="create.rpm.%s.binaries" % repo.metric_name)
     timer.start()
@@ -80,3 +81,4 @@ def create_rpm_repo(repo_id):
     repo.is_updating = False
     models.commit()
     timer.stop()
+    post_ready(repo)
