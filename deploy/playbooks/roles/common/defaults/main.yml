@@ -1,3 +1,7 @@
 ---
 app_home: /opt/{{ app_name }}
 app_use_ssl: yes
+
+# hostnames
+fqdn: ''
+short_hostname: 'chacra'
