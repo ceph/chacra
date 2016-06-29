@@ -1,6 +1,6 @@
 from celery import shared_task
 from chacra import models
-from chacra.async import base
+from chacra.async import base, post_ready, post_building
 from chacra import util
 from chacra.metrics import Counter, Timer
 import logging
@@ -20,6 +20,7 @@ def create_deb_repo(repo_id):
     timer = Timer(__name__, suffix="create.deb.%s" % repo.metric_name)
     counter = Counter(__name__, suffix="create.deb.%s.binaries" % repo.metric_name)
     timer.start()
+    post_building(repo)
     logger.info("processing repository: %s", repo)
     if util.repository_is_disabled(repo.project.name):
         logger.info("will not process repository: %s", repo)
@@ -129,3 +130,4 @@ def create_deb_repo(repo_id):
     repo.is_updating = False
     models.commit()
     timer.stop()
+    post_ready(repo)

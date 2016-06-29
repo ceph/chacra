@@ -18,3 +18,9 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: true
+     fqdn: "localhost"
+
+     # callbacks
+     callback_url: ""
+     callback_user: "admin"
+     callback_key: "secret"
