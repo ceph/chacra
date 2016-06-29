@@ -20,6 +20,7 @@ setup(
         "pecan-notario",
         "python-statsd",
         "requests",
+        "celery",
     ],
     test_suite='chacra',
     zip_safe=False,
