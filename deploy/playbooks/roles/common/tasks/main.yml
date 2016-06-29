@@ -2,7 +2,9 @@
 
 - name: "Build hosts file"
   sudo: yes
-  lineinfile: dest=/etc/hosts regexp=".*{{ fqdn }}$" line="127.0.1.1 {{ fqdn }}" state=present
+  template:
+    src: hosts.j2
+    dest: "/etc/hosts"
 
 - name: Set Hostname with hostname command
   sudo: yes
