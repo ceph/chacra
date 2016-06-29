@@ -3,9 +3,9 @@
 - hosts: all
   user: vagrant
   roles:
+    - celery
     - common
     - repos
-    - celery
     - statsd
   vars:
      app_name: "chacra"

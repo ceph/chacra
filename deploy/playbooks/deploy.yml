@@ -3,9 +3,9 @@
 - hosts: all
   user: ubuntu
   roles:
+    - celery
     - common
     - repos
-    - celery
     - statsd
   vars:
      app_name: "chacra"
