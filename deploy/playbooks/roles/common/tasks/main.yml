@@ -51,6 +51,12 @@
     dest: "{{ app_home }}/src/{{ app_name }}/prod_api_creds.py"
   when: api_key is defined and api_user is defined
 
+- name: create the callbacks configuration file
+  template:
+    src: prod_callbacks.py.j2
+    dest: "{{ app_home }}/src/{{ app_name }}/prod_callbacks.py"
+  when: callback_user is defined and callback_key is defined
+
 - name: install python requirements in virtualenv
   pip:
     requirements: "{{ app_home }}/src/{{ app_name }}/requirements.txt"
