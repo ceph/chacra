@@ -5,6 +5,7 @@ from celery import shared_task
 from chacra import models
 from chacra.async import base, debian, rpm, post_queued
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -80,6 +81,7 @@ def callback(self, json, project_name, url=None):
         if not getattr(pecan.conf.callback_url, False):
             return
         url = os.path.join(pecan.conf.callback_url, project_name, '')
+    logger.debug('callback for url: %s', url)
     user = pecan.conf.callback_user
     key = pecan.conf.callback_key
 
