@@ -24,3 +24,4 @@
      callback_url: ""
      callback_user: "admin"
      callback_key: "secret"
+     graphite_api_key: '1234-asdf-1234'
