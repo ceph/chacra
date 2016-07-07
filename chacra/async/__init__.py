@@ -21,6 +21,7 @@ def bootstrap_pecan(signal, sender):
     # Once configuration is set we need to initialize the models so that we can connect
     # to the DB wth a configured mapper.
     models.init_model()
+    configure_celerybeat()
 
 
 app = Celery(
@@ -47,8 +48,6 @@ def configure_celerybeat():
             },
         },
     )
-
-configure_celerybeat()
 
 
 # helpers
