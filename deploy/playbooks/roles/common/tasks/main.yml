@@ -51,6 +51,18 @@
     dest: "{{ app_home }}/src/{{ app_name }}/prod_api_creds.py"
   when: api_key is defined and api_user is defined
 
+- name: stop chacra-celery
+  service:
+    name: chacra-celery
+    state: stopped
+  sudo: yes
+
+- name: stop chacra-celerybeat
+  service:
+    name: chacra-celerybeat
+    state: stopped
+  sudo: yes
+
 - name: create the callbacks configuration file
   template:
     src: prod_callbacks.py.j2
