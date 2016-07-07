@@ -9,7 +9,7 @@
 - name: Set Hostname with hostname command
   sudo: yes
   hostname: name="{{ fqdn }}"
-  when: fqdn
+  when: fqdn is defined
 
 - name: "ensure a home for {{ app_name }}"
   sudo: yes
