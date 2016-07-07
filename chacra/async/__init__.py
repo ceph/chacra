@@ -1,6 +1,7 @@
 from datetime import timedelta
 import os
 import pecan
+import socket
 
 from celery import Celery
 from celery.signals import worker_init
@@ -20,6 +21,7 @@ def bootstrap_pecan(signal, sender):
     # Once configuration is set we need to initialize the models so that we can connect
     # to the DB wth a configured mapper.
     models.init_model()
+    configure_celerybeat()
 
 
 app = Celery(
@@ -46,8 +48,6 @@ def configure_celerybeat():
             },
         },
     )
-
-configure_celerybeat()
 
 
 # helpers
@@ -90,3 +90,31 @@ def post_building(repo):
 def post_ready(repo):
     json = repo.__json__()
     post_status('ready', json)
+
+
+def post_if_healthy():
+    """
+    If system is healthy, make an asynchronous request to a configured remote
+    system. Requires the following in the config file::
+
+        health_ping = True
+        health_ping_url = "https://check.example.com"
+
+    """
+    health_ping = getattr(pecan.conf, 'health_ping', False)
+    health_ping_url = getattr(pecan.conf, 'health_ping_url', False)
+
+    if not health_ping or not health_ping_url:
+        return
+
+    from chacra.async import recurring, checks
+
+    if not checks.is_healthy():
+        return
+
+    hostname = socket.gethostname()
+    url = os.path.join(health_ping_url, hostname, '')
+    recurring.callback.apply_async(
+        args=({}, None),
+        kwargs=dict(url=url),
+    )

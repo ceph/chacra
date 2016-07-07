@@ -9,7 +9,7 @@
 - name: Set Hostname with hostname command
   sudo: yes
   hostname: name="{{ fqdn }}"
-  when: fqdn
+  when: fqdn is defined
 
 - name: "ensure a home for {{ app_name }}"
   sudo: yes
@@ -50,6 +50,18 @@
     src: prod_api_creds.py.j2
     dest: "{{ app_home }}/src/{{ app_name }}/prod_api_creds.py"
   when: api_key is defined and api_user is defined
+
+- name: stop chacra-celery
+  service:
+    name: chacra-celery
+    state: stopped
+  sudo: yes
+
+- name: stop chacra-celerybeat
+  service:
+    name: chacra-celerybeat
+    state: stopped
+  sudo: yes
 
 - name: create the callbacks configuration file
   template:

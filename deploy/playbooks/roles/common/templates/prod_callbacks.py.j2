@@ -3,3 +3,8 @@
 callback_url = "{{ callback_url|default('') }}"
 callback_user = "{{ callback_user|default('') }}"
 callback_key = "{{ callback_key|default('') }}"
+
+# Health Pings
+health_ping = True
+# note this url will get the hostname appended
+health_ping_url = "http://shaman.ceph.com/api/nodes/"
