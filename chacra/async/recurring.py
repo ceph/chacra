@@ -52,7 +52,7 @@ def poll_repos():
 
 
 @shared_task(acks_late=True, bind=True, default_retry_delay=30)
-def callback(self, json, project_name):
+def callback(self, json, project_name, url=None):
     """
     Send a callback to a remote HTTP service. Useful in cases where it is
     needed to advertise the current state of building repositories (since it is
@@ -76,9 +76,10 @@ def callback(self, json, project_name):
 
     http://docs.celeryproject.org/en/latest/userguide/tasks.html#retrying
     """
-    if not getattr(pecan.conf.callback_url, False):
-        return
-    url = os.path.join(pecan.conf.callback_url, project_name, '')
+    if url is None:
+        if not getattr(pecan.conf.callback_url, False):
+            return
+        url = os.path.join(pecan.conf.callback_url, project_name, '')
     user = pecan.conf.callback_user
     key = pecan.conf.callback_key
 
