@@ -3,7 +3,8 @@ from pecan.hooks import TransactionHook
 from chacra import models
 from chacra import hooks
 from prod_db import sqlalchemy
-from prod_api_creds import api_key, api_user, prod_callbacks
+from prod_api_creds import api_key, api_user
+from prod_callbacks import callback_url, callback_user, callback_key, health_ping, health_ping_url
 
 
 # Server Specific Configurations
