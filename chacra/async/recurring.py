@@ -84,6 +84,6 @@ def callback(self, json, project_name, url=None):
     key = pecan.conf.callback_key
 
     try:
-        requests.post(url, body=json, auth=(user, key))
+        requests.post(url, json=json, auth=(user, key))
     except requests.HTTPError as exc:
         raise self.retry(exc=exc)
