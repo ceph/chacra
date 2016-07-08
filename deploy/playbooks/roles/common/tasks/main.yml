@@ -56,12 +56,14 @@
     name: chacra-celery
     state: stopped
   sudo: yes
+  failed_when: false
 
 - name: stop chacra-celerybeat
   service:
     name: chacra-celerybeat
     state: stopped
   sudo: yes
+  failed_when: false
 
 - name: create the callbacks configuration file
   template:
