@@ -70,4 +70,4 @@ def is_healthy():
         except Exception:
             logger.exception('system is unhealthy')
             return False
-        return True
+    return True
