@@ -20,9 +20,11 @@ class BinaryController(object):
         self.distro = request.context['distro']
         self.arch = request.context['arch']
         self.ref = request.context['ref']
+        self.sha1 = request.context['sha1']
         self.binary = Binary.query.filter_by(
             name=binary_name,
             ref=self.ref,
+            sha1=self.sha1,
             distro=self.distro,
             distro_version=self.distro_version,
             project=self.project).first()
@@ -109,7 +111,7 @@ class BinaryController(object):
         Binary(
             name=name, project=self.project, arch=self.arch,
             distro=self.distro, distro_version=self.distro_version,
-            ref=self.ref, size=size
+            ref=self.ref, size=size, sha1=self.sha1
         )
 
         return {}

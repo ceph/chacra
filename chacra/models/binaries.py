@@ -17,6 +17,7 @@ class Binary(Base):
     name = Column(String(256), nullable=False, index=True)
     path = Column(String(256))
     ref = Column(String(256), index=True)
+    sha1 = Column(String(256), index=True)
     distro = Column(String(256), nullable=False, index=True)
     distro_version = Column(String(256), nullable=False, index=True)
     arch = Column(String(256), nullable=False, index=True)
@@ -39,6 +40,7 @@ class Binary(Base):
         'distro_version',
         'arch',
         'ref',
+        'sha1',
         'built_by',
         'size',
     ]
@@ -85,6 +87,7 @@ class Binary(Base):
         # try to find one that matches our needs first
         repo = Repo.query.filter_by(
             ref=self.ref,
+            sha1=self.sha1,
             distro=self.distro,
             distro_version=self.distro_version,
             project=self.project).first()
@@ -95,7 +98,8 @@ class Binary(Base):
                 self.project,
                 self.ref,
                 self.distro,
-                self.distro_version
+                self.distro_version,
+                sha1=self.sha1
             )
         # only needs_update when binary is not generic and automatic repos
         # are configured for this project
@@ -149,6 +153,7 @@ class Binary(Base):
             checksum=self.checksum,
             arch=self.arch,
             ref=self.ref,
+            sha1=self.sha1,
         )
 
 

@@ -10,10 +10,11 @@ class TestDistroController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         repo.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/ubuntu/')
+        result = session.app.get('/repos/foobar/firefly/head/ubuntu/')
         assert result.status_int == 200
         assert len(result.json) == 1
         assert result.json == ["trusty"]
@@ -25,6 +26,7 @@ class TestDistroController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         repo.path = "some_path"
         repo2 = Repo(
@@ -32,10 +34,11 @@ class TestDistroController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         repo2.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/ubuntu/')
+        result = session.app.get('/repos/foobar/firefly/head/ubuntu/')
         assert result.status_int == 200
         assert len(result.json) == 1
         assert result.json == ["trusty"]
@@ -47,6 +50,7 @@ class TestDistroController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         repo.path = "some_path"
         repo2 = Repo(
@@ -54,10 +58,11 @@ class TestDistroController(object):
             "hammer",
             "ubuntu",
             "precise",
+            sha1="head",
         )
         repo2.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/ubuntu/')
+        result = session.app.get('/repos/foobar/firefly/head/ubuntu/')
         assert result.status_int == 200
         assert len(result.json) == 1
         assert result.json == ["trusty"]
@@ -69,10 +74,11 @@ class TestDistroController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         repo.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/centos/',
+        result = session.app.get('/repos/foobar/firefly/head/centos/',
                                  expect_errors=True)
         assert result.status_int == 404
 
@@ -83,9 +89,10 @@ class TestDistroController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/ubuntu/',
+        result = session.app.get('/repos/foobar/firefly/head/ubuntu/',
                                  expect_errors=True)
         assert result.status_int == 404
 
@@ -96,9 +103,10 @@ class TestDistroController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         repo.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/hammer/ubuntu/',
+        result = session.app.get('/repos/foobar/hammer/head/ubuntu/',
                                  expect_errors=True)
         assert result.status_int == 404

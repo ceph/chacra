@@ -9,6 +9,7 @@ class DistroController(object):
         self.distro_name = distro_name
         self.project = Project.get(request.context['project_id'])
         self.ref = request.context['ref']
+        self.sha1 = request.context['sha1']
         request.context['distro'] = distro_name
 
     @expose('json', generic=True)
@@ -20,7 +21,7 @@ class DistroController(object):
             abort(404)
         resp = []
 
-        for repo in self.project.built_repos.filter_by(distro=self.distro_name, ref=self.ref).all():
+        for repo in self.project.built_repos.filter_by(distro=self.distro_name, ref=self.ref, sha1=self.sha1).all():
             resp.append(repo.distro_version)
         return list(set(resp))
 

@@ -11,6 +11,7 @@ class DistroVersionController(object):
         self.project = models.Project.get(request.context['project_id'])
         self.distro_name = request.context['distro']
         self.ref = request.context['ref']
+        self.sha1 = request.context['sha1']
         request.context['distro_version'] = self.distro_version
 
     @expose('json', generic=True)
@@ -26,6 +27,7 @@ class DistroVersionController(object):
                     distro_version=self.distro_version,
                     distro=self.distro_name,
                     ref=self.ref,
+                    sha1=self.sha1,
                     arch=arch).all()]
             if binaries:
                 resp[arch] = list(set(binaries))
@@ -48,6 +50,7 @@ class DistroController(object):
         self.distro_name = distro_name
         self.project = models.Project.get(request.context['project_id'])
         self.ref = request.context['ref']
+        self.sha1 = request.context['sha1']
         request.context['distro'] = distro_name
 
     @expose('json', generic=True)
@@ -57,7 +60,8 @@ class DistroController(object):
         binaries = models.Binary.filter_by(
             project=self.project,
             distro=self.distro_name,
-            ref=self.ref).all()
+            ref=self.ref,
+            sha1=self.sha1).all()
 
         if not binaries:
             abort(404)
