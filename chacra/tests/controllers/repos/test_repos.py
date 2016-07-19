@@ -29,10 +29,11 @@ class TestRepoApiController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         repo.path = "some_path"
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/ubuntu/trusty/')
+        result = session.app.get('/repos/foobar/firefly/head/ubuntu/trusty/')
         assert result.status_int == 200
         assert result.json["is_queued"] is False
 
@@ -295,6 +296,7 @@ class TestRepoCRUDOperations(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="head",
         )
         repo.path = path
         session.commit()
@@ -302,7 +304,7 @@ class TestRepoCRUDOperations(object):
         repo.is_queued = True
         session.commit()
         result = session.app.post_json(
-            "/repos/foobar/firefly/ubuntu/trusty/recreate",
+            "/repos/foobar/firefly/head/ubuntu/trusty/recreate",
             params={}
         )
         assert os.path.exists(path) is False
