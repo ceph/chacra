@@ -64,7 +64,7 @@ class Project(Base):
         for ref in self.refs:
             json_[ref] = list(
                 set(
-                    [b.distro for b in self.binaries.filter_by(ref=ref).all()]
+                    [b.sha1 for b in self.binaries.filter_by(ref=ref).all()]
                 )
             )
         return json_

@@ -26,7 +26,7 @@ class ProjectController(object):
         resp = {}
         for ref in self.project.repo_refs:
             resp[ref] = list(set(
-                [r.distro for r in
+                [r.sha1 for r in
                     self.project.built_repos.filter_by(ref=ref).all()]
             ))
         return resp

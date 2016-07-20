@@ -77,13 +77,14 @@ class TestProjectController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="HEAD",
         )
         repo.path = "some_path"
         session.commit()
         result = session.app.get('/repos/foobar/')
         assert result.status_int == 200
         assert len(result.json) == 1
-        assert result.json == {"firefly": ["ubuntu"]}
+        assert result.json == {"firefly": ["HEAD"]}
 
     def test_project_does_not_exist(self, session):
         result = session.app.get('/repos/foo/', expect_errors=True)
@@ -101,19 +102,21 @@ class TestProjectController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="HEAD",
         )
         Repo(
             p,
             "hammer",
             "ubuntu",
             "trusty",
+            sha1="HEAD",
         )
         repo.path = "some_path"
         session.commit()
         result = session.app.get('/repos/foobar/')
         assert result.status_int == 200
         assert len(result.json) == 1
-        assert result.json == {"firefly": ["ubuntu"]}
+        assert result.json == {"firefly": ["HEAD"]}
 
     def test_show_multiple_refs_with_built_repos(self, session):
         p = Project('foobar')
@@ -122,12 +125,14 @@ class TestProjectController(object):
             "firefly",
             "ubuntu",
             "trusty",
+            sha1="HEAD",
         )
         repo2 = Repo(
             p,
             "hammer",
             "ubuntu",
             "trusty",
+            sha1="HEAD",
         )
         repo.path = "some_path"
         repo2.path = "some_path"
@@ -135,4 +140,4 @@ class TestProjectController(object):
         result = session.app.get('/repos/foobar/')
         assert result.status_int == 200
         assert len(result.json) == 2
-        assert result.json == {"firefly": ["ubuntu"], "hammer": ["ubuntu"]}
+        assert result.json == {"firefly": ["HEAD"], "hammer": ["HEAD"]}
