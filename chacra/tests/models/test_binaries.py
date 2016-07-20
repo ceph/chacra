@@ -15,7 +15,15 @@ class TestBinaryModification(object):
             arch='x86_64',
             )
         session.commit()
-        assert binary.created.timetuple() == binary.modified.timetuple()
+        # multiple assertions so that we don't fail because of a msec
+        # difference when the object gets modified. We don't care about msec,
+        # we just want to make sure that the same date/time is kept when first
+        # created
+        assert binary.created.year == binary.modified.year
+        assert binary.created.month == binary.modified.month
+        assert binary.created.day == binary.modified.day
+        assert binary.created.hour == binary.modified.hour
+        assert binary.created.minute == binary.modified.minute
 
     def test_modified_gets_updated(self, session):
         binary = Binary(
