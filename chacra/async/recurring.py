@@ -78,7 +78,7 @@ def callback(self, json, project_name, url=None):
     http://docs.celeryproject.org/en/latest/userguide/tasks.html#retrying
     """
     if url is None:
-        if not getattr(pecan.conf.callback_url, False):
+        if not getattr(pecan.conf, "callback_url", False):
             return
         url = os.path.join(pecan.conf.callback_url, project_name, '')
     logger.debug('callback for url: %s', url)
