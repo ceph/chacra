@@ -7,4 +7,4 @@ callback_key = "{{ callback_key|default('') }}"
 # Health Pings
 health_ping = {{ health_ping|default(False) }}
 # note this url will get the hostname appended
-health_ping_url = "http://shaman.ceph.com/api/nodes/"
+health_ping_url = "{{ health_ping_url|default('') }}"
