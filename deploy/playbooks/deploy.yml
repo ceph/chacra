@@ -30,3 +30,4 @@
      #callback_user: "admin"
      #callback_key: "secret"
      health_ping: true
+     health_ping_url: "https://shaman.ceph.com/api/nodes/"
