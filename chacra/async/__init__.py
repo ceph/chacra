@@ -2,10 +2,13 @@ from datetime import timedelta
 import os
 import pecan
 import socket
+import logging
 
 from celery import Celery
 from celery.signals import worker_init
 from chacra import models
+
+logger = logging.getLogger(__name__)
 
 
 @worker_init.connect
@@ -105,15 +108,18 @@ def post_if_healthy():
     health_ping_url = getattr(pecan.conf, 'health_ping_url', False)
 
     if not health_ping or not health_ping_url:
+        logger.info("System is not configured to send health ping.")
         return
 
     from chacra.async import recurring, checks
 
     if not checks.is_healthy():
+        logger.warning("System is not healthy and will not send health ping.")
         return
 
     hostname = socket.gethostname()
     url = os.path.join(health_ping_url, hostname, '')
+    logger.info("Posting health ping to: %s", url)
     recurring.callback.apply_async(
         args=({}, None),
         kwargs=dict(url=url),
