@@ -3,6 +3,7 @@
 callback_url = "{{ callback_url|default('') }}"
 callback_user = "{{ callback_user|default('') }}"
 callback_key = "{{ callback_key|default('') }}"
+callback_verify_ssl = {{ callback_verify_ssl|default(True) }}
 
 # Health Pings
 health_ping = {{ health_ping|default(False) }}

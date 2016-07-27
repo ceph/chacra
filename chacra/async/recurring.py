@@ -84,8 +84,9 @@ def callback(self, json, project_name, url=None):
     logger.debug('callback for url: %s', url)
     user = pecan.conf.callback_user
     key = pecan.conf.callback_key
+    verify_ssl = getattr(pecan.conf, "callback_verify_ssl", True)
 
     try:
-        requests.post(url, json=json, auth=(user, key))
+        requests.post(url, json=json, auth=(user, key), verify=verify_ssl)
     except requests.HTTPError as exc:
         raise self.retry(exc=exc)
