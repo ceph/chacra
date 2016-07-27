@@ -18,10 +18,18 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: true
-     fqdn: "localhost"
+     short_hostname: "3"
+     fqdn: "3.node.a"
+     api_user: "admin"
+     api_key: "secret"
 
      # callbacks
-     callback_url: ""
+     # using an IP here because vagrant won't know about
+     # the hostnames of other vagrant machines
+     callback_url: "https://192.168.111.116/api/repos/"
      callback_user: "admin"
      callback_key: "secret"
      graphite_api_key: '1234-asdf-1234'
+
+     health_ping: True
+     health_ping_url: "https://192.168.111.116/api/nodes/"
