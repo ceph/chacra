@@ -1,6 +1,6 @@
 ---
 
-- hosts: all
+- hosts: test
   user: ubuntu
   roles:
     - celery
@@ -17,10 +17,7 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: false
- 
-     # required
-     # short_hostname: ""
-     # fqdn: ""
+     fqdn: "{{ inventory_hostname }}"
 
      # graphite reporting for statsd
      graphite_host: "shaman.ceph.com"

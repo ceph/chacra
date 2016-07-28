@@ -3,7 +3,7 @@
 # used for creating ceph releases. It does not register or report status
 # to shaman.ceph.com.
 
-- hosts: all
+- hosts: production
   user: ubuntu
   roles:
     - celery
