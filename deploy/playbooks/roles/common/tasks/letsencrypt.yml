@@ -1,0 +1,44 @@
+---
+
+- name: ensure letsencrypt acme-challenge path
+  file:
+    path: "{{ ssl_webroot_path }}"
+    state: "directory"
+    mode: 0755
+  sudo: yes
+
+- name: unlink app nginx config
+  file:
+    path: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
+    state: "absent"
+  sudo: true
+
+- name: create temporary nginx config
+  template:
+    src: "../templates/nginx_tmp_site.conf"
+    dest: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
+  sudo: true
+
+- name: restart nginx
+  sudo: yes
+  service:
+    name: nginx
+    state: restarted
+
+- name: create (or renew) letsencrypt ssl cert
+  command: "{{ letsencrypt_command }}"
+  sudo: yes
+
+- name: setup a cron to renew the SSL cert every day
+  cron:
+    name: "renew letsencrypt cert"
+    minute: "0"
+    hour: "6,18"
+    job: "{{letsencrypt_command}}"
+  sudo: yes
+
+- name: unlink tmp nginx config
+  file:
+    path: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
+    state: "absent"
+  sudo: true

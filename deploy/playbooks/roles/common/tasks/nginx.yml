@@ -1,14 +1,20 @@
 ---
 - name: ensure sites-available for nginx
-  file: path=/etc/nginx/sites-available state=directory
+  file:
+    path: /etc/nginx/sites-available
+    state: directory
   sudo: true
 
 - name: ensure there is an nginx user
-  user: name=nginx comment="Nginx user"
+  user:
+    name: nginx
+    comment: "Nginx user"
   sudo: true
 
 - name: ensure sites-enable for nginx
-  file: path=/etc/nginx/sites-enabled state=directory
+  file:
+    path: /etc/nginx/sites-enabled
+    state: directory
   sudo: true
 
 - name: remove default nginx site
@@ -24,39 +30,24 @@
   action: service name=nginx enabled=true
 
 - name: create nginx site config
-  action: template src=../templates/nginx_site.conf dest=/etc/nginx/sites-available/{{ app_name }}.conf
+  template:
+    src: "../templates/nginx_site.conf"
+    dest: "/etc/nginx/sites-available/{{ app_name }}.conf"
   sudo: true
   notify:
     - restart nginx
 
+- include: ssl.yml
+  when: development_server == true
+
+- include: letsencrypt.yml
+  when: development_server == false
+
 - name: link nginx config
-  action: file src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
-  sudo: true
-
-- name: ensure ssl certs directory
-  action: file dest=/etc/ssl/certs state=directory
-  sudo: true
-
-- name: ensure ssl private directory
-  action: file dest=/etc/ssl/private state=directory
-  sudo: true
-
-- name: check for SSL cert
-  stat: path=/etc/ssl/certs/{{ fqdn }}-bundled.crt
-  ignore_errors: true
-  register: ssl_cert
-
-- name: create self-signed SSL cert
-  command: openssl req -new -nodes -x509 -subj "/C=US/ST=Oregon/L=Portland/O=IT/CN=${app_name}" -days 3650 -keyout /etc/ssl/private/{{ fqdn }}.key -out /etc/ssl/certs/{{ fqdn }}-bundled.crt -extensions v3_ca creates=/etc/nginx/ssl/{{ fqdn }}-bundled.crt
-  when: development_server and ssl_cert.stat.exists == false
-  sudo: true
-  notify: restart nginx
-
-- name: make sure permissions are correct for crt
   file:
-    path: /etc/ssl/certs/{{ fqdn }}-bundled.crt
-    mode: 0777
-  when: development_server
+    src: "/etc/nginx/sites-available/{{ app_name }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
+    state: "link"
   sudo: true
 
 - name: ensure nginx is restarted
