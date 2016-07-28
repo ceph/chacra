@@ -34,3 +34,6 @@
 
      health_ping: True
      health_ping_url: "https://192.168.111.116/api/nodes/"
+
+     nginx_ssl_cert_path: "/etc/ssl/certs/{{ fqdn }}-bundled.crt"
+     nginx_ssl_key_path: "/etc/ssl/private/{{ fqdn }}.key"
