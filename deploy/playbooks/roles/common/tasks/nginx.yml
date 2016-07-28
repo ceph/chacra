@@ -41,7 +41,7 @@
   when: development_server == true
 
 - include: letsencrypt.yml
-  when: development_server == false
+  when: development_server == false and use_letsencrypt
 
 - name: link nginx config
   file:
