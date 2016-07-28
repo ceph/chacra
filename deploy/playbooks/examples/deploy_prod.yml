@@ -1,0 +1,36 @@
+---
+# This playbook is used for deploying the production chacra instance that's
+# used for creating ceph releases. It does not register or report status
+# to shaman.ceph.com.
+
+- hosts: all
+  user: ubuntu
+  roles:
+    - celery
+    - common
+    - repos
+    - statsd
+  vars:
+     app_name: "chacra"
+     use_ssl: true
+     wsgi_file: wsgi.py
+     wsgi_callable: application
+     ansible_ssh_port: 2222
+     binary_root: "/opt/binaries"
+     repos_root: "/opt/repos"
+     branch: "master"
+     development_server: false
+     fqdn: "chacra.ceph.com"
+
+     # graphite reporting for statsd
+     graphite_host: "shaman.ceph.com"
+     # required
+     # graphite_api_key: '1234-asdf-1234'
+
+     # required on first deploy
+     # api_user: "admin"
+     # api_key: "secret"
+
+     # leave blank, we want prod_callbacks.py created, by not used
+     callback_user: ""
+     callback_key: ""
