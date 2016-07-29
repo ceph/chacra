@@ -114,7 +114,7 @@ def post_if_healthy():
     from chacra.async import recurring, checks
 
     if not checks.is_healthy():
-        logger.warning("System is not healthy and will not send health ping.")
+        logger.error("System is not healthy and will not send health ping.")
         return
 
     hostname = socket.gethostname()
