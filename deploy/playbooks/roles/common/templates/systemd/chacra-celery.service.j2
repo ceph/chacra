@@ -11,9 +11,9 @@ User={{ ansible_ssh_user }}
 WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 StandardOutput=journal
 StandardError=journal
-ExecStart={{ app_home }}/bin/celery multi start 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async --logfile=/var/log/celery/%n%I.log
+ExecStart={{ app_home }}/bin/celery multi start 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async
 ExecStop={{ app_home }}/bin/celery multi stopwait 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos --pidfile=%n.pid
-ExecReload={{ app_home }}/bin/celery multi restart 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async --logfile=/var/log/celery/%n%I.log
+ExecReload={{ app_home }}/bin/celery multi restart 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async
 
 [Install]
 WantedBy=multi-user.target
