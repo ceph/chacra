@@ -50,6 +50,11 @@ def fake():
     return Fake
 
 
+def pytest_collectstart(collector):
+    import os
+    os.environ['PECAN_CONFIG'] = config_file()
+
+
 @pytest.fixture(scope='session')
 def app(request):
     config = configuration.conf_from_file(config_file()).to_dict()
