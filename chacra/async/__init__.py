@@ -24,7 +24,6 @@ def bootstrap_pecan(signal, sender):
     # Once configuration is set we need to initialize the models so that we can connect
     # to the DB wth a configured mapper.
     models.init_model()
-    configure_celerybeat()
 
 
 app = Celery(
@@ -34,23 +33,22 @@ app = Celery(
 )
 
 
-def configure_celerybeat():
-    try:
-        seconds = pecan.conf.polling_cycle
-    except AttributeError:
-        bootstrap_pecan(None, None)
-        seconds = pecan.conf.polling_cycle
+try:
+    seconds = pecan.conf.polling_cycle
+except AttributeError:
+    bootstrap_pecan(None, None)
+    seconds = pecan.conf.polling_cycle
 
-    app.conf.update(
-        CELERYBEAT_SCHEDULE={
-            'poll-repos': {
-                'task': 'chacra.async.recurring.poll_repos',
-                'schedule': timedelta(
-                    seconds=seconds),
-                'options': {'queue': 'poll_repos'}
-            },
+app.conf.update(
+    CELERYBEAT_SCHEDULE={
+        'poll-repos': {
+            'task': 'chacra.async.recurring.poll_repos',
+            'schedule': timedelta(
+                seconds=seconds),
+            'options': {'queue': 'poll_repos'}
         },
-    )
+    },
+)
 
 
 # helpers
