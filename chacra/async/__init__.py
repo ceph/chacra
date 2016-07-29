@@ -3,12 +3,46 @@ import os
 import pecan
 import socket
 import logging
+import warnings
 
 from celery import Celery
 from celery.signals import worker_init
 from chacra import models
 
+from pecan.configuration import Config
+
+try:
+    from logging.config import dictConfig as load_logging_config
+except ImportError:
+    from logutils.dictconfig import dictConfig as load_logging_config  # noqa
+
+
 logger = logging.getLogger(__name__)
+
+
+def configure_celery_logging():
+    logging = pecan.conf.get('logging', {})
+    debug = pecan.conf.get('debug', False)
+    if logging:
+        if debug:
+            try:
+                #
+                # By default, Python 2.7+ silences DeprecationWarnings.
+                # However, if conf.app.debug is True, we should probably ensure
+                # that users see these types of warnings.
+                #
+                from logging import captureWarnings
+                captureWarnings(True)
+                warnings.simplefilter("default", DeprecationWarning)
+            except ImportError:
+                # No captureWarnings on Python 2.6, DeprecationWarnings are on
+                pass
+
+        if isinstance(logging, Config):
+            logging = logging.to_dict()
+        if 'version' not in logging:
+            logging['version'] = 1
+        load_logging_config(logging)
 
 
 @worker_init.connect
@@ -21,6 +55,7 @@ def bootstrap_pecan(signal, sender):
         config_path = os.path.abspath(os.path.join(here, '../config/config.py'))
 
     pecan.configuration.set_config(config_path, overwrite=True)
+    configure_celery_logging()
     # Once configuration is set we need to initialize the models so that we can connect
     # to the DB wth a configured mapper.
     models.init_model()
