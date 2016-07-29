@@ -1,6 +1,6 @@
 ---
 
-- hosts: all
+- hosts: test
   user: ubuntu
   roles:
     - celery
@@ -17,16 +17,19 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: false
-     fqdn: "chacra.ceph.com"
-
+     fqdn: "{{ inventory_hostname }}"
      # graphite reporting for statsd
      graphite_host: "shaman.ceph.com"
      # required
      # graphite_api_key: '1234-asdf-1234'
-
      # callbacks
      callback_url: "https://shaman.ceph.com/api/repos/"
      # required
      #callback_user: "admin"
      #callback_key: "secret"
+     callback_verify_ssl: True
      health_ping: true
+     health_ping_url: "https://shaman.ceph.com/api/nodes/"
+     use_letsencrypt: True
+     nginx_ssl_cert_path: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
+     nginx_ssl_key_path: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"

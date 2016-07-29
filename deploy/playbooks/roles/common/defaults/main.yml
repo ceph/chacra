@@ -1,7 +1,11 @@
 ---
 app_home: /opt/{{ app_name }}
 app_use_ssl: yes
-
-# hostnames
-fqdn: ''
-short_hostname: 'chacra'
+ssl_support_email: "adeza@redhat.com"
+ssl_webroot_path: "/var/www/{{ fqdn }}"
+letsencrypt_command: "letsencrypt certonly --webroot -w {{ ssl_webroot_path }} -d {{ fqdn }} --email {{ ssl_support_email }} --agree-tos --renew-by-default"
+ssl_cert_path: "files/ssl/dev/ssl.crt"
+ssl_key_path: "files/ssl/dev/ssl.key"
+# this gives us a way for chacra.ceph.com to avoid
+# using letsencrypt for now as it already has a ssl cert
+use_letsencrypt: False

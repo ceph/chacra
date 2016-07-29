@@ -104,18 +104,3 @@
 - include: nginx.yml
   tags:
     - nginx
-
-# nginx should be up and running by now, there is a bug with Ubuntu 14.04 and
-# nginx where nginx is using the old init scripts and the 'service' command
-# returns a zero exit code which ansible interprets as all being OK.
-
-- name: ensure nginx is running
-  sudo: true
-  action: service name=nginx state=started
-
-- name: ensure nginx was started and stayed up and running
-  sudo: true
-  action: service name=nginx state=started
-  register: nginx_was_running
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_release == 'trusty'
-  failed_when: nginx_was_running.changed
