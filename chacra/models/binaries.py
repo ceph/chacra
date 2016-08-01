@@ -21,6 +21,7 @@ class Binary(Base):
     distro = Column(String(256), nullable=False, index=True)
     distro_version = Column(String(256), nullable=False, index=True)
     arch = Column(String(256), nullable=False, index=True)
+    flavor = Column(String(256), nullable=False, index=True, default='default')
     built_by = Column(String(256))
     created = Column(DateTime, index=True)
     modified = Column(DateTime, index=True)
@@ -43,6 +44,7 @@ class Binary(Base):
         'sha1',
         'built_by',
         'size',
+        'flavor',
     ]
 
     def __init__(self, name, project, repo=None, **kw):
@@ -154,6 +156,7 @@ class Binary(Base):
             arch=self.arch,
             ref=self.ref,
             sha1=self.sha1,
+            flavor=self.flavor,
         )
 
 
