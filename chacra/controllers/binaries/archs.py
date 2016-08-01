@@ -10,6 +10,7 @@ from chacra import models, util
 from chacra.controllers import error
 from chacra.controllers.util import repository_is_automatic
 from chacra.controllers.binaries import BinaryController
+from chacra.controllers.binaries import flavors as _flavors
 from chacra.auth import basic_auth
 
 
@@ -85,7 +86,7 @@ class ArchController(object):
         if self.binary is not None:
             if os.path.exists(self.binary.path):
                 if request.POST.get('force', False) is False:
-                    error('/errors/invalid', "resource already exists")
+                    error('/errors/invalid', 'resource already exists and "force" key was not used')
 
         full_path = self.save_file(file_obj)
 
@@ -180,3 +181,5 @@ class ArchController(object):
     @expose()
     def _lookup(self, name, *remainder):
         return BinaryController(name), remainder
+
+    flavors = _flavors.FlavorsController()
