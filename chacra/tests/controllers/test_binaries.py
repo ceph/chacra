@@ -1,5 +1,6 @@
 import os
 import pecan
+import py.test
 
 from chacra.models import Binary, Project, Repo
 from chacra.tests import util
@@ -27,53 +28,96 @@ class TestBinaryUniqueness(object):
 
         assert result.json['i386'] == ['ceph-deploy-1.0.0-0.el6.i386.rpm']
 
+    def test_two_projects_different_archs_flavored(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/head/centos/el6/x86_64/flavors/default/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+
+        session.app.post(
+            '/binaries/ceph-deploy/master/head/centos/el6/i386/flavors/default/',
+            upload_files=[('file', 'ceph-deploy-1.0.0-0.el6.i386.rpm', 'hello tharrrr')]
+        )
+
+        # get archs for ceph-deploy
+        result = session.app.get(
+            '/binaries/ceph-deploy/master/head/centos/el6/',
+        )
+
+        assert result.json['i386'] == ['ceph-deploy-1.0.0-0.el6.i386.rpm']
+
 
 class TestBinaryController(object):
 
-    def test_single_binary_file_creates_resource(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph/giant/head/ceph/el6/x86_64/',
+             '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/']
+    )
+    def test_single_binary_file_creates_resource(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url,
             params={'force': 1},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         assert result.status_int == 201
 
-    def test_put_is_not_allowed(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph/giant/head/ceph/el6/x86_64/',
+             '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/']
+    )
+    def test_put_is_not_allowed(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         result = session.app.put(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
             expect_errors=True,
         )
         assert result.status_int == 405
 
-    def test_archs_is_not_found(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_get',
+            [('/binaries/ceph/giant/head/ceph/el7/x86_64/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
+             ('/binaries/ceph/giant/head/ceph/el7/x86_64/flavors/default/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/')]
+    )
+    def test_archs_is_not_found(self, session, tmpdir, url_post, url_get):
         pecan.conf.binary_root = str(tmpdir)
         # post to a different distro but same arch
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el7/x86_64/',
+            url_post,
             params={'force': 1},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         result = session.app.get(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_get,
             expect_errors=True
         )
         assert result.status_int == 404
 
-    def test_single_binary_file_can_be_downloaded(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_get',
+            [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/'),
+            ('/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/',
+            '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/')]
+    )
+    def test_single_binary_file_can_be_downloaded(self, session, tmpdir, url_post, url_get):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post,
             params={'force': 1},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
-        result = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
+        result = session.app.get(url_get)
         assert result.status_int == 200
 
     def test_single_binary_file_can_be_deleted(self, session, tmpdir):
@@ -90,7 +134,12 @@ class TestBinaryController(object):
         result = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
         assert result.status_int == 404
 
-    def test_binary_file_can_not_delete_binary_file(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/']
+    )
+    def test_binary_file_deletes_object_with_no_path(self, session, url):
         p = Project("ceph")
         Binary(
             "ceph-9.0.0-0.el6.x86_64.rpm",
@@ -101,12 +150,17 @@ class TestBinaryController(object):
             arch="x86_64",
             sha1="head",
         )
-        result = session.app.delete('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
-        assert result.status_int == 500
+        result = session.app.delete(url, expect_errors=True)
+        assert result.status_int == 204
 
-    def test_delete_missing_binary_file(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/']
+    )
+    def test_delete_missing_binary_file(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
-        result = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
+        result = session.app.get(url, expect_errors=True)
         assert result.status_int == 404
 
     def test_binary_file_deleted_removes_project(self, session, tmpdir):
@@ -140,17 +194,24 @@ class TestBinaryController(object):
         p = Project.get(1)
         assert p.name == "ceph"
 
-    def test_binary_file_deleted_removes_repo(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_delete',
+            [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/'),
+            ('/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/',
+            '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/')]
+    )
+    def test_binary_file_deleted_removes_repo(self, session, tmpdir, url_post, url_delete):
         # if a repo has no binaries related to it after binary deletion, it is deleted as well
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post,
             params={'force': 1},
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         repo = Repo.get(1)
         assert repo
-        result = session.app.delete('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
+        result = session.app.delete(url_delete)
         assert result.status_int == 204
         repo = Repo.get(1)
         assert not repo
@@ -175,9 +236,14 @@ class TestBinaryController(object):
         repo = Repo.get(1)
         assert repo.needs_update
 
-    def test_auth_fails(self, session):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/']
+    )
+    def test_auth_fails(self, session, url):
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
+            url,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
             headers={'Authorization': util.make_credentials(correct=False)},
             expect_errors=True
@@ -203,30 +269,44 @@ class TestBinaryController(object):
         binary = Binary.get(1)
         assert binary.path.endswith('ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm')
 
-    def test_new_binary_upload_fails_with_existing(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_post_2',
+            [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
+             ('/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/')]
+    )
+    def test_new_binary_upload_fails_with_existing(self, session, tmpdir, url_post, url_post_2):
         pecan.conf.binary_root = str(tmpdir)
 
         # we do a bunch of requests that do talk to the database
         session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post_2,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
             expect_errors=True
         )
 
         assert result.status_int == 400
 
-    def test_posting_twice__different_distro_ver_not_requires_force_flag(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_post_2',
+            [('/binaries/ceph/giant/head/ceph/el7/x86_64/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
+             ('/binaries/ceph/giant/head/ceph/el7/x86_64/flavors/default/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/')]
+    )
+    def test_posting_twice__different_distro_ver_not_requires_force_flag(self, session, tmpdir, url_post, url_post_2):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el7/x86_64/',
+            url_post,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post_2,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         assert result.status_int == 201
@@ -249,33 +329,54 @@ class TestBinaryController(object):
         contents = open(destination).read()
         assert contents == 'something changed'
 
-    def test_binary_tells_what_project_it_belongs_to(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_get',
+            [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
+             ('/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/')]
+    )
+    def test_binary_tells_what_project_it_belongs_to(self, session, tmpdir, url_post, url_get):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
-        response = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/').json
+        response = session.app.get(url_get).json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['project']
         assert result == 'ceph'
 
-    def test_binary_gets_size_computed(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_get',
+            [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
+             ('/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/')]
+    )
+    def test_binary_gets_size_computed(self, session, tmpdir, url_post, url_get):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
-        response = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/').json
+        response = session.app.get(url_get).json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['size']
         assert result == 13
 
-    def test_binary_gets_checksum_computed(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_get',
+            [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
+             ('/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/')]
+    )
+    def test_binary_gets_checksum_computed(self, session, tmpdir, url_post, url_get):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
-        response = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/').json
+        response = session.app.get(url_get).json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
         assert len(result) == 128
         assert result.startswith('318b')
@@ -298,19 +399,31 @@ class TestBinaryController(object):
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
         assert result.startswith('a5725e467')
 
-    def test_head_requests_are_allowed(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url_post, url_head',
+            [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
+             ('/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/',
+              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/')]
+    )
+    def test_head_requests_are_allowed(self, session, tmpdir, url_post, url_head):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
-            '/binaries/ceph/giant/head/ceph/el6/x86_64/',
+            url_post,
             upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
-        response = session.app.head('/binaries/ceph/giant/head/ceph/el6/x86_64/')
+        response = session.app.head(url_head)
         assert response.status_int == 200
 
 
 class TestRelatedProjects(object):
 
-    def test_marks_nonexsitent_related_project(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+    )
+    def test_marks_nonexsitent_related_project(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
@@ -319,7 +432,7 @@ class TestRelatedProjects(object):
             '__force_dict__': True,
         }
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         project = Project.filter_by(name='ceph').first()
@@ -328,7 +441,12 @@ class TestRelatedProjects(object):
         repo = Repo.filter_by(project=project).first()
         assert repo.needs_update is True
 
-    def test_marks_existing_related_project(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+    )
+    def test_marks_existing_related_project(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
@@ -339,7 +457,7 @@ class TestRelatedProjects(object):
         Project(name='ceph')
         session.commit()
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         project = Project.filter_by(name='ceph').first()
@@ -347,7 +465,12 @@ class TestRelatedProjects(object):
         repo = Repo.filter_by(project=project).first()
         assert repo.needs_update is True
 
-    def test_marks_multiple_projects(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+    )
+    def test_marks_multiple_projects(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
@@ -360,7 +483,7 @@ class TestRelatedProjects(object):
         }
         session.commit()
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         ceph_project = Project.filter_by(name='ceph').first()
@@ -368,7 +491,12 @@ class TestRelatedProjects(object):
         assert Repo.filter_by(project=ceph_project).first().needs_update is True
         assert Repo.filter_by(project=rhcs_project).first().needs_update is True
 
-    def test_marks_nonexsitent_related_project_type(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+    )
+    def test_marks_nonexsitent_related_project_type(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
@@ -377,7 +505,7 @@ class TestRelatedProjects(object):
             '__force_dict__': True,
         }
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         project = Project.filter_by(name='ceph').first()
@@ -388,7 +516,12 @@ class TestRelatedProjects(object):
 class TestAutomaticRepos(object):
     # these are not unittests :(
 
-    def test_skips_marking_needs_update_on_related_repos(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+    )
+    def test_skips_marking_needs_update_on_related_repos(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
@@ -398,7 +531,7 @@ class TestAutomaticRepos(object):
             '__force_dict__': True,
         }
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         project = Project.filter_by(name='ceph').first()
@@ -409,15 +542,19 @@ class TestAutomaticRepos(object):
         session.commit()
 
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-deploy_10.0.0-0.el6.x86_64.rpm', 'newer version')]
         )
         project = Project.filter_by(name='ceph').first()
         repo = Repo.filter_by(project=project).first()
         assert repo.needs_update is False
 
-
-    def test_skips_marking_needs_update(self, session, tmpdir):
+    @py.test.mark.parametrize(
+            'url',
+            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+    )
+    def test_skips_marking_needs_update(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph-deploy': {
@@ -426,7 +563,7 @@ class TestAutomaticRepos(object):
             '__force_dict__': True,
         }
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
         )
         project = Project.filter_by(name='ceph-deploy').first()
@@ -437,7 +574,7 @@ class TestAutomaticRepos(object):
         session.commit()
 
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/6/x86_64/',
+            url,
             upload_files=[('file', 'ceph-deploy_10.0.0-0.el6.x86_64.rpm', 'newer version')]
         )
         project = Project.filter_by(name='ceph-deploy').first()
