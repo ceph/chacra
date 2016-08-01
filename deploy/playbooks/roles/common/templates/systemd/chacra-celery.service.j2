@@ -1,4 +1,7 @@
 # {{ ansible_managed }}
+# logs for celery can be found in /var/log/celery/
+# The logs can not be sent to the journal because the `celery multi` command will not log to
+# stderr or stdout.
 [Unit]
 Description=chacra celery service
 After=network.target rabbitmq-server.service
@@ -11,9 +14,9 @@ User={{ ansible_ssh_user }}
 WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 StandardOutput=journal
 StandardError=journal
-ExecStart={{ app_home }}/bin/celery multi start 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async
+ExecStart={{ app_home }}/bin/celery multi start 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async --logfile=/var/log/celery/%n%I.log
 ExecStop={{ app_home }}/bin/celery multi stopwait 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos --pidfile=%n.pid
-ExecReload={{ app_home }}/bin/celery multi restart 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async
+ExecReload={{ app_home }}/bin/celery multi restart 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async --logfile=/var/log/celery/%n%I.log
 
 [Install]
 WantedBy=multi-user.target
