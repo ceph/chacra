@@ -21,12 +21,14 @@ class BinaryController(object):
         self.arch = request.context['arch']
         self.ref = request.context['ref']
         self.sha1 = request.context['sha1']
+        self.flavor = request.context.get('flavor', 'default')
         self.binary = Binary.query.filter_by(
             name=binary_name,
             ref=self.ref,
             sha1=self.sha1,
             distro=self.distro,
             distro_version=self.distro_version,
+            flavor=self.flavor,
             project=self.project).first()
 
     @expose(content_type='application/octet-stream', generic=True)
@@ -139,7 +141,8 @@ class BinaryController(object):
         project = self.binary.project
         self.binary.delete()
         try:
-            os.remove(binary_path)
+            if binary_path:
+                os.remove(binary_path)
         except (IOError, OSError):
             msg = "Could not remove the binary path: %s" % binary_path
             logger.exception(msg)

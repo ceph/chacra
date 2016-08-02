@@ -15,6 +15,7 @@ class Repo(Base):
     sha1 = Column(String(256), index=True)
     distro = Column(String(256), nullable=False, index=True)
     distro_version = Column(String(256), nullable=False, index=True)
+    flavor = Column(String(256), nullable=False, index=True, default='default')
     modified = Column(DateTime, index=True)
     signed = Column(Boolean(), default=False)
     needs_update = Column(Boolean(), default=True)
@@ -32,7 +33,8 @@ class Repo(Base):
         self.distro = distro
         self.distro_version = distro_version
         self.modified = datetime.datetime.utcnow()
-        self.sha1 = kwargs.get("sha1")
+        self.sha1 = kwargs.get('sha1')
+        self.flavor = kwargs.get('flavor', 'default')
 
     def __repr__(self):
         try:
@@ -61,6 +63,7 @@ class Repo(Base):
             is_queued=self.is_queued,
             type=self.type,
             size=self.size,
+            flavor=self.flavor,
         )
 
     @property

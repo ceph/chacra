@@ -1,32 +1,29 @@
-import logging
 import os
+import logging
 import pecan
-from pecan import response
+from pecan import expose, abort, request, response
 from pecan.secure import secure
-from pecan import expose, abort, request
 from webob.static import FileIter
-from chacra.models import Binary
 from chacra import models, util
 from chacra.controllers import error
 from chacra.controllers.util import repository_is_automatic
 from chacra.controllers.binaries import BinaryController
-from chacra.controllers.binaries import flavors as _flavors
 from chacra.auth import basic_auth
-
 
 logger = logging.getLogger(__name__)
 
 
-class ArchController(object):
+class FlavorController(object):
 
-    def __init__(self, arch):
-        self.arch = arch
+    def __init__(self, flavor):
+        self.flavor = flavor
+        self.arch = request.context['arch']
         self.project = models.Project.get(request.context['project_id'])
         self.distro = request.context['distro']
         self.distro_version = request.context['distro_version']
         self.ref = request.context['ref']
         self.sha1 = request.context['sha1']
-        request.context['arch'] = self.arch
+        request.context['flavor'] = self.flavor
 
     @expose(generic=True, template='json')
     def index(self):
@@ -39,6 +36,7 @@ class ArchController(object):
             distro_version=self.distro_version,
             ref=self.ref,
             sha1=self.sha1,
+            flavor=self.flavor,
             arch=self.arch).all()
 
         if not binaries:
@@ -51,6 +49,7 @@ class ArchController(object):
             distro_version=self.distro_version,
             ref=self.ref,
             sha1=self.sha1,
+            flavor=self.flavor,
             arch=self.arch).all()
 
         if not binaries:
@@ -62,15 +61,16 @@ class ArchController(object):
                 distro_version=self.distro_version,
                 ref=self.ref,
                 sha1=self.sha1,
+                flavor=self.flavor,
                 arch=self.arch).all():
             resp[b.name] = b
         return resp
 
     def get_binary(self, name):
-        return Binary.filter_by(
+        return models.Binary.filter_by(
             name=name, project=self.project, arch=self.arch,
             distro=self.distro, distro_version=self.distro_version,
-            ref=self.ref, sha1=self.sha1
+            ref=self.ref, sha1=self.sha1, flavor=self.flavor
         ).first()
 
     @secure(basic_auth)
@@ -98,10 +98,11 @@ class ArchController(object):
             ref = request.context['ref']
             sha1 = request.context['sha1']
 
-            self.binary = Binary(
+            self.binary = models.Binary(
                 self.binary_name, self.project, arch=arch,
                 distro=distro, distro_version=distro_version,
-                ref=ref, sha1=sha1, path=path, size=os.path.getsize(path)
+                ref=ref, sha1=sha1, path=path, size=os.path.getsize(path),
+                flavor=self.flavor
             )
         else:
             self.binary.path = full_path
@@ -182,4 +183,34 @@ class ArchController(object):
     def _lookup(self, name, *remainder):
         return BinaryController(name), remainder
 
-    flavors = _flavors.FlavorsController()
+
+class FlavorsController(object):
+
+    @expose('json', generic=True)
+    def index(self):
+        project = models.Project.get(request.context['project_id'])
+        resp = {}
+        for flavor in project.flavors:
+            binaries = [
+                b.name for b in models.Binary.filter_by(
+                    project=project,
+                    distro_version=request.context['distro_version'],
+                    distro=request.context['distro'],
+                    ref=request.context['ref'],
+                    sha1=request.context['sha1'],
+                    arch=request.context['arch']).all()]
+            if binaries:
+                resp[flavor] = list(set(binaries))
+        return resp
+
+    @index.when(method='POST', template='json')
+    def index_post(self):
+        error('/errors/not_allowed', 'POST requests to this url are not allowed')
+
+    @expose()
+    def _lookup(self, flavor, *remainder):
+        if request.method in ['HEAD', 'GET']:
+            project = models.Project.get(request.context['project_id'])
+            if flavor not in project.flavors:
+                abort(404)
+        return FlavorController(flavor), remainder

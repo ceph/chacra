@@ -34,6 +34,10 @@ class Project(Base):
         return list(set([b.sha1 for b in self.binaries.all()]))
 
     @property
+    def flavors(self):
+        return list(set([b.flavor for b in self.binaries.all()]))
+
+    @property
     def built_repos(self):
         return self.repos.filter(Repo.path != None)
 
