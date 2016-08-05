@@ -17,7 +17,7 @@ class Binary(Base):
     name = Column(String(256), nullable=False, index=True)
     path = Column(String(256))
     ref = Column(String(256), index=True)
-    sha1 = Column(String(256), index=True)
+    sha1 = Column(String(256), index=True, default='head')
     distro = Column(String(256), nullable=False, index=True)
     distro_version = Column(String(256), nullable=False, index=True)
     arch = Column(String(256), nullable=False, index=True)
@@ -53,6 +53,8 @@ class Binary(Base):
         now = datetime.datetime.utcnow()
         self.created = now
         self.modified = now
+        self.sha1 = kw.get('sha1', 'head')
+        self.flavor = kw.get('flavor', 'default')
         for key in self.allowed_keys:
             if key in kw.keys():
                 setattr(self, key, kw[key])
@@ -90,6 +92,7 @@ class Binary(Base):
         repo = Repo.query.filter_by(
             ref=self.ref,
             sha1=self.sha1,
+            flavor=self.flavor,
             distro=self.distro,
             distro_version=self.distro_version,
             project=self.project).first()
@@ -101,7 +104,9 @@ class Binary(Base):
                 self.ref,
                 self.distro,
                 self.distro_version,
-                sha1=self.sha1
+                sha1=self.sha1,
+                flavor=self.flavor,
+                type=self._get_repo_type(),
             )
         # only needs_update when binary is not generic and automatic repos
         # are configured for this project
