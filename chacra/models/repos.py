@@ -12,7 +12,7 @@ class Repo(Base):
     id = Column(Integer, primary_key=True)
     path = Column(String(256))
     ref = Column(String(256), index=True)
-    sha1 = Column(String(256), index=True)
+    sha1 = Column(String(256), index=True, default='head')
     distro = Column(String(256), nullable=False, index=True)
     distro_version = Column(String(256), nullable=False, index=True)
     flavor = Column(String(256), nullable=False, index=True, default='default')
@@ -33,7 +33,7 @@ class Repo(Base):
         self.distro = distro
         self.distro_version = distro_version
         self.modified = datetime.datetime.utcnow()
-        self.sha1 = kwargs.get('sha1')
+        self.sha1 = kwargs.get('sha1', 'head')
         self.flavor = kwargs.get('flavor', 'default')
 
     def __repr__(self):
