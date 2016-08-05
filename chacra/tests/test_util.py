@@ -93,7 +93,7 @@ class TestRepoPaths(object):
     def test_relative(self):
         pecan.conf.repos_root = '/tmp/repos'
         result = util.repo_paths(self.repo)
-        assert result['relative'] == 'master/centos/el7'
+        assert result['relative'] == 'master/head/centos/el7'
 
     def test_root(self):
         pecan.conf.repos_root = '/tmp/repos'
@@ -103,7 +103,7 @@ class TestRepoPaths(object):
     def test_absolute(self):
         pecan.conf.repos_root = '/tmp/repos'
         result = util.repo_paths(self.repo)['absolute']
-        assert result == '/tmp/repos/ceph-deploy/master/centos/el7'
+        assert result == '/tmp/repos/ceph-deploy/master/head/centos/el7'
 
 
 class TestMakeDirs(object):
