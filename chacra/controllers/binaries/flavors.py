@@ -41,6 +41,7 @@ class FlavorController(object):
 
         if not binaries:
             abort(404)
+        return dict()
 
     @index.when(method='GET', template='json')
     def index_get(self):
