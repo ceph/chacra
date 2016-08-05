@@ -43,6 +43,7 @@ class ArchController(object):
 
         if not binaries:
             abort(404)
+        return dict()
 
     @index.when(method='GET', template='json')
     def index_get(self):
@@ -109,7 +110,6 @@ class ArchController(object):
         # check if this binary is interesting for other configured projects,
         # and if so, then mark those other repos so that they can be re-built
         self.mark_related_repos()
-
         return dict()
 
     def mark_related_repos(self):
