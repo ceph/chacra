@@ -7,11 +7,11 @@ A REST API for storing and retrieving specific versions and architectures of
 The URL structure is very simple and allows to be explicit about what the type
 and version of a given binary package the API is providing::
 
-    /binaries/{package_name}/{version}/{distribution}/{distro_release}/{architecture}/$binary
+    /binaries/{package_name}/{version}/{sha1}/{distribution}/{distro_release}/{architecture}/$binary
 
 So for a CentOS 7 x86_64 package for Ceph the url could look like::
 
-    /binaries/ceph/firefly/centos/7/x86_64/ceph-0.87.2-0.el7.centos.x86_64.rpm
+    /binaries/ceph/firefly/87a7cec9ab11c677de2ab23a7668a77d2f5b955e/centos/7/x86_64/ceph-0.87.2-0.el7.centos.x86_64.rpm
 
 
 Configuration
@@ -65,25 +65,32 @@ can be consumed to dig deeper into the URL structure:
 ``GET /binaries/ceph/firefly/``::
 
     {
+        "head": ["centos", "debian", "ubuntu"],
+        "95c4287b5d24b762bc8538633c5bb2918ecfe4dd": ["centos"],
+    }
+
+``GET /binaries/ceph/firefly/head/``::
+
+    {
         "centos": ["7", "6"],
         "debian": ["wheezy"],
         "ubuntu": ["trusty"],
     }
 
-``GET /binaries/ceph/firefly/centos/``::
+``GET /binaries/ceph/firefly/head/centos/``::
 
     {
         "7": ["x86_64"],
         "6": ["x86_64"]
     }
 
-``GET /binaries/ceph/firefly/centos/7/``::
+``GET /binaries/ceph/firefly/head/centos/7/``::
 
     {
         "x86_64": ["ceph-0.87.2-0.el7.centos.x86_64.rpm"]
     }
 
-``GET /binaries/ceph/firefly/centos/7/x86_64/``::
+``GET /binaries/ceph/firefly/head/centos/7/x86_64/``::
 
     {
         "ceph-0.87.2-0.el7.centos.x86_64.rpm": {
@@ -183,7 +190,7 @@ File resources
 ``POST`` requests will create new resources when using the full url with all
 the metadata parts including the filename *when uploading files*. For example::
 
-    curl -F "file=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" https://chacra.ceph.com/binaries/ceph/firefly/centos/10/x86_64/
+    curl -F "file=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" https://chacra.ceph.com/binaries/ceph/firefly/head/centos/10/x86_64/
 
 Note how a trailing slash is required as well as the full name of the binary.
 
@@ -209,9 +216,9 @@ Or any other absolute path is allowed too::
 Directory paths will follow the same structure as in URLs. For example, with
 a ``binary_root`` key that points to ``/opt/binaries/`` the final location for
 a resource that lives in
-``/binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/`` would
+``/binaries/ceph/firefly/head/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/`` would
 be
-``/opt/binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/``
+``/opt/binaries/ceph/firefly/head/centos/10/x86_64/ceph-0.87.1-0.el10.centos.x86_64.rpm/``
 
 HTTP Responses:
 
@@ -244,7 +251,7 @@ For non-existing URLs a retroactive feature will create the rest of the url
 structure. For example, a new distribution release for CentOS 10 that didn't
 exist before at this url and for the following package::
 
-    /binaries/ceph/firefly/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm
+    /binaries/ceph/firefly/head/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm
 
 Would create all the parts that didn't exist before ('10','x86_64', and
 'ceph-0.87.2-0.el10.centos.x86_64.rpm' from our previous examples). This would
@@ -265,7 +272,7 @@ Optional (but recommended key) is the ``built-by``::
 These requests need to go to the parent url part, so for the example above the
 HTTP request would go to::
 
-    /binaries/ceph/firefly/centos/10/x86_64/
+    /binaries/ceph/firefly/head/centos/10/x86_64/
 
 Note the need for a trailing slash.
 
@@ -308,7 +315,7 @@ case of DEB packages.
 
 The default repository structure URL looks like::
 
-    /repos/{project}/{ref}/{distro}/{distro version}/{REPO}
+    /repos/{project}/{ref}/{sha1}/{distro}/{distro version}/{REPO}
 
 
 Defining custom repositories
@@ -327,12 +334,12 @@ in config.py::
 The above configuration would create a "combined" repository of the defined
 versions. The repository would then be available at::
 
-    /repos/{project}/{ref}/combined/{combined REPO}
+    /repos/{project}/{ref}/{sha1}/combined/{combined REPO}
 
 All other repos built for other other distro versions will still be available at the
 default endpoint::
 
-    /repos/{project}/{ref}/{distro}/{distro version}/{REPO}
+    /repos/{project}/{ref}/{sha1}/{distro}/{distro version}/{REPO}
 
 
 .. note::
@@ -446,7 +453,7 @@ Authentication
 
 If authentication is configured, you can use the following flags to curl:
 
-curl --basic -u myuser -k -F "file=@ceph-deploy-1.5.28-0.noarch.rpm" https://chacra.example.com/binaries/ceph/test/centos/10/x86_64/
+curl --basic -u myuser -k -F "file=@ceph-deploy-1.5.28-0.noarch.rpm" https://chacra.example.com/binaries/ceph/test/head/centos/10/x86_64/
 
 You should also investigate https://pypi.python.org/pypi/chacractl, a client
 that wraps the chacra API and handles authentication in a configuration file,
