@@ -34,7 +34,7 @@
     name: "renew letsencrypt cert"
     minute: "0"
     hour: "6,18"
-    job: "{{letsencrypt_command}}"
+    job: "letsencrypt renew"
   sudo: yes
 
 - name: unlink tmp nginx config
