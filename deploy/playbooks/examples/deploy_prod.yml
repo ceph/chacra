@@ -20,6 +20,8 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: false
+     # the current prod ssl setup doesn't use letsencrypt
+     use_letsencrypt: false
      fqdn: "chacra.ceph.com"
 
      # graphite reporting for statsd
