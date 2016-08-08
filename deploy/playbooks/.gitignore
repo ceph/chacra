@@ -4,6 +4,7 @@
 
 # these should never make it to version control
 files/ssl/dev
+files/ssl/test
 
 # ignore a hosts file at the top level that was copied from examples/
 /hosts
