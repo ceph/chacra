@@ -9,3 +9,6 @@ ssl_key_path: "files/ssl/dev/ssl.key"
 # this gives us a way for chacra.ceph.com to avoid
 # using letsencrypt for now as it already has a ssl cert
 use_letsencrypt: False
+# this gives us a way to use self signed certs
+# on non-dev environments
+use_self_signed_ssl: False

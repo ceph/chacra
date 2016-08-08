@@ -38,7 +38,7 @@
     - restart nginx
 
 - include: ssl.yml
-  when: development_server == true
+  when: development_server == true or use_self_signed_ssl
 
 - include: letsencrypt.yml
   when: development_server == false and use_letsencrypt
