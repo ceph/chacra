@@ -34,11 +34,5 @@
      health_ping: true
      health_ping_url: "https://shaman.ceph.com/api/nodes/"
      use_letsencrypt: True
-     #nginx_ssl_cert_path: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
-     #nginx_ssl_key_path: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
-     # we want to use self-signed certs for now
-     use_self_signed_ssl: True
-     ssl_cert_path: "files/ssl/test/ssl.crt"
-     ssl_key_path: "files/ssl/test/ssl.key"
-     nginx_ssl_cert_path: "/etc/ssl/certs/{{ fqdn }}-bundled.crt"
-     nginx_ssl_key_path: "/etc/ssl/private/{{ fqdn }}.key"
+     nginx_ssl_cert_path: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
+     nginx_ssl_key_path: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
