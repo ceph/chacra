@@ -1,6 +1,5 @@
 from pecan import expose, abort, request
 from chacra.models import Project
-from chacra.models.repos import Repo
 from chacra.controllers import error
 from chacra.controllers.repos.refs import RefController
 
@@ -11,8 +10,6 @@ class ProjectController(object):
         self.project_name = project_name
         self.project = Project.query.filter_by(
             name=project_name
-        ).join(Repo).filter(
-            Repo.path != None
         ).first()
         if not self.project:
             abort(404)
@@ -27,7 +24,7 @@ class ProjectController(object):
         for ref in self.project.repo_refs:
             resp[ref] = list(set(
                 [r.sha1 for r in
-                    self.project.built_repos.filter_by(ref=ref).all()]
+                    self.project.repos.filter_by(ref=ref).all()]
             ))
         return resp
 
@@ -41,8 +38,7 @@ class ProjectsController(object):
     @expose('json')
     def index(self):
         resp = {}
-        projects = Project.query.join(Repo).filter(Repo.path != None)
-        for project in projects.all():
+        for project in Project.query.all():
             resp[project.name] = project.repo_refs
         return resp
 

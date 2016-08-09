@@ -13,7 +13,7 @@ class TestProjectsController(object):
         session.commit()
         result = session.app.get('/repos/')
         assert result.status_int == 200
-        assert result.json == {}
+        assert result.json == {"foobar": []}
 
     def test_single_project_with_built_repos(self, session):
         p = Project('foobar')
@@ -30,7 +30,7 @@ class TestProjectsController(object):
         assert len(result.json) == 1
         assert result.json == {"foobar": ["firefly"]}
 
-    def test_do_not_show_refs_without_built_repos(self, session):
+    def test_does_show_refs_without_built_repos(self, session):
         p = Project('foobar')
         repo = Repo(
             p,
@@ -49,23 +49,21 @@ class TestProjectsController(object):
         result = session.app.get('/repos/')
         assert result.status_int == 200
         assert len(result.json) == 1
-        assert result.json == {"foobar": ["firefly"]}
+        assert sorted(result.json["foobar"]) == sorted(["firefly", "hammer"])
 
-    def test_do_not_list_projects_without_built_repos(self, session):
+    def test_does_list_projects_without_built_repos(self, session):
         p = Project('foobar')
-        repo = Repo(
+        Repo(
             p,
             "firefly",
             "ubuntu",
             "trusty",
         )
-        repo.path = "some_path"
         Project('baz')
         session.commit()
         result = session.app.get('/repos/')
         assert result.status_int == 200
-        assert len(result.json) == 1
-        assert result.json == {"foobar": ["firefly"]}
+        assert len(result.json) == 2
 
 
 class TestProjectController(object):
@@ -92,10 +90,10 @@ class TestProjectController(object):
 
     def test_project_has_no_built_repos(self, session):
         Project('foobar')
-        result = session.app.get('/repos/foobar/', expect_errors=True)
-        assert result.status_int == 404
+        result = session.app.get('/repos/foobar/')
+        assert result.status_int == 200
 
-    def test_do_not_show_refs_without_built_repos(self, session):
+    def test_does_show_refs_without_built_repos(self, session):
         p = Project('foobar')
         repo = Repo(
             p,
@@ -115,8 +113,7 @@ class TestProjectController(object):
         session.commit()
         result = session.app.get('/repos/foobar/')
         assert result.status_int == 200
-        assert len(result.json) == 1
-        assert result.json == {"firefly": ["HEAD"]}
+        assert len(result.json) == 2
 
     def test_show_multiple_refs_with_built_repos(self, session):
         p = Project('foobar')

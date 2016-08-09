@@ -43,31 +43,9 @@ class TestSHA1Controller(object):
             sha1="head",
         )
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/head/', expect_errors=True)
-        assert result.status_int == 404
-
-    def test_do_not_show_distro_without_built_repos(self, session):
-        p = Project('foobar')
-        repo = Repo(
-            p,
-            "firefly",
-            "ubuntu",
-            "trusty",
-            sha1="head",
-        )
-        Repo(
-            p,
-            "firefly",
-            "centos",
-            "7",
-            sha1="head",
-        )
-        repo.path = "some_path"
-        session.commit()
         result = session.app.get('/repos/foobar/firefly/head/')
         assert result.status_int == 200
         assert len(result.json) == 1
-        assert result.json == {"ubuntu": ["trusty"]}
 
     def test_multiple_distros_with_built_repos(self, session):
         p = Project('foobar')

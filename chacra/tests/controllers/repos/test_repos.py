@@ -33,6 +33,29 @@ class TestRepoApiController(object):
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
     )
+    def test_repo_exists_no_path(self, session, url):
+        p = Project('foobar')
+        Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        session.commit()
+        result = session.app.get(url)
+        assert result.status_int == 200
+        assert result.json["distro_version"] == "trusty"
+        assert result.json["distro"] == "ubuntu"
+        assert result.json["ref"] == "firefly"
+        assert result.json["sha1"] == "head"
+
+
+    @py.test.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/ubuntu/trusty/',
+             '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
+    )
     def test_repo_is_not_queued(self, session, url):
         p = Project('foobar')
         repo = Repo(

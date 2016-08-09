@@ -82,7 +82,7 @@ class TestDistroController(object):
                                  expect_errors=True)
         assert result.status_int == 404
 
-    def test_distro_has_no_built_repos(self, session):
+    def test_shows_distro_that_has_no_built_repos(self, session):
         p = Project('foobar')
         Repo(
             p,
@@ -92,9 +92,8 @@ class TestDistroController(object):
             sha1="head",
         )
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/head/ubuntu/',
-                                 expect_errors=True)
-        assert result.status_int == 404
+        result = session.app.get('/repos/foobar/firefly/head/ubuntu/')
+        assert result.json == ["trusty"]
 
     def test_ref_does_not_exist(self, session):
         p = Project('foobar')

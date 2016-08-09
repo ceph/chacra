@@ -22,7 +22,7 @@ class FlavorsController(object):
         self.distro_name = request.context['distro']
         self.ref = request.context['ref']
         self.sha1 = request.context['sha1']
-        self.repos = self.project.built_repos.filter_by(
+        self.repos = self.project.repos.filter_by(
             distro=self.distro_name,
             distro_version=self.distro_version,
             ref=self.ref,
@@ -56,7 +56,7 @@ class RepoController(object):
         if not request.context.get('distro_version'):
             request.context['distro_version'] = self.distro_version
         self.flavor = flavor
-        self.repo = self.project.built_repos.filter_by(
+        self.repo = self.project.repos.filter_by(
             distro=self.distro_name,
             distro_version=self.distro_version,
             ref=self.ref,
