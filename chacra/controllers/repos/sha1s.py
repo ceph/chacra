@@ -20,7 +20,7 @@ class SHA1Controller(object):
         for distro in self.project.repo_distros:
             resp[distro] = list(set(
                 [b.distro_version for b in
-                    self.project.built_repos.filter_by(distro=distro, ref=self.ref, sha1=self.sha1).all()]
+                    self.project.repos.filter_by(distro=distro, ref=self.ref, sha1=self.sha1).all()]
             ))
         return resp
 

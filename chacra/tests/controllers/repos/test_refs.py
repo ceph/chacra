@@ -43,17 +43,18 @@ class TestRefController(object):
             sha1="head",
         )
         session.commit()
-        result = session.app.get('/repos/foobar/firefly/', expect_errors=True)
-        assert result.status_int == 404
+        result = session.app.get('/repos/foobar/firefly/')
+        assert result.status_int == 200
+        assert len(result.json) == 1
 
-    def test_do_not_show_sha1_without_built_repos(self, session):
+    def test_does_show_sha1_without_built_repos(self, session):
         p = Project('foobar')
         repo = Repo(
             p,
             "firefly",
             "ubuntu",
             "trusty",
-            sha1="head",
+            sha1="sha1",
         )
         Repo(
             p,
@@ -65,9 +66,8 @@ class TestRefController(object):
         repo.path = "some_path"
         session.commit()
         result = session.app.get('/repos/foobar/firefly/')
-        assert result.status_int == 200
-        assert len(result.json) == 1
-        assert result.json == {"head": ["ubuntu"]}
+        assert len(result.json) == 2
+        assert "sha1" in result.json
 
     def test_multiple_sha1_with_built_repos(self, session):
         p = Project('foobar')

@@ -18,12 +18,12 @@ class RefController(object):
         resp = {}
         sha1s = list(set(
             [r.sha1 for r in
-                self.project.built_repos.filter_by(ref=self.ref_name).all()]
+                self.project.repos.filter_by(ref=self.ref_name).all()]
         ))
         for sha1 in sha1s:
             resp[sha1] = list(set(
                 [b.distro for b in
-                    self.project.built_repos.filter_by(ref=self.ref_name, sha1=sha1).all()]
+                    self.project.repos.filter_by(ref=self.ref_name, sha1=sha1).all()]
             ))
         return resp
 

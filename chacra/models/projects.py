@@ -43,19 +43,19 @@ class Project(Base):
 
     @property
     def repo_refs(self):
-        return list(set([r.ref for r in self.built_repos.all()]))
+        return list(set([r.ref for r in self.repos.all()]))
 
     @property
     def repo_sha1s(self):
-        return list(set([r.sha1 for r in self.built_repos.all()]))
+        return list(set([r.sha1 for r in self.repos.all()]))
 
     @property
     def repo_distros(self):
-        return list(set([r.distro for r in self.built_repos.all()]))
+        return list(set([r.distro for r in self.repos.all()]))
 
     @property
     def repo_distro_versions(self):
-        return list(set([r.distro_version for r in self.built_repos.all()]))
+        return list(set([r.distro_version for r in self.repos.all()]))
 
     def __repr__(self):
         try:
