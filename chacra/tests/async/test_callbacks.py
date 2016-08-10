@@ -11,7 +11,7 @@ from chacra.tests import conftest
 repo_keys = [
         '"needs_update"', '"sha1"', '"is_queued"', '"is_updating"', '"type"',
         '"modified"', '"signed"', '"status"', '"project_name"', '"distro_version"',
-        '"path"', '"flavor"', '"ref"', '"distro"']
+        '"path"', '"flavor"', '"ref"', '"distro"', '"chacra_url"', '"url"']
 
 
 class TestHelpers(object):
