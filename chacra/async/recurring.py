@@ -102,4 +102,8 @@ def callback(self, data, project_name, url=None):
             headers=headers
         )
     except requests.HTTPError as exc:
+        logger.warning('callback failed: %s', str(exc))
         raise self.retry(exc=exc)
+    except Exception:
+        # Celery eats exceptions for breakfast
+        logger.exception('fatal error trying to POST callback')
