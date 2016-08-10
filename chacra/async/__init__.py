@@ -89,7 +89,7 @@ app.conf.update(
 # helpers
 #
 #
-def post_status(state, repo_obj, _callback=None):
+def post_status(status, repo_obj, _callback=None):
     """
     Nicer interface to send a status report on repo creation if configured.
 
@@ -103,7 +103,7 @@ def post_status(state, repo_obj, _callback=None):
     from chacra.async import recurring
     callback = _callback or recurring.callback.apply_async
     repo_obj_dict = repo_obj.__json__()
-    repo_obj_dict['state'] = state
+    repo_obj_dict['status'] = status
     project_name = repo_obj_dict['project_name']
 
     # Some fields from the object may not be JSON serializable by `requests`
