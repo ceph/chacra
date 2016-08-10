@@ -10,8 +10,8 @@ from chacra.tests import conftest
 
 repo_keys = [
         '"needs_update"', '"sha1"', '"is_queued"', '"is_updating"', '"type"',
-        '"modified"', '"signed"', '"state"', '"project_name"', '"distro_version"',
-        '"path"', '"flavor"', '"ref"', '"distro"']
+        '"modified"', '"signed"', '"status"', '"project_name"', '"distro_version"',
+        '"path"', '"flavor"', '"ref"', '"distro"', '"chacra_url"', '"url"']
 
 
 class TestHelpers(object):
@@ -40,6 +40,19 @@ class TestHelpers(object):
         assert key in result
         assert '"building"' in result
 
+    def test_correct_url_for_repos(self, session, recorder):
+        conf.callback_url = 'http://localhost/callback'
+        f_async = recorder()
+        async.post_status('building', self.repo, _callback=f_async)
+        result = f_async.recorder_calls[0]['kwargs']['args'][0]
+        assert '/r/ceph/firefly/head/centos/7/' in result
+
+    def test_correct_url_for_api(self, session, recorder):
+        conf.callback_url = 'http://localhost/callback'
+        f_async = recorder()
+        async.post_status('building', self.repo, _callback=f_async)
+        result = f_async.recorder_calls[0]['kwargs']['args'][0]
+        assert '/repos/ceph/firefly/head/centos/7/' in result
 
 class TestCallbackInvalidConf(object):
 
