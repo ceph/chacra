@@ -101,9 +101,15 @@ def post_status(status, repo_obj, _callback=None):
     if not getattr(pecan.conf, 'callback_url', False):
         return
     from chacra.async import recurring
+    # this needs a better implementation
+    host_url = 'https://%s/' % socket.gethostname()
+    api_url = os.path.join(host_url, 'repos', '')
+    repos_url = os.path.join(host_url, 'r', '')
     callback = _callback or recurring.callback.apply_async
     repo_obj_dict = repo_obj.__json__()
     repo_obj_dict['status'] = status
+    repo_obj_dict['chacra_url'] = os.path.join(api_url, repo_obj.uri, '')
+    repo_obj_dict['url'] = os.path.join(repos_url, repo_obj.uri, '')
     project_name = repo_obj_dict['project_name']
 
     # Some fields from the object may not be JSON serializable by `requests`
