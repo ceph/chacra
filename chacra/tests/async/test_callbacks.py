@@ -25,6 +25,12 @@ class TestHelpers(object):
             distro_version='7',
             )
 
+    def teardown(self):
+        # callback settings added in test_post_request are "sticky", this
+        # ensures they are reset for other tests that rely on pristine conf
+        # settings
+        conftest.reload_config()
+
     @pytest.mark.parametrize('key', repo_keys)
     def test_post_request(self, session, recorder, key):
         conf.callback_url = 'http://localhost/callback'
@@ -41,6 +47,8 @@ class TestCallbackInvalidConf(object):
         conf.callback_url = 'http://localhost/callback'
 
     def teardown(self):
+        # callback settings added in setup are "sticky", this ensures they are
+        # reset for other tests that rely on pristine conf settings
         conftest.reload_config()
 
     def test_missing_user_and_key(self):
@@ -61,6 +69,11 @@ class TestCallback(object):
         conf.callback_url = 'http://localhost/callback'
         conf.callback_user = 'admin'
         conf.callback_key = 'key'
+
+    def teardown(self):
+        # callback settings added in setup are "sticky", this ensures they are
+        # reset for other tests that rely on pristine conf settings
+        conftest.reload_config()
 
     def test_invalid_json(self):
         # omg this is so invalid
