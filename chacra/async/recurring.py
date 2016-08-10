@@ -1,4 +1,5 @@
 import os
+import json
 import pecan
 import requests
 from celery import shared_task
@@ -53,11 +54,15 @@ def poll_repos():
 
 
 @shared_task(acks_late=True, bind=True, default_retry_delay=30)
-def callback(self, json, project_name, url=None):
+def callback(self, data, project_name, url=None):
     """
     Send a callback to a remote HTTP service. Useful in cases where it is
     needed to advertise the current state of building repositories (since it is
     a time consuming process).
+
+    ``data`` Can be an encoded JSON string or a dictionary. If using specialty
+    fields like datetime values, it is safer to use `pecan.jsonify.encode` to
+    serialize properly.
 
     ``acks_late`` will wait until after the task has been acknowledged (not
     before, which is the default) giving a more robust behavior along with
@@ -81,12 +86,20 @@ def callback(self, json, project_name, url=None):
         if not getattr(pecan.conf, "callback_url", False):
             return
         url = os.path.join(pecan.conf.callback_url, project_name, '')
+    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     logger.debug('callback for url: %s', url)
     user = pecan.conf.callback_user
     key = pecan.conf.callback_key
     verify_ssl = getattr(pecan.conf, "callback_verify_ssl", True)
-
+    if isinstance(data, dict):
+        data = json.dumps(data)
     try:
-        requests.post(url, json=json, auth=(user, key), verify=verify_ssl)
+        requests.post(
+            url,
+            data=data,
+            auth=(user, key),
+            verify=verify_ssl,
+            headers=headers
+        )
     except requests.HTTPError as exc:
         raise self.retry(exc=exc)
