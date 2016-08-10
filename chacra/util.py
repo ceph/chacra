@@ -47,11 +47,12 @@ def repo_paths(repo):
     paths = {}
 
     # e.g. ceph-deploy/master/ubuntu/trusty
-    paths['relative'] = '%s/%s/%s/%s' % (
+    paths['relative'] = '%s/%s/%s/%s/flavors/%s' % (
         repo.ref,
         repo.sha1,
         repo.distro,
-        repo.distro_version
+        repo.distro_version,
+        repo.flavor
     )
 
     # e.g. /opt/repos/ceph-deploy
