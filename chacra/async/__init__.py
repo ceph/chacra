@@ -89,7 +89,7 @@ app.conf.update(
 # helpers
 #
 #
-def post_status(state, json):
+def post_status(state, repo_obj, _callback=None):
     """
     Nicer interface to send a status report on repo creation if configured.
 
@@ -101,31 +101,34 @@ def post_status(state, json):
     if not getattr(pecan.conf, 'callback_url', False):
         return
     from chacra.async import recurring
-    json['state'] = state
-    project_name = json['project_name']
-    recurring.callback.apply_async(
-        args=(json, project_name),
+    callback = _callback or recurring.callback.apply_async
+    repo_obj_dict = repo_obj.__json__()
+    repo_obj_dict['state'] = state
+    project_name = repo_obj_dict['project_name']
+
+    # Some fields from the object may not be JSON serializable by `requests`
+    # (like datetime objects) so we rely on Pecan to deal with those and encode
+    # them for us
+    data = pecan.jsonify.encode(repo_obj_dict)
+    callback(
+        args=(data, project_name),
     )
 
 
 def post_requested(repo):
-    json = repo.__json__()
-    post_status('requested', json)
+    post_status('requested', repo)
 
 
 def post_queued(repo):
-    json = repo.__json__()
-    post_status('queued', json)
+    post_status('queued', repo)
 
 
 def post_building(repo):
-    json = repo.__json__()
-    post_status('building', json)
+    post_status('building', repo)
 
 
 def post_ready(repo):
-    json = repo.__json__()
-    post_status('ready', json)
+    post_status('ready', repo)
 
 
 def post_if_healthy():

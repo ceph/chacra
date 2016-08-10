@@ -49,6 +49,25 @@ def fake():
                 setattr(self, k, v)
     return Fake
 
+@pytest.fixture
+def recorder():
+    class Recorder(object):
+        def __init__(self, *a, **kw):
+            self.recorder_init_call = []
+            self.recorder_calls = []
+            for k, v, in kw.items():
+                setattr(self, k, v)
+            self.recorder_init_call.append(
+                {'args': a, 'kwargs': kw}
+            )
+        def __call__(self, *a, **kw):
+            for k, v, in kw.items():
+                setattr(self, k, v)
+            self.recorder_calls.append(
+                {'args': a, 'kwargs': kw}
+            )
+
+    return Recorder
 
 def pytest_collectstart(collector):
     import os
