@@ -88,11 +88,21 @@ def callback(self, data, project_name, url=None):
         url = os.path.join(pecan.conf.callback_url, project_name, '')
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     logger.debug('callback for url: %s', url)
-    user = pecan.conf.callback_user
-    key = pecan.conf.callback_key
+    try:
+        user = pecan.conf.callback_user
+        key = pecan.conf.callback_key
+    except AttributeError:
+        logger.exception('callback authentication information missing')
+        return False
+
     verify_ssl = getattr(pecan.conf, "callback_verify_ssl", True)
+
     if isinstance(data, dict):
-        data = json.dumps(data)
+        try:
+            data = json.dumps(data)
+        except TypeError:
+            logger.exception('could not serialize data')
+            return False
     try:
         requests.post(
             url,
