@@ -10,7 +10,7 @@ from chacra.tests import conftest
 
 repo_keys = [
         '"needs_update"', '"sha1"', '"is_queued"', '"is_updating"', '"type"',
-        '"modified"', '"signed"', '"state"', '"project_name"', '"distro_version"',
+        '"modified"', '"signed"', '"status"', '"project_name"', '"distro_version"',
         '"path"', '"flavor"', '"ref"', '"distro"']
 
 
