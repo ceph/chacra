@@ -89,7 +89,7 @@ app.conf.update(
 # helpers
 #
 #
-def post_status(state, repo_obj):
+def post_status(state, repo_obj, _callback=None):
     """
     Nicer interface to send a status report on repo creation if configured.
 
@@ -101,6 +101,7 @@ def post_status(state, repo_obj):
     if not getattr(pecan.conf, 'callback_url', False):
         return
     from chacra.async import recurring
+    callback = _callback or recurring.callback.apply_async
     repo_obj_dict = repo_obj.__json__()
     repo_obj_dict['state'] = state
     project_name = repo_obj_dict['project_name']
@@ -109,7 +110,7 @@ def post_status(state, repo_obj):
     # (like datetime objects) so we rely on Pecan to deal with those and encode
     # them for us
     data = pecan.jsonify.encode(repo_obj_dict)
-    recurring.callback.apply_async(
+    callback(
         args=(data, project_name),
     )
 
