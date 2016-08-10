@@ -67,6 +67,17 @@ class Repo(Base):
         )
 
     @property
+    def uri(self):
+        return "{}/{}/{}/{}/{}/flavors/{}/".format(
+            self.project.name,
+            self.ref,
+            self.sha1,
+            self.distro,
+            self.distro_version,
+            self.flavor,
+        )
+
+    @property
     def is_generic(self):
         for binary in self.binaries:
             if binary.is_generic:
