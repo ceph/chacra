@@ -104,13 +104,14 @@ def callback(self, data, project_name, url=None):
             logger.exception('could not serialize data')
             return False
     try:
-        requests.post(
+        response = requests.post(
             url,
             data=data,
             auth=(user, key),
             verify=verify_ssl,
             headers=headers
         )
+        response.raise_for_status()
     except requests.HTTPError as exc:
         logger.warning('callback failed: %s', str(exc))
         raise self.retry(exc=exc)
