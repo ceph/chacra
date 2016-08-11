@@ -86,7 +86,7 @@ def callback(self, data, project_name, url=None):
         if not getattr(pecan.conf, "callback_url", False):
             return
         url = os.path.join(pecan.conf.callback_url, project_name, '')
-    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+    headers = {'Content-type': 'application/json'}
     logger.debug('callback for url: %s', url)
     try:
         user = pecan.conf.callback_user
