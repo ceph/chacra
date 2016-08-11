@@ -37,11 +37,20 @@
   notify:
     - restart nginx
 
+- name: check to see if ssl cert needs created
+  stat:
+    path: "{{ nginx_ssl_cert_path }}"
+  sudo: true
+  register: ssl_cert
+
 - include: ssl.yml
   when: development_server == true or use_self_signed_ssl
 
 - include: letsencrypt.yml
-  when: development_server == false and use_letsencrypt
+  when:
+    - development_server == false
+    - use_letsencrypt
+    - not ssl_cert.stat.exists
 
 - name: link nginx config
   file:
