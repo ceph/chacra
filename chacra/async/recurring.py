@@ -59,6 +59,10 @@ def purge_repos(_now=None):
     """
     Purge built repositories, including the associated model objects.
     """
+    if getattr(pecan.conf, 'purge_repos', False) is False:
+        logger.info('purge_repos option is unset or explicitly disabled, will skip purge')
+        return
+
     logger.info('polling repos for purging....')
     now = _now or datetime.datetime.utcnow()
 
