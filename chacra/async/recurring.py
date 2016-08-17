@@ -5,7 +5,7 @@ import pecan
 import requests
 from celery import shared_task
 from chacra import models
-from chacra.async import base, debian, rpm, post_queued
+from chacra.async import base, debian, rpm, post_queued, post_deleted
 import logging
 
 logger = logging.getLogger(__name__)
@@ -75,6 +75,7 @@ def purge_repos(_now=None):
             os.remove(b.path)
             b.delete()
             models.flush()
+        post_deleted(r)
         r.delete()
         models.flush()
     logger.info('completed repo purging')
