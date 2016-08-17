@@ -90,5 +90,4 @@ class TestDistroController(object):
         Binary('ceph-1.0.0.deb', p, ref='master', sha1="head", distro='ubuntu', distro_version='12.04', arch='i386')
         session.commit()
         result = session.app.get('/binaries/ceph/master/head/ubuntu/')
-        print result
         assert result.json['12.04'] == ['i386']
