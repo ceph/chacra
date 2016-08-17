@@ -54,6 +54,7 @@ class TestHelpers(object):
         result = f_async.recorder_calls[0]['kwargs']['args'][0]
         assert '/repos/ceph/firefly/head/centos/7/' in result
 
+
 class TestCallbackInvalidConf(object):
 
     def setup(self):
