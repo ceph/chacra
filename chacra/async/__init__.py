@@ -140,6 +140,10 @@ def post_ready(repo):
     post_status('ready', repo)
 
 
+def post_deleted(repo):
+    post_status('deleted', repo)
+
+
 def post_if_healthy():
     """
     If system is healthy, make an asynchronous request to a configured remote
