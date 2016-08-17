@@ -78,9 +78,12 @@ app.conf.update(
     CELERYBEAT_SCHEDULE={
         'poll-repos': {
             'task': 'chacra.async.recurring.poll_repos',
-            'schedule': timedelta(
-                seconds=seconds),
+            'schedule': timedelta(seconds=seconds),
             'options': {'queue': 'poll_repos'}
+        },
+        'purge-repos': {
+            'task': 'chacra.async.recurring.purge_repos',
+            'schedule': timedelta(days=1),
         },
     },
 )
