@@ -17,6 +17,7 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: false
+     purge_repos: True
      fqdn: "{{ inventory_hostname }}"
      # required for first deploy
      # api_user: "admin"
