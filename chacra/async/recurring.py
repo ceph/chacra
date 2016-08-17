@@ -1,3 +1,4 @@
+import datetime
 import os
 import json
 import pecan
@@ -51,6 +52,28 @@ def poll_repos():
             models.commit()
 
     logger.info('completed repo polling')
+
+
+@shared_task(base=base.SQLATask)
+def purge_repos(_now=None):
+    """
+    Purge built repositories, including the associated model objects.
+    """
+    logger.info('polling repos for purging....')
+    now = _now or datetime.datetime.utcnow()
+
+    # XXX Magical datetime, not user configurable
+    lifespan = now - datetime.timedelta(weeks=2)
+
+    for r in models.Repo.query.filter(models.Repo.modified < lifespan).all():
+        logger.info('repo %s is being processed for removal', r)
+        for b in r.binaries:
+            os.remove(b.path)
+            b.delete()
+            models.flush()
+        r.delete()
+        models.flush()
+    logger.info('completed repo purging')
 
 
 @shared_task(acks_late=True, bind=True, default_retry_delay=30)
