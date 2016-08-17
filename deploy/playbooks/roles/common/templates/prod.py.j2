@@ -78,6 +78,10 @@ distributions_root = "%(confdir)s/distributions"
 # be rebuilt
 polling_cycle = 120
 
+{% if purge_repos is defined %}
+purge_repos = {{ purge_repos }}
+{% endif %}
+
 # Once a "create repo" task is called, how many seconds (if any) to wait before actually
 # creating the repository
 quiet_time = 20
