@@ -1,0 +1,24 @@
+---
+# A simple playbook for bootstrapping a new xenial node
+# This installs python2.7 so that ansible modules work
+# and changes the default ssh port to 2222
+
+- hosts: all
+  user: ubuntu 
+  gather_facts: false
+  tasks:
+    - name: do python2.7 install
+      raw: sudo apt-get -y install python2.7
+
+    - name: setup alternate SSH port
+      lineinfile:
+        dest: "/etc/ssh/sshd_config"
+        regexp: "^Port"
+        line: "Port 2222"
+      become: yes
+
+    - name: restart sshd
+      service:
+        name: sshd
+        state: restarted
+      become: yes
