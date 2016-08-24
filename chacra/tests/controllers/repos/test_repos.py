@@ -1,9 +1,29 @@
 import os
 import py.test
-from chacra.models import Project, Repo
+from chacra.models import Project, Repo, Binary
 
 
 class TestRepoApiController(object):
+
+    @py.test.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/ubuntu/trusty/',
+             '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
+    )
+    def test_repo_archs(self, session, url):
+        p = Project('foobar')
+        Binary(
+            'ceph-1.0.deb',
+            p,
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='x86_64',
+            sha1="head",
+            ref="firefly",
+        )
+        session.commit()
+        result = session.app.get(url)
+        assert result.json['archs'] == ['x86_64']
 
     @py.test.mark.parametrize(
             'url',

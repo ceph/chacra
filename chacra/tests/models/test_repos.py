@@ -68,3 +68,40 @@ class TestInferType(object):
         session.commit()
         repo = Repo.get(1)
         assert repo.infer_type() == 'deb'
+
+
+class TestRepoArch(object):
+
+    def setup(self):
+        self.p = Project('ceph')
+
+    def test_x86_64(self, session):
+        Binary(
+            'ceph-1.0.rpm',
+            self.p,
+            distro='centos',
+            distro_version='7',
+            arch='x86_64',
+        )
+        session.commit()
+        repo = Repo.get(1)
+        assert repo.archs == ['x86_64']
+
+    def test_multiple_archs(self, session):
+        Binary(
+            'ceph-1.0.deb',
+            self.p,
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='aarch64',
+        )
+        Binary(
+            'ceph-1.0.deb',
+            self.p,
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='x86_64',
+        )
+        session.commit()
+        repo = Repo.get(1)
+        assert repo.archs == ['aarch64', 'x86_64']
