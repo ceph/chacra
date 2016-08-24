@@ -64,6 +64,7 @@ class Repo(Base):
             type=self.type,
             size=self.size,
             flavor=self.flavor,
+            archs=self.archs,
         )
 
     @property
@@ -101,6 +102,9 @@ class Repo(Base):
         for binary in self.binaries:
             return binary._get_repo_type()
 
+    @property
+    def archs(self):
+        return list(set(b.arch for b in self.binaries))
 
 # listen for timestamp modifications
 listen(Repo, 'before_insert', update_timestamp)
