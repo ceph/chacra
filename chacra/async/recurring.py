@@ -1,4 +1,5 @@
 import datetime
+import errno
 import os
 import json
 import pecan
@@ -72,7 +73,12 @@ def purge_repos(_now=None):
     for r in models.Repo.query.filter(models.Repo.modified < lifespan).all():
         logger.info('repo %s is being processed for removal', r)
         for b in r.binaries:
-            os.remove(b.path)
+            try:
+                os.remove(b.path)
+            except OSError as err:
+                # no such file, ignore
+                if err.errno == errno.ENOENT:
+                    pass
             b.delete()
             models.flush()
         post_deleted(r)

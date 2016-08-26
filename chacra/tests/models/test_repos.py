@@ -104,4 +104,4 @@ class TestRepoArch(object):
         )
         session.commit()
         repo = Repo.get(1)
-        assert repo.archs == ['aarch64', 'x86_64']
+        assert sorted(repo.archs) == sorted(['aarch64', 'x86_64'])
