@@ -1,4 +1,5 @@
 import datetime
+import os
 from pecan import conf
 from chacra.tests import conftest
 from chacra.async import recurring
@@ -57,6 +58,25 @@ class TestPurgeRepos(object):
             repo=self.repo
         )
         session.commit()
+        assert len(Binary.query.all()) == 1
+        recurring.purge_repos(_now=self.now)
+        assert len(Binary.query.all()) == 0
+
+    def test_ignores_binaries_that_do_not_exist(self, session, fake, monkeypatch, tmpdir):
+        p = tmpdir.join('binary')
+        p.write('contents')
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        Binary(
+            'ceph-10.0.0.rpm', self.p, distro='centos',
+            distro_version='6',
+            arch='i386',
+            path=str(p),
+            repo=self.repo
+        )
+        session.commit()
+        # remove the binary, to ensure that the purge can continue
+        os.remove(str(p))
         assert len(Binary.query.all()) == 1
         recurring.purge_repos(_now=self.now)
         assert len(Binary.query.all()) == 0
