@@ -1,9 +1,10 @@
 import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, deferred
 from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
 from chacra.models import Base, update_timestamp
+from chacra.models.types import JSONType
 
 
 class Repo(Base):
@@ -23,6 +24,7 @@ class Repo(Base):
     is_queued = Column(Boolean(), default=False)
     type = Column(String(12))
     size = Column(Integer, default=0)
+    extra = deferred(Column(JSONType(), default={}))
 
     project_id = Column(Integer, ForeignKey('projects.id'))
     project = relationship('Project', backref=backref('repos', lazy='dynamic'))
@@ -65,6 +67,7 @@ class Repo(Base):
             size=self.size,
             flavor=self.flavor,
             archs=self.archs,
+            extra=self.extra,
         )
 
     @property
