@@ -121,6 +121,17 @@ class RepoController(object):
         async.post_requested(self.repo)
         return self.repo
 
+    @secure(basic_auth)
+    @expose('json')
+    def extra(self):
+        if request.method != 'POST':
+            error(
+                '/errors/not_allowed',
+                'only POST request are accepted for this url'
+            )
+        self.repo.extra = request.json
+        return self.repo
+
     @expose()
     def _lookup(self, name, *remainder):
         # the `is not None` prevents this from being a recursive url
