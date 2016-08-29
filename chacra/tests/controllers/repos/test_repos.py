@@ -212,6 +212,50 @@ class TestRepoApiController(object):
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
     )
+    def test_extra_metadata_default(self, session, url):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.get(url)
+        assert result.json['extra'] == {}
+
+    @py.test.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/ubuntu/trusty/extra/',
+             '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/extra/']
+    )
+    def test_add_extra_metadata(self, session, url):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        repo.path = "some_path"
+        session.commit()
+        repo_id = repo.id
+        data = {'version': '0.94.8', 'distros': ['precise']}
+        session.app.post_json(
+            url,
+            params=data,
+        )
+        updated_repo = Repo.get(repo_id)
+        assert updated_repo.extra == {"version": "0.94.8", 'distros': ['precise']}
+
+    @py.test.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/ubuntu/trusty/',
+             '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
+    )
     def test_update_single_field(self, session, url):
         p = Project('foobar')
         repo = Repo(
