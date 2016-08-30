@@ -83,7 +83,7 @@ def purge_repos(_now=None):
             models.flush()
         post_deleted(r)
         r.delete()
-        models.flush()
+        models.commit()
     logger.info('completed repo purging')
 
 
