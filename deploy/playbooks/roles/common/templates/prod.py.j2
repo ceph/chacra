@@ -111,9 +111,11 @@ repos = {
         'testing': {
             'ceph': ['jewel-rc'],
         },
+        {% if combine_deb_repos|default(True) %}
         # note: 'universal' binaries will be included to all these distro
         # versions since they do not belong to any one in particular.
         'combined': ['wheezy', 'trusty', 'precise', 'jessie', 'xenial']
+        {% endif %}
    },
     '__force_dict__': True,
 }
