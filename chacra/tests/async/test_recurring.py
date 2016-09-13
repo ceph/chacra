@@ -37,6 +37,17 @@ class TestPurgeRepos(object):
         recurring.purge_repos(_now=self.now)
         assert Repo.query.all() == []
 
+    def test_gets_rid_of_old_repos_paths(self, session, fake, monkeypatch, tmpdir):
+        repo_path = str(tmpdir)
+        package = tmpdir.join('ceph-1.0.rpm')
+        package.write("101010101010")
+        self.repo.path = str(repo_path)
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert os.path.exists(repo_path) is False
+
     def test_leaves_newer_repos_behind(self, session, fake, monkeypatch):
         session.commit()
         fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
