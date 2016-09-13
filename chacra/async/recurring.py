@@ -4,6 +4,7 @@ import os
 import json
 import pecan
 import requests
+import shutil
 from celery import shared_task
 from chacra import models
 from chacra.async import base, debian, rpm, post_queued, post_deleted
@@ -81,6 +82,14 @@ def purge_repos(_now=None):
                     pass
             b.delete()
             models.flush()
+        try:
+            if r.path:
+                shutil.rmtree(r.path)
+        except OSError as err:
+            # no such file, ignore
+            if err.errno == errno.ENOENT:
+                pass
+            raise
         post_deleted(r)
         r.delete()
         models.commit()
