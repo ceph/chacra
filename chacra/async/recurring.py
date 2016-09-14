@@ -89,7 +89,8 @@ def purge_repos(_now=None):
             # no such file, ignore
             if err.errno == errno.ENOENT:
                 pass
-            raise
+            else:
+                raise
         post_deleted(r)
         r.delete()
         models.commit()
