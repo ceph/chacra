@@ -1,8 +1,11 @@
+import logging
+import os
+
 from celery.task.control import inspect
 from errno import errorcode
+from pecan import conf
 from chacra import models
 from sqlalchemy.exc import OperationalError
-import logging
 
 
 logger = logging.getLogger(__name__)
@@ -52,10 +55,22 @@ def database_connection():
             "Could not connect or retrieve information from the database: %s" % exc.message)
 
 
+def fail_health_check():
+    """
+    Checks for the existance of a file and if that file exists it fails
+    the check. This is used to manually take a node out of rotation for
+    maintenance.
+    """
+    check_file_path = getattr(conf, "fail_check_trigger_path", "/tmp/fail_check")
+    if os.path.exists(check_file_path):
+        raise SystemCheckError("%s was found, failing health check" % check_file_path)
+
+
 system_checks = (
     rabbitmq_is_running,
     celery_has_workers,
-    database_connection
+    database_connection,
+    fail_health_check,
 )
 
 
