@@ -9,3 +9,5 @@ callback_verify_ssl = {{ callback_verify_ssl|default(True) }}
 health_ping = {{ health_ping|default(False) }}
 # note this url will get the hostname appended
 health_ping_url = "{{ health_ping_url|default('') }}"
+# this value will be used when registering the node with shaman
+hostname = "{{ fqdn }}"

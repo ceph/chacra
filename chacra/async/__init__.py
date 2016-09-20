@@ -166,7 +166,7 @@ def post_if_healthy():
         logger.error("System is not healthy and will not send health ping.")
         return
 
-    hostname = socket.gethostname()
+    hostname = getattr(pecan.conf, 'hostname', socket.gethostname())
     url = os.path.join(health_ping_url, hostname, '')
     logger.info("Posting health ping to: %s", url)
     recurring.callback.apply_async(

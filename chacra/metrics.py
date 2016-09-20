@@ -58,11 +58,17 @@ import statsd
 
 def short_hostname(_socket=None):
     """
-    Obtains remote hostname of the socket and cuts off the domain part
+    Returns the config option ``short_hostname`` if found.
+
+    If ``short_hostname`` is not defined, it obtains the
+    remote hostname of the socket and cuts off the domain part
     of its FQDN.
     """
-    _socket = _socket or socket
-    return _socket.gethostname().split('.', 1)[0]
+    short_hostname = getattr(pecan.conf, 'short_hostname', None)
+    if not short_hostname:
+        _socket = _socket or socket
+        return _socket.gethostname().split('.', 1)[0]
+    return short_hostname
 
 
 def get_prefix(conf=None, host=None):
