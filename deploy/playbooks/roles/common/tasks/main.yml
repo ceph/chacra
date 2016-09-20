@@ -11,6 +11,9 @@
   hostname: name="{{ fqdn }}"
   when: fqdn is defined
 
+# rabbitmq must be installed after the hostname is set
+- include: rabbitmq.yml
+
 - name: "ensure a home for {{ app_name }}"
   sudo: yes
   file: path={{ app_home }} owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} state=directory recurse=yes
