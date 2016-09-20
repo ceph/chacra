@@ -64,6 +64,8 @@ logging = {
 
 # graphite/statsd settings
 graphite_api_key = "{{ graphite_api_key }}"
+# this value will be used when sending metrics to graphite
+short_hostname = "{{ short_hostname }}"
 
 # When True it will set the headers so that Nginx can serve the download
 # instead of Pecan.
