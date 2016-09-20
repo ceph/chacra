@@ -3,7 +3,6 @@
 - hosts: test
   user: ubuntu
   roles:
-    - celery
     - common
     - repos
     - statsd

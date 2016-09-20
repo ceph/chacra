@@ -3,7 +3,6 @@
 - hosts: all
   user: vagrant
   roles:
-    - celery
     - common
     - repos
     - statsd

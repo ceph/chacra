@@ -6,7 +6,6 @@
 - hosts: production
   user: ubuntu
   roles:
-    - celery
     - common
     - repos
     - statsd
