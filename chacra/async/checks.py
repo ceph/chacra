@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 
 from celery.task.control import inspect
 from errno import errorcode
@@ -55,6 +56,23 @@ def database_connection():
             "Could not connect or retrieve information from the database: %s" % exc.message)
 
 
+def disk_has_space(_popen=None):
+    """
+    If the disk where repos/binaries doesn't have enough space, fail the health
+    check to prevent failing when the binaries are getting posted
+    """
+    popen = _popen or subprocess.Popen
+    command = ['df', conf.get('repo_path', '/')]
+    result = popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    if result.returncode > 0:
+        raise SystemCheckError("failed disk check: %s" % result.stderr.read())
+    out = result.communicate()[0]
+    device, size, used, available, percent, mountpoint = out.split('\n')[1].split()
+    if int(percent.strip().split('%')[0]) > 85:
+        msg = 'disk %s almost full. Used: %s' % (device, percent)
+        raise SystemCheckError(msg)
+
+
 def fail_health_check():
     """
     Checks for the existance of a file and if that file exists it fails
@@ -71,6 +89,7 @@ system_checks = (
     celery_has_workers,
     database_connection,
     fail_health_check,
+    disk_has_space,
 )
 
 
