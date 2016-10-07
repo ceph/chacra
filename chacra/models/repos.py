@@ -90,9 +90,8 @@ class Repo(Base):
 
     @property
     def metric_name(self):
-        return "repos.%s.%s.%s.%s" % (
+        return "repos.%s.%s.%s" % (
             self.project.name,
-            self.ref,
             self.distro,
             self.distro_version,
         )
