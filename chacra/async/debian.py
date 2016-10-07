@@ -18,7 +18,7 @@ def create_deb_repo(repo_id):
     # TODO: Is it possible we can get an ID that doesn't exist anymore?
     repo = models.Repo.get(repo_id)
     timer = Timer(__name__, suffix="create.deb.%s" % repo.metric_name)
-    counter = Counter(__name__, suffix="create.deb.%s.binaries" % repo.metric_name)
+    counter = Counter(__name__, suffix="create.deb.%s" % repo.metric_name)
     timer.start()
     post_building(repo)
     logger.info("processing repository: %s", repo)
@@ -116,7 +116,6 @@ def create_deb_repo(repo_id):
                 distro_versions=combined_versions,
                 fallback_version=repo.distro_version
             )
-            counter += 1
         except KeyError:  # probably a tar.gz or similar file that should not be added directly
             continue
         for command in commands:
@@ -130,4 +129,5 @@ def create_deb_repo(repo_id):
     repo.is_updating = False
     models.commit()
     timer.stop()
+    counter += 1
     post_ready(repo)
