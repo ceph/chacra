@@ -105,3 +105,21 @@ class TestRepoArch(object):
         session.commit()
         repo = Repo.get(1)
         assert sorted(repo.archs) == sorted(['aarch64', 'x86_64'])
+
+
+class TestRepoMetricNames(object):
+
+    def setup(self):
+        self.p = Project('ceph')
+
+    def test_full_metric_name(self, session):
+        Repo(
+            self.p,
+            ref="master",
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='aarch64',
+        )
+        session.commit()
+        result = Repo.get(1).metric_name
+        assert result == "repos.ceph.ubuntu.trusty"
