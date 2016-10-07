@@ -21,7 +21,7 @@ def create_rpm_repo(repo_id):
     repo = models.Repo.get(repo_id)
     post_building(repo)
     timer = Timer(__name__, suffix="create.rpm.%s" % repo.metric_name)
-    counter = Counter(__name__, suffix="create.rpm.%s.binaries" % repo.metric_name)
+    counter = Counter(__name__, suffix="create.rpm.%s" % repo.metric_name)
     timer.start()
     logger.info("processing repository: %s", repo)
     if util.repository_is_disabled(repo.project.name):
@@ -67,7 +67,6 @@ def create_rpm_repo(repo_id):
         arch_directory = util.infer_arch_directory(binary.name)
         destination_dir = os.path.join(paths['absolute'], arch_directory)
         destination = os.path.join(destination_dir, binary.name)
-        counter += 1
         try:
             if not os.path.exists(destination):
                 os.symlink(source, destination)
@@ -81,4 +80,5 @@ def create_rpm_repo(repo_id):
     repo.is_updating = False
     models.commit()
     timer.stop()
+    counter += 1
     post_ready(repo)
