@@ -66,7 +66,8 @@ def create_deb_repo(repo_id):
                 None,
                 repo.distro_version,
                 distro_versions=combined_versions,
-                ref=ref if ref != 'all' else None
+                ref=ref if ref != 'all' else None,
+                sha1=repo.sha1
             )
             extra_binaries += found_binaries
 
@@ -77,7 +78,8 @@ def create_deb_repo(repo_id):
                     repo.distro,
                     None,
                     distro_versions=['generic', 'universal', 'any'],
-                    ref=ref if ref != 'all' else None):
+                    ref=ref if ref != 'all' else None,
+                    sha1=repo.sha1):
                 extra_binaries.append(binary)
 
     # check for the option to 'combine' repositories with different
