@@ -293,6 +293,36 @@ class TestGetBinaries(object):
             ref='firefly')
         assert len(result) == 2
 
+    def test_filter_binaries_by_sha1(self, session):
+        models.Binary(
+            'ceph-1.0.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='precise',
+            arch='all',
+            sha1="sha1",
+            )
+        models.Binary(
+            'ceph-1.0.deb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            sha1="head",
+            )
+
+        models.commit()
+        result = util.get_extra_binaries(
+            'ceph',
+            'ubuntu',
+            'trusty',
+            distro_versions=['precise', 'trusty'],
+            ref='firefly',
+            sha1="sha1")
+        assert len(result) == 1
+
 
 class TestRepreproCommand(object):
 
