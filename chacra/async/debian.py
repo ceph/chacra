@@ -55,7 +55,8 @@ def create_deb_repo(repo_id):
             repo.distro,
             None,
             distro_versions=['generic', 'universal', 'any'],
-            ref=repo.ref):
+            ref=repo.ref,
+            sha1=repo.sha1):
         extra_binaries.append(binary)
 
     for project_name, project_refs in conf_extra_repos.items():
@@ -95,7 +96,8 @@ def create_deb_repo(repo_id):
             repo.project.name,
             None,
             distro_version,
-            ref=repo.ref
+            ref=repo.ref,
+            sha1=repo.sha1
         )
 
     # try to create the absolute path to the repository if it doesn't exist
