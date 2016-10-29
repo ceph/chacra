@@ -105,7 +105,8 @@ def post_status(status, repo_obj, _callback=None):
         return
     from chacra.async import recurring
     # this needs a better implementation
-    host_url = 'https://%s/' % socket.gethostname()
+    hostname = getattr(pecan.conf, 'hostname', socket.gethostname())
+    host_url = 'https://%s/' % hostname
     api_url = os.path.join(host_url, 'repos', '')
     repos_url = os.path.join(host_url, 'r', '')
     callback = _callback or recurring.callback.apply_async
