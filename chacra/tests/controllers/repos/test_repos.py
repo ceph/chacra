@@ -27,6 +27,46 @@ class TestRepoApiController(object):
 
     @py.test.mark.parametrize(
             'url',
+            ['/repos/foobar/firefly/head/ubuntu/trusty/repo/',
+             '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/repo/']
+    )
+    def test_repo_endpoint_deb(self, session, url):
+        p = Project('foobar')
+        Binary(
+            'ceph-1.0.deb',
+            p,
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='x86_64',
+            sha1="head",
+            ref="firefly",
+        )
+        session.commit()
+        result = session.app.get(url)
+        assert "deb" in result.body
+
+    @py.test.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/centos/7/repo/',
+             '/repos/foobar/firefly/head/centos/7/flavors/default/repo/']
+    )
+    def test_repo_endpoint_rpm(self, session, url):
+        p = Project('foobar')
+        Binary(
+            'ceph-1.0.rpm',
+            p,
+            distro='centos',
+            distro_version='7',
+            arch='x86_64',
+            sha1="head",
+            ref="firefly",
+        )
+        session.commit()
+        result = session.app.get(url)
+        assert "[foobar]" in result.body
+
+    @py.test.mark.parametrize(
+            'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
     )

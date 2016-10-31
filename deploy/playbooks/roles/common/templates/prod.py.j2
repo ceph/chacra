@@ -18,6 +18,7 @@ app = {
     'root': 'chacra.controllers.root.RootController',
     'modules': ['chacra'],
     'guess_content_type_from_ext': False,
+    'template_path': '%(confdir)s/chacra/templates',
     'hooks': [
         TransactionHook(
             models.start,

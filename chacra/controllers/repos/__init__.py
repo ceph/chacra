@@ -56,7 +56,7 @@ class RepoController(object):
         if not request.context.get('distro_version'):
             request.context['distro_version'] = self.distro_version
         self.flavor = flavor
-        self.repo = self.project.repos.filter_by(
+        self.repo_obj = self.project.repos.filter_by(
             distro=self.distro_name,
             distro_version=self.distro_version,
             ref=self.ref,
@@ -66,17 +66,18 @@ class RepoController(object):
 
     @expose('json', generic=True)
     def index(self):
-        if self.repo is None:
+        if self.repo_obj is None:
+            print "no repo, aborting"
             abort(404)
-        return self.repo
+        return self.repo_obj
 
     @secure(basic_auth)
     @index.when(method='POST', template='json')
     @validate(schemas.repo_schema, handler='/errors/schema')
     def index_post(self):
         data = request.json
-        self.repo.update_from_json(data)
-        return self.repo
+        self.repo_obj.update_from_json(data)
+        return self.repo_obj
 
     @secure(basic_auth)
     @expose('json')
@@ -89,12 +90,12 @@ class RepoController(object):
                 'only POST request are accepted for this url'
             )
         # Just mark the repo so that celery picks it up
-        self.repo.needs_update = True
-        self.repo.is_updating = False
-        self.repo.is_queued = False
+        self.repo_obj.needs_update = True
+        self.repo_obj.is_updating = False
+        self.repo_obj.is_queued = False
 
-        async.post_requested(self.repo)
-        return self.repo
+        async.post_requested(self.repo_obj)
+        return self.repo_obj
 
     @secure(basic_auth)
     @expose('json')
@@ -107,19 +108,19 @@ class RepoController(object):
                 'only POST request are accepted for this url'
             )
         # completely remove the path to the repository
-        logger.info('removing repository path: %s', self.repo.path)
+        logger.info('removing repository path: %s', self.repo_obj.path)
         try:
-            shutil.rmtree(self.repo.path)
+            shutil.rmtree(self.repo_obj.path)
         except OSError:
-            logger.warning("could not remove repo path: %s", self.repo.path)
+            logger.warning("could not remove repo path: %s", self.repo_obj.path)
 
         # mark the repo so that celery picks it up
-        self.repo.needs_update = True
-        self.repo.is_updating = False
-        self.repo.is_queued = False
+        self.repo_obj.needs_update = True
+        self.repo_obj.is_updating = False
+        self.repo_obj.is_queued = False
 
-        async.post_requested(self.repo)
-        return self.repo
+        async.post_requested(self.repo_obj)
+        return self.repo_obj
 
     @secure(basic_auth)
     @expose('json')
@@ -129,8 +130,17 @@ class RepoController(object):
                 '/errors/not_allowed',
                 'only POST request are accepted for this url'
             )
-        self.repo.extra = request.json
-        return self.repo
+        self.repo_obj.extra = request.json
+        return self.repo_obj
+
+    @expose('mako:repo.mako')
+    def repo(self):
+        return dict(
+            project_name=self.project.name,
+            base_url=self.repo_obj.base_url,
+            distro_version=self.repo_obj.distro_version,
+            type=self.repo_obj.type,
+        )
 
     @expose()
     def _lookup(self, name, *remainder):
