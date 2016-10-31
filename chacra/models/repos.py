@@ -1,4 +1,7 @@
 import datetime
+import os
+import socket
+from pecan import conf
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import relationship, backref, deferred
 from sqlalchemy.event import listen
@@ -80,6 +83,12 @@ class Repo(Base):
             self.distro_version,
             self.flavor,
         )
+
+    @property
+    def base_url(self):
+        hostname = getattr(conf, 'hostname', socket.gethostname())
+        host_url = 'https://%s/' % hostname
+        return os.path.join(host_url, 'r', self.uri, '')
 
     @property
     def is_generic(self):
