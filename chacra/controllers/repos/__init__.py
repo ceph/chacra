@@ -133,7 +133,7 @@ class RepoController(object):
         self.repo_obj.extra = request.json
         return self.repo_obj
 
-    @expose('mako:repo.mako')
+    @expose('mako:repo.mako', content_type="text/plain")
     def repo(self):
         return dict(
             project_name=self.project.name,
