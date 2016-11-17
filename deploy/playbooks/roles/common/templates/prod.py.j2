@@ -86,6 +86,11 @@ polling_cycle = 120
 purge_repos = {{ purge_repos }}
 
 purge_rotation = {
+    'kernel': {
+        'testing': {
+            'keep_minimum': 10
+        }
+    },
     'ceph': {
         'hammer': {
             'days': 30,
