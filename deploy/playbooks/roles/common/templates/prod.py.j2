@@ -84,6 +84,34 @@ polling_cycle = 120
 
 {% if purge_repos is defined %}
 purge_repos = {{ purge_repos }}
+
+purge_rotation = {
+    'kernel': {
+        'testing': {
+            'keep_minimum': 10
+        }
+    },
+    'ceph': {
+        'hammer': {
+            'days': 30,
+            'keep_minimum': 5
+        },
+        'infernalis': {
+            'days': 30,
+            'keep_minimum': 5
+        },
+        'jewel': {
+            'days': 14,
+            'keep_minimum': 10
+        },
+        'kraken': {
+            'days': 14,
+            'keep_minimum': 10
+        }
+    },
+    '__force_dict__': True,
+}
+
 {% endif %}
 
 # Once a "create repo" task is called, how many seconds (if any) to wait before actually

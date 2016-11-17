@@ -5,6 +5,7 @@ import json
 import pecan
 import requests
 import shutil
+from sqlalchemy import desc
 from celery import shared_task
 from chacra import models
 from chacra.async import base, debian, rpm, post_queued, post_deleted
@@ -65,13 +66,57 @@ def purge_repos(_now=None):
         logger.info('purge_repos option is unset or explicitly disabled, will skip purge')
         return
 
-    logger.info('polling repos for purging....')
+    # default value for repo life
     now = _now or datetime.datetime.utcnow()
+    default_lifespan = now - datetime.timedelta(days=14)
+    default_keep_minimum = 0
 
-    # XXX Magical datetime, not user configurable
-    lifespan = now - datetime.timedelta(weeks=2)
+    purge_rotation = pecan.conf.get('purge_rotation', {})
+    # 'all' is a special key to alter defaults for every other project. Not implemented yet.
+    purge_projects = [i for i in purge_rotation.keys() if i != 'all']
 
-    for r in models.Repo.query.filter(models.Repo.modified < lifespan).all():
+    logger.info('polling repos for purging....')
+
+    # process configured repos for purging first
+    for project_name in purge_projects:
+        # set the base query to filter
+        p = models.Project.filter_by(name=project_name).first()
+        project_repos = models.Repo.filter_by(project=p)
+
+        # get the configuration for current project
+        ref_names = purge_rotation[project_name].keys()
+        purge_project = purge_rotation.get(project_name)
+
+        for ref_name in ref_names:
+            purge_ref = purge_project[ref_name]
+            lifespan = now - datetime.timedelta(days=purge_ref.get('days', 14))
+            keep_minimum = purge_ref.get('keep_minimum', 0)
+            ref_repos = project_repos.filter_by(ref=ref_name)
+
+            # filter the query further, with the offset being the
+            # minimum to keep, and lifespan how old they should be
+            repos = ref_repos.filter(
+                    models.Repo.modified < lifespan).order_by(
+                        desc(models.Repo.modified)).offset(keep_minimum).all()
+            delete_repositories(repos, lifespan, keep_minimum)
+
+    # process everything else that isn't configured, with the defaults
+    for r in models.Repo.query.filter(models.Repo.modified < default_lifespan).all():
+        if purge_rotation.get(r.project.name, {}).get(r.ref):
+            # this project has a ref with special configuration for purging
+            continue
+        delete_repositories([r], default_lifespan, default_keep_minimum)
+    logger.info('completed repo purging')
+
+
+def delete_repositories(repo_objects, lifespan, keep_minimum):
+    logger.info('processing deletion for repos %s days and older', lifespan)
+    if keep_minimum:
+        logger.info('will keep at most %s repositories after purging', keep_minimum)
+    else:
+        logger.info('will not keep any repositories after purging is completed')
+
+    for r in repo_objects:
         logger.info('repo %s is being processed for removal', r)
         for b in r.binaries:
             try:
@@ -94,7 +139,6 @@ def purge_repos(_now=None):
         post_deleted(r)
         r.delete()
         models.commit()
-    logger.info('completed repo purging')
 
 
 @shared_task(acks_late=True, bind=True, default_retry_delay=30)

@@ -37,6 +37,37 @@ class TestPurgeRepos(object):
         recurring.purge_repos(_now=self.now)
         assert Repo.query.all() == []
 
+    def test_does_not_get_rid_of_old_repos_configured_in_days(self, session, fake, monkeypatch):
+        conf.purge_rotation = {'ceph': {'firefly': {'days': 70}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+    def test_does_not_get_rid_of_old_repos_configured_with_offset(self, session, fake, monkeypatch):
+        conf.purge_rotation = {'ceph': {'firefly': {'keep_minimum': 1}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+    def test_gets_rid_of_other_repos(self, session, fake, monkeypatch):
+        Repo(
+            self.p,
+            ref='hammer',
+            distro='centos',
+            distro_version='7',
+        )
+
+        conf.purge_rotation = {'ceph': {'firefly': {'keep_minimum': 1}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert Repo.query.first().ref == 'firefly'
+
     def test_gets_rid_of_old_repos_paths(self, session, fake, monkeypatch, tmpdir):
         repo_path = str(tmpdir)
         package = tmpdir.join('ceph-1.0.rpm')
@@ -116,3 +147,5 @@ class TestPurgeRepos(object):
         session.commit()
         recurring.purge_repos(_now=self.now)
         assert len(Repo.query.all()) == 1
+
+
