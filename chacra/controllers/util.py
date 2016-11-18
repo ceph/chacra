@@ -36,13 +36,13 @@ class ReadableSeconds(object):
         return datetime(1, 1, 1) + timedelta(seconds=self.original_seconds)
 
     def __str__(self):
-        return "{0}{1}{2}{3}{4}{5}".format(
-            self.years,
-            self.months,
-            self.days,
-            self.hours,
-            self.minutes,
-            self.seconds,
+        return "{years}{months}{days}{hours}{minutes}{seconds}".format(
+            years=self.years,
+            months=self.months,
+            days=self.days,
+            hours=self.hours,
+            minutes=self.minutes,
+            seconds=self.seconds,
         ).rstrip(' ,')
 
     @property
