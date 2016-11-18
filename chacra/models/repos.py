@@ -43,12 +43,12 @@ class Repo(Base):
 
     def __repr__(self):
         try:
-            return "<Repo {}/{}/{}/{}/{}>".format(
-                self.project.name,
-                self.ref,
-                self.sha1,
-                self.distro,
-                self.distro_version,
+            return "<Repo {name}/{ref}/{sha1}/{distro}/{version}>".format(
+                name=self.project.name,
+                ref=self.ref,
+                sha1=self.sha1,
+                distro=self.distro,
+                version=self.distro_version,
             )
         except DetachedInstanceError:
             return '<Repo detached>'
@@ -75,13 +75,13 @@ class Repo(Base):
 
     @property
     def uri(self):
-        return "{}/{}/{}/{}/{}/flavors/{}/".format(
-            self.project.name,
-            self.ref,
-            self.sha1,
-            self.distro,
-            self.distro_version,
-            self.flavor,
+        return "{name}/{ref}/{sha1}/{distro}/{version}/flavors/{flavor}/".format(
+            name=self.project.name,
+            ref=self.ref,
+            sha1=self.sha1,
+            distro=self.distro,
+            version=self.distro_version,
+            flavor=self.flavor,
         )
 
     @property
