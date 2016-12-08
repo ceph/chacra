@@ -1,5 +1,5 @@
 % if type == "deb":
-deb ${base_url} ${distro_version} main
+deb [trusted=yes] ${base_url} ${distro_version} main
 % elif type == "rpm":
 [${project_name}]
 name=${project_name} packages for \$basearch
