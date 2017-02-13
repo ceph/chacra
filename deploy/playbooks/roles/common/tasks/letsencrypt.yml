@@ -35,7 +35,7 @@
     minute: "0"
     hour: "0"
     day: "1,15"
-    job: "letsencrypt renew --email {{ ssl_support_email }} --agree-tos; service nginx reload"
+    job: "letsencrypt renew --email {{ ssl_support_email }} --agree-tos && service nginx reload"
   sudo: yes
 
 - name: unlink tmp nginx config
