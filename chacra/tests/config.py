@@ -90,7 +90,7 @@ distributions = {
         "DebIndices": "Packages Release . .gz .bz2",
         "DscIndices": "Sources Release .gz .bz2",
         "Contents": ".gz .bz2",
-        "Origin": "RedHat",
+        "Origin": "ceph.com",
         "Description": "",
         "Architectures": "amd64 armhf i386 source",
         "Suite": "stable",
