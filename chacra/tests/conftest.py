@@ -15,7 +15,7 @@ import pytest
 
 
 DBNAME = 'chacratest'
-BIND = 'postgresql+psycopg2://localhost'
+BIND = 'postgresql+psycopg2://'
 
 
 def config_file():
