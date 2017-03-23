@@ -29,6 +29,7 @@ class BinaryController(object):
             distro=self.distro,
             distro_version=self.distro_version,
             flavor=self.flavor,
+            arch=self.arch,
             project=self.project).first()
 
     @expose(content_type='application/octet-stream', generic=True)

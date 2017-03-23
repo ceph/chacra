@@ -191,17 +191,23 @@ class FlavorsController(object):
     def index(self):
         project = models.Project.get(request.context['project_id'])
         resp = {}
-        for flavor in project.flavors:
-            binaries = [
-                b.name for b in models.Binary.filter_by(
+        binaries = models.Binary.filter_by(
                     project=project,
                     distro_version=request.context['distro_version'],
                     distro=request.context['distro'],
                     ref=request.context['ref'],
                     sha1=request.context['sha1'],
-                    arch=request.context['arch']).all()]
-            if binaries:
-                resp[flavor] = list(set(binaries))
+                    arch=request.context['arch']).all()
+
+        flavors = set([b.flavor for b in binaries])
+
+        for flavor in flavors:
+            resp[flavor] = list(
+                set(
+                    [b.name for b in binaries if b.flavor == flavor]
+                )
+            )
+
         return resp
 
     @index.when(method='POST', template='json')
