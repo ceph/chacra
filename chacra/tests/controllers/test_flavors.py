@@ -49,6 +49,36 @@ class TestFlavorsController(object):
         )
         assert result.json['tcmalloc'] == ['ceph-1.0.0.rpm']
 
+    def test_list_one_flavor(self, session):
+        project = Project('ceph')
+        Binary(
+            'ceph-1.0.0.rpm',
+            project,
+            ref='giant',
+            sha1="head",
+            distro='centos',
+            distro_version='el6',
+            arch='x86_64',
+            flavor='tcmalloc'
+        )
+        Binary(
+            'ceph-1.0.0.rpm',
+            project,
+            ref='giant',
+            sha1="head",
+            distro='centos',
+            distro_version='el7',
+            arch='x86_64',
+            flavor='default'
+        )
+        session.commit()
+        result = session.app.get(
+            '/binaries/ceph/giant/head/centos/el6/x86_64/flavors/',
+        )
+        # default flavor is for a different distro_version in this case
+        # and should not show up
+        assert result.json.keys() == ['tcmalloc']
+
 
 class TestFlavorController(object):
 
