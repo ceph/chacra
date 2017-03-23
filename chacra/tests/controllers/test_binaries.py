@@ -47,6 +47,27 @@ class TestBinaryUniqueness(object):
 
         assert result.json['i386'] == ['ceph-deploy-1.0.0-0.el6.i386.rpm']
 
+    def test_same_project_different_archs_should_not_pollute_other_endpoints(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        session.app.post(
+            '/binaries/ceph/giant/head/centos/el6/x86_64/flavors/default/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+        )
+
+        session.app.post(
+            '/binaries/ceph/giant/head/centos/el6/i386/flavors/default/',
+            upload_files=[('file', 'ceph-9.0.0-0.el6.i386.rpm', 'hello tharrrr')]
+        )
+
+        # get the binary for an i386 url but for a different arch on the same
+        # project. This should never happen, and we should get a 404
+        result = session.app.get(
+            '/binaries/ceph/giant/head/centos/el6/i386/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/',
+            expect_errors=True
+        )
+
+        assert result.status_int == 404
+
 
 class TestBinaryController(object):
 
