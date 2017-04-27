@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.exc import DetachedInstanceError
 from chacra.models import Base
 from chacra.models.repos import Repo
+from chacra.models.binaries import Binary
 
 
 class Project(Base):
@@ -15,27 +16,45 @@ class Project(Base):
 
     @property
     def archs(self):
-        return list(set([b.arch for b in self.binaries.all()]))
+        return list(set(
+            [b.arch for b in
+             Binary.query.distinct(Binary.arch).filter_by(project=self).all()]
+        ))
 
     @property
     def distro_versions(self):
-        return list(set([b.distro_version for b in self.binaries.all()]))
+        return list(set(
+            [b.distro_version for b in
+             Binary.query.distinct(Binary.distro_version).filter_by(project=self).all()]
+        ))
 
     @property
     def distros(self):
-        return list(set([b.distro for b in self.binaries.all()]))
+        return list(set(
+            [b.distro for b in
+             Binary.query.distinct(Binary.distro).filter_by(project=self).all()]
+        ))
 
     @property
     def refs(self):
-        return list(set([b.ref for b in self.binaries.all()]))
+        return list(set(
+            [b.ref for b in
+             Binary.query.distinct(Binary.ref).filter_by(project=self).all()]
+        ))
 
     @property
     def sha1s(self):
-        return list(set([b.sha1 for b in self.binaries.all()]))
+        return list(set(
+            [b.sha1 for b in
+             Binary.query.distinct(Binary.sha1).filter_by(project=self).all()]
+        ))
 
     @property
     def flavors(self):
-        return list(set([b.flavor for b in self.binaries.all()]))
+        return list(set(
+            [b.flavor for b in
+             Binary.query.distinct(Binary.flavor).filter_by(project=self).all()]
+        ))
 
     @property
     def built_repos(self):
@@ -68,7 +87,8 @@ class Project(Base):
         for ref in self.refs:
             json_[ref] = list(
                 set(
-                    [b.sha1 for b in self.binaries.filter_by(ref=ref).all()]
+                    [b.sha1 for b in
+                     Binary.query.distinct(Binary.sha1).filter_by(ref=ref, project=self).all()]
                 )
             )
         return json_
