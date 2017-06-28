@@ -86,6 +86,11 @@ polling_cycle = 120
 purge_repos = {{ purge_repos }}
 
 purge_rotation = {
+    'ceph-medic': {
+        'master': {
+            'keep_minimum': 5
+        }
+    },
     'kernel': {
         'testing': {
             'keep_minimum': 10
@@ -156,6 +161,7 @@ repos = {
         # here to avoid getting cruft like "test" builds
         'all': {
             'ceph-deploy': ['master'],
+            'ceph-medic': ['master'],
         },
         'hammer': {
             'ceph-release': ['hammer'],
