@@ -187,7 +187,20 @@ repos = {
         # versions since they do not belong to any one in particular.
         'combined': ['stretch', 'wheezy', 'trusty', 'precise', 'jessie', 'xenial']
         {% endif %}
-   },
+    },
+    'cephmetrics': {
+        'master': {
+            'cephmetrics-deps': ['master'],
+        },
+        # For testing cephmetrics changes against existing deps
+        'develop': {
+            'cephmetrics-deps': ['master'],
+        },
+        # Release!
+        '1.0': {
+            'cephmetrics-deps': ['1.0'],
+        },
+    },
     '__force_dict__': True,
 }
 
