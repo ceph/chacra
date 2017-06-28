@@ -151,13 +151,11 @@ quiet_time = 20
 repos = {
     'ceph': {
         'automatic': False,
+        # ceph-deploy production builds should go into the "ref" master
+        # because otherwise we would be forced to list every "vN.N.N" ref
+        # here to avoid getting cruft like "test" builds
         'all': {
-            # both ceph-deploy and radosgw-agent production builds should go
-            # into the "ref" master because otherwise we would be forced to
-            # list every "vN.N.N" ref here to avoid getting cruft like "test"
-            # builds
             'ceph-deploy': ['master'],
-            'radosgw-agent': ['master'],
         },
         'hammer': {
             'ceph-release': ['hammer'],
