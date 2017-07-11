@@ -1,45 +1,44 @@
 ---
+# letsencrypt doesn't recommend using the Ubuntu-provided letsencrypt package
+# https://github.com/certbot/certbot/issues/3538
+# They do recommend using certbot from their PPA for Xenial
+# https://certbot.eff.org/#ubuntuxenial-nginx
+
+- name: install software-properties-common
+  apt:
+    name: software-properties-common
+    state: latest
+    update_cache: yes
+  become: true
+
+- name: add certbot PPA
+  apt_repository:
+    repo: "ppa:certbot/certbot"
+  become: true
+
+- name: install certbot
+  apt:
+    name: python-certbot-nginx
+    state: latest
+    update_cache: yes
+  become: true
 
 - name: ensure letsencrypt acme-challenge path
   file:
     path: "{{ ssl_webroot_path }}"
     state: "directory"
     mode: 0755
-  sudo: yes
-
-- name: unlink app nginx config
-  file:
-    path: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
-    state: "absent"
-  sudo: true
-
-- name: create temporary nginx config
-  template:
-    src: "../templates/nginx_tmp_site.conf"
-    dest: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
-  sudo: true
-
-- name: restart nginx
-  sudo: yes
-  service:
-    name: nginx
-    state: restarted
+  become: true
 
 - name: create (or renew) letsencrypt ssl cert
   command: "{{ letsencrypt_command }}"
-  sudo: yes
+  become: true
 
-- name: setup a cron to renew the SSL cert every day
+- name: setup a cron to attempt to renew the SSL cert every 15ish days
   cron:
     name: "renew letsencrypt cert"
     minute: "0"
     hour: "0"
     day: "1,15"
-    job: "letsencrypt renew --email {{ ssl_support_email }} --agree-tos && service nginx reload"
-  sudo: yes
-
-- name: unlink tmp nginx config
-  file:
-    path: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
-    state: "absent"
-  sudo: true
+    job: "certbot renew --renew-hook='service nginx reload'"
+  become: true

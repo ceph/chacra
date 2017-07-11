@@ -19,8 +19,7 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: false
-     # the current prod ssl setup doesn't use letsencrypt
-     use_letsencrypt: false
+     use_letsencrypt: true
      fqdn: "chacra.ceph.com"
 
      # graphite reporting for statsd
@@ -36,5 +35,5 @@
      callback_user: ""
      callback_key: ""
 
-     nginx_ssl_cert_path: "/etc/ssl/certs/{{ fqdn }}-bundled.crt"
-     nginx_ssl_key_path: "/etc/ssl/private/{{ fqdn }}.key"
+     nginx_ssl_cert_path: "/etc/letsencrypt/live/{{ fqdn }}/fullchain.pem"
+     nginx_ssl_key_path: "/etc/letsencrypt/live/{{ fqdn }}/privkey.pem"
