@@ -21,7 +21,6 @@ system_packages:
 ssl_requirements:
   - openssl
   - libssl-dev
-  - letsencrypt
 
 circus_system_packages:
   - libzmq-dev
