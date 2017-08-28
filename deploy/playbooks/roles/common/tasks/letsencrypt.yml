@@ -40,5 +40,5 @@
     minute: "0"
     hour: "0"
     day: "1,15"
-    job: "certbot renew --renew-hook='service nginx reload'"
+    job: "certbot renew --renew-hook='systemctl reload nginx'"
   become: true
