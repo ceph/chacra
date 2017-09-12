@@ -200,7 +200,7 @@ def callback(self, data, project_name, url=None):
             headers=headers
         )
         response.raise_for_status()
-    except requests.HTTPError as exc:
+    except requests.RequestException as exc:
         logger.warning('callback failed: %s', str(exc))
         raise self.retry(exc=exc)
     except Exception:
