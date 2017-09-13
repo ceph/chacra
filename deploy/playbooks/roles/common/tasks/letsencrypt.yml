@@ -42,3 +42,21 @@
     day: "1,15"
     job: "certbot renew --renew-hook='systemctl reload nginx'"
   become: true
+
+# This cronjob would attempt to renew the cert twice a day but doesn't have our required --renew-hook
+- name: make sure certbot's cronbjob is not present
+  file:
+    path: /etc/cron.d/certbot
+    state: absent
+  become: true
+
+# Same thing here.  Let me automate how I wanna automate plz.
+- name: make sure certbot's systemd services are disabled
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - "certbot.service"
+    - "certbot.timer"
+  become: true
