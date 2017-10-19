@@ -21,6 +21,12 @@
   action: file path=/etc/nginx/sites-enabled/default state=absent
   sudo: true
 
+- name: "check if {{ nginx_ssl_cert_path }} exists"
+  stat:
+    path: "{{ nginx_ssl_cert_path }}"
+  register: ssl_cert_exists
+  become: true
+
 - name: write nginx.conf
   action: template src=../templates/nginx.conf dest=/etc/nginx/nginx.conf
   sudo: true
