@@ -37,6 +37,13 @@
   notify:
     - restart nginx
 
+- name: link nginx config
+  file:
+    src: "/etc/nginx/sites-available/{{ app_name }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
+    state: "link"
+  sudo: true
+
 - name: check to see if ssl cert needs created
   stat:
     path: "{{ nginx_ssl_cert_path }}"
@@ -51,13 +58,6 @@
     - development_server == false
     - use_letsencrypt
     - not ssl_cert.stat.exists
-
-- name: link nginx config
-  file:
-    src: "/etc/nginx/sites-available/{{ app_name }}.conf"
-    dest: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
-    state: "link"
-  sudo: true
 
 - name: ensure nginx is restarted
   sudo: true
