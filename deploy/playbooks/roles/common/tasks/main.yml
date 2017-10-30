@@ -6,13 +6,18 @@
     src: hosts.j2
     dest: "/etc/hosts"
 
-- name: Set Hostname with hostname command
+- name: "Temporarily set hostname to {{ short_hostname }} so rabbitmq will start"
   become: true
-  hostname: name="{{ fqdn }}"
-  when: fqdn is defined
+  hostname: name="{{ short_hostname }}"
+  when: short_hostname is defined
 
 # rabbitmq must be installed after the hostname is set
 - include: rabbitmq.yml
+
+- name: "Set hostname back to {{ fqdn }}"
+  become: true
+  hostname: name="{{ fqdn }}"
+  when: fqdn is defined
 
 - name: "ensure a home for {{ app_name }}"
   become: true
