@@ -1,23 +1,23 @@
 ---
 
 - name: ensure /etc/default/ dir exists
-  sudo: true
+  become: true
   file: path=/etc/default state=directory
 
 - name: ensure /etc/systemd/system-preset dir exists
-  sudo: true
+  become: true
   file: path=/etc/systemd/system-preset state=directory
   notify:
      - reload systemd
 
 - name: install the systemd unit file for statsd
   template: src=systemd/statsd.service.j2 dest=/etc/systemd/system/statsd.service
-  sudo: true
+  become: true
   notify:
      - reload systemd
 
 - name: install the preset file for statsd
   template: src=systemd/80-statsd.preset.j2 dest=/etc/systemd/system-preset/80-statsd.preset
-  sudo: true
+  become: true
   notify:
      - reload systemd

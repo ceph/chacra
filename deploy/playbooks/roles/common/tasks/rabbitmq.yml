@@ -1,34 +1,34 @@
 ---
 - name: add the rabbitmq official repo
-  sudo: yes
+  become: true
   apt_repository:
     repo: "deb http://www.rabbitmq.com/debian/ testing main"
     state: present
 
 - name: add the rabbitmq public key
-  sudo: yes
+  become: true
   apt_key:
     url: "https://www.rabbitmq.com/rabbitmq-release-signing-key.asc"
     state: present
 
 - name: update the apt cache
-  sudo: yes
+  become: true
   apt:
     update_cache: true
 
 - name: install rabbitmq-server
-  sudo: yes
+  become: true
   apt:
     name: rabbitmq-server
     state: present
 
 - name: ensure rabbitmq is running and enabled
-  sudo: yes
+  become: true
   service:
     name: rabbitmq-server
     state: started
     enabled: yes
 
 - name: enable web management for rabbit
-  sudo: yes
+  become: true
   command: rabbitmq-plugins enable rabbitmq_management

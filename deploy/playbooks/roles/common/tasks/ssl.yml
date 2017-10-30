@@ -4,13 +4,13 @@
   file:
     dest: /etc/ssl/certs
     state: directory
-  sudo: true
+  become: true
 
 - name: ensure ssl private directory
   file:
     dest: /etc/ssl/private
     state: directory
-  sudo: true
+  become: true
 
 - name: copy SSL cert
   copy:
@@ -18,7 +18,7 @@
     dest: "/etc/ssl/certs/{{ fqdn }}-bundled.crt"
     mode: 0777
     force: no
-  sudo: true
+  become: true
   notify: restart nginx
 
 - name: copy SSL key
@@ -26,5 +26,5 @@
     src: "{{ ssl_key_path }}"
     dest: "/etc/ssl/private/{{ fqdn }}.key"
     force: no
-  sudo: true
+  become: true
   notify: restart nginx
