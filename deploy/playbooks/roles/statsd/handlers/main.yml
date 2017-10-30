@@ -1,9 +1,9 @@
 ---
 
 - name: restart statsd
-  sudo: yes
+  become: true
   service: name=statsd state=restarted enabled=yes
 
 - name: reload systemd
-  sudo: yes
+  become: true
   command: systemctl daemon-reload

@@ -1,13 +1,13 @@
 ---
 
 - name: "Build hosts file"
-  sudo: yes
+  become: true
   template:
     src: hosts.j2
     dest: "/etc/hosts"
 
 - name: Set Hostname with hostname command
-  sudo: yes
+  become: true
   hostname: name="{{ fqdn }}"
   when: fqdn is defined
 
@@ -15,16 +15,16 @@
 - include: rabbitmq.yml
 
 - name: "ensure a home for {{ app_name }}"
-  sudo: yes
+  become: true
   file: path={{ app_home }} owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} state=directory recurse=yes
 
 - name: Update apt cache
   apt:
     update_cache: yes
-  sudo: yes
+  become: true
 
 - name: install ssl system requirements
-  sudo: yes
+  become: true
   apt: name={{ item }} state=present
   with_items: "{{ ssl_requirements }}"
   when: app_use_ssl
@@ -32,7 +32,7 @@
     - packages
 
 - name: install system packages
-  sudo: yes
+  become: true
   apt: name={{ item }} state=present
   with_items: "{{ system_packages }}"
   tags:
@@ -58,14 +58,14 @@
   service:
     name: chacra-celery
     state: stopped
-  sudo: yes
+  become: true
   failed_when: false
 
 - name: stop chacra-celerybeat
   service:
     name: chacra-celerybeat
     state: stopped
-  sudo: yes
+  become: true
   failed_when: false
 
 - name: create the callbacks configuration file
@@ -85,7 +85,7 @@
     - restart chacra-celerybeat
 
 - name: ensure file paths are set properly
-  sudo: true
+  become: true
   file:
     path: "{{ item }}"
     state: directory

@@ -1,22 +1,22 @@
 ---
 
 - name: reload systemd
-  sudo: yes
-  sudo: yes
+  become: true
+  become: true
   command: systemctl daemon-reload
 
 - name: restart app
-  sudo: yes
+  become: true
   service: name=chacra state=restarted enabled=yes
 
 - name: restart chacra-celery
   service: name=chacra-celery state=restarted enabled=yes
-  sudo: yes
+  become: true
 
 - name: restart chacra-celerybeat
   service: name=chacra-celerybeat state=restarted enabled=yes
-  sudo: yes
+  become: true
 
 - name: restart nginx
-  sudo: yes
+  become: true
   action: service name=nginx state=restarted

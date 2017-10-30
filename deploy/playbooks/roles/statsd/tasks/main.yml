@@ -2,7 +2,7 @@
 
 - name: Install Statsd Dependencies for Debian
   apt: "name={{ item }} update_cache=yes"
-  sudo: true
+  become: true
   # nodejs-legacy is required in Xenial so that it provides the `node`
   # executable
   with_items:
@@ -11,7 +11,7 @@
   when: ansible_pkg_mgr == 'apt'
 
 - name: Create node user
-  sudo: true
+  become: true
   user: name=node state=present shell=/bin/false system=yes
 
 - name: Install statsd from GitHub
@@ -22,17 +22,17 @@
   register: permissions
 
 - name: Set file permissions
-  sudo: true
+  become: true
   file: path={{ app_home }}/src/statsd owner=node group=node
   when: permissions.stat.pw_name != 'node'
 
 - include: systemd.yml
 
 - name: Configure statsd
-  sudo: true
+  become: true
   template: src=config/localConfig.js.j2 dest={{ app_home }}/src/statsd/localConfig.js owner=node group=node mode=0444
   notify: restart statsd
 
 - name: Start statsd
-  sudo: true
+  become: true
   service: name=statsd state=running enabled=yes

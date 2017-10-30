@@ -3,10 +3,10 @@
   service:
     name: postgresql
     state: started
-  sudo: yes
+  become: true
 
 - name: allow users to connect locally
-  sudo: yes
+  become: true
   lineinfile:
      # TODO: should not hardcode that version
      dest: /etc/postgresql/9.5/main/pg_hba.conf
@@ -18,7 +18,7 @@
 - service:
     name: postgresql
     state: restarted
-  sudo: true
+  become: true
   when: pg_hba_conf.changed
 
 # FIXME: flag/option needed
@@ -37,8 +37,8 @@
     password: "{{ db_password.stdout }}"
     role_attr_flags: SUPERUSER
     login_user: postgres
-  sudo_user: postgres
-  sudo: yes
+  become_user: postgres
+  become: true
 
 - name: Make {{ app_name }} database
   postgresql_db:
@@ -46,14 +46,14 @@
     owner: "{{ app_name }}"
     state: present
     login_user: postgres
-  sudo_user: postgres
-  sudo: yes
+  become_user: postgres
+  become: true
 
 - name: ensure database service is up
   service:
     name: postgresql
     state: started
-  sudo: yes
+  become: true
 
 - name: create the prod_db config file with the db password
   template:
@@ -71,8 +71,8 @@
 - name: check if database for app needs populating
   # this should be configurable/optional in the playbook
   command: psql -t chacra -c "SELECT COUNT(*) FROM projects;"
-  sudo_user: postgres
-  sudo: yes
+  become_user: postgres
+  become: true
   register: database_is_populated
   ignore_errors: true
   changed_when: "database_is_populated.rc != 0"

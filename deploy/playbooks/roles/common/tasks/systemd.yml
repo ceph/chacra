@@ -1,43 +1,43 @@
 ---
 
 - name: ensure /var/log/celery dir exists
-  sudo: true
+  become: true
   file: path=/var/log/celery state=directory owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }} recurse=yes
 
 - name: ensure /etc/default/ dir exists
-  sudo: true
+  become: true
   file: path=/etc/default state=directory
 
 - name: install the systemd configuration file for celery
   template: src=systemd/chacra.sysconfig.j2 dest=/etc/default/chacra
-  sudo: true
+  become: true
 
 - name: install the systemd unit file for chacra
   template: src=systemd/chacra.service.j2 dest=/etc/systemd/system/chacra.service
-  sudo: true
+  become: true
   notify:
      - reload systemd
 
 - name: install the systemd unit file for celery
   template: src=systemd/chacra-celery.service.j2 dest=/etc/systemd/system/chacra-celery.service
-  sudo: true
+  become: true
   notify:
      - reload systemd
 
 - name: install the systemd unit file for celerybeat
   template: src=systemd/chacra-celerybeat.service.j2 dest=/etc/systemd/system/chacra-celerybeat.service
-  sudo: true
+  become: true
   notify:
      - reload systemd
 
 - name: ensure chacra is enabled and running
-  sudo: true
+  become: true
   service: name=chacra state=running enabled=yes
 
 - name: ensure chacra-celery is enabled and running
-  sudo: true
+  become: true
   service: name=chacra-celery state=running enabled=yes
 
 - name: ensure chacra-celerybeat is enabled and running
-  sudo: true
+  become: true
   service: name=chacra-celerybeat state=running enabled=yes

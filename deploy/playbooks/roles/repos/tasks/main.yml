@@ -1,11 +1,11 @@
 ---
 - name: Update apt
-  sudo: yes
+  become: true
   apt:
     update_cache: yes
 
 - name: Install needed packages
-  sudo: yes 
+  become: true 
   apt:
     name: "{{ item }}"
     state: present

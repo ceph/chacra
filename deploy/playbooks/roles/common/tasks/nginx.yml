@@ -3,23 +3,23 @@
   file:
     path: /etc/nginx/sites-available
     state: directory
-  sudo: true
+  become: true
 
 - name: ensure there is an nginx user
   user:
     name: nginx
     comment: "Nginx user"
-  sudo: true
+  become: true
 
 - name: ensure sites-enable for nginx
   file:
     path: /etc/nginx/sites-enabled
     state: directory
-  sudo: true
+  become: true
 
 - name: remove default nginx site
   action: file path=/etc/nginx/sites-enabled/default state=absent
-  sudo: true
+  become: true
 
 - name: "check if {{ nginx_ssl_cert_path }} exists"
   stat:
@@ -29,17 +29,17 @@
 
 - name: write nginx.conf
   action: template src=../templates/nginx.conf dest=/etc/nginx/nginx.conf
-  sudo: true
+  become: true
 
 - name: enable nginx
-  sudo: true
+  become: true
   action: service name=nginx enabled=true
 
 - name: create nginx site config
   template:
     src: "../templates/nginx_site.conf"
     dest: "/etc/nginx/sites-available/{{ app_name }}.conf"
-  sudo: true
+  become: true
   notify:
     - restart nginx
 
@@ -48,12 +48,12 @@
     src: "/etc/nginx/sites-available/{{ app_name }}.conf"
     dest: "/etc/nginx/sites-enabled/{{ app_name }}.conf"
     state: "link"
-  sudo: true
+  become: true
 
 - name: check to see if ssl cert needs created
   stat:
     path: "{{ nginx_ssl_cert_path }}"
-  sudo: true
+  become: true
   register: ssl_cert
 
 - include: ssl.yml
@@ -66,5 +66,5 @@
     - not ssl_cert.stat.exists
 
 - name: ensure nginx is restarted
-  sudo: true
+  become: true
   action: service name=nginx state=restarted
