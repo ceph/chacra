@@ -18,18 +18,21 @@
      development_server: false
      purge_repos: True
      fqdn: "{{ inventory_hostname }}"
+     ## required. use something like chacra# so rabbitmq will start
+     ## see http://tracker.ceph.com/issues/19316
+     # short_hostname: "chacra#"
      # required for first deploy
      # api_user: "admin"
      # api_key: "secret"
      # graphite reporting for statsd
      graphite_host: "shaman.ceph.com"
-     # required
+     ## required
      # graphite_api_key: '1234-asdf-1234'
      # callbacks
      callback_url: "https://shaman.ceph.com/api/repos/"
-     # required for first deploy
-     #callback_user: "admin"
-     #callback_key: "secret"
+     ## required for first deploy
+     # callback_user: "admin"
+     # callback_key: "secret"
      callback_verify_ssl: True
      health_ping: true
      health_ping_url: "https://shaman.ceph.com/api/nodes/"
