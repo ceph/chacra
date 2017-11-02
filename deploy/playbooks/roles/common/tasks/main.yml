@@ -6,18 +6,22 @@
     src: hosts.j2
     dest: "/etc/hosts"
 
-- name: "Temporarily set hostname to {{ short_hostname }} so rabbitmq will start"
+- name: "Set hostname to {{ short_hostname }}"
   become: true
   hostname: name="{{ short_hostname }}"
   when: short_hostname is defined
 
+- name: Prevent cloud-init from changing hostname after reboot
+  become: true
+  lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: '^preserve_hostname:'
+    line: 'preserve_hostname: true'
+    state: present
+    create: yes
+
 # rabbitmq must be installed after the hostname is set
 - include: rabbitmq.yml
-
-- name: "Set hostname back to {{ fqdn }}"
-  become: true
-  hostname: name="{{ fqdn }}"
-  when: fqdn is defined
 
 - name: "ensure a home for {{ app_name }}"
   become: true
