@@ -25,6 +25,7 @@ df_communicate_full = (
 'Filesystem                   1K-blocks    Used Available Use% Mounted on\n/dev/mapper/vagrant--vg-root  80909064 2205960  74570036   93% /\n',
 '')
 
+
 class TestDiskHasSpace(object):
 
     def test_it_has_plenty(self, fake):
@@ -44,3 +45,11 @@ class TestDiskHasSpace(object):
         with pytest.raises(SystemCheckError) as err:
             checks.disk_has_space(_popen=lambda *a, **kw: popen)
         assert 'almost full. Used: 93%' in err.value.message
+
+
+class TestErrorMessage(object):
+
+    def test_message_is_captured(self):
+        with pytest.raises(SystemCheckError) as err:
+            raise SystemCheckError('an error message')
+        assert 'an error message' == str(err.value)
