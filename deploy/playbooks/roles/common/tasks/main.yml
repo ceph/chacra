@@ -51,7 +51,7 @@
   pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade'
 
 - name: "pip+git install {{ app_name }} into virtualenv."
-  pip: name='git+https://github.com/ceph/chacra@{{ branch }}#egg=chacra' virtualenv={{ app_home }} editable=yes
+  pip: name='git+https://github.com/ceph/chacra@{{ branch }}#egg=chacra' virtualenv={{ app_home }} editable=yes state=forcereinstall
   changed_when: False
 
 - name: create the prod config file
