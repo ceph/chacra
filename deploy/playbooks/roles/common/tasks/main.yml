@@ -25,6 +25,7 @@
   apt:
     name: unattended-upgrades
     state: absent
+  become: true
 
 # rabbitmq must be installed after the hostname is set
 - include: rabbitmq.yml
