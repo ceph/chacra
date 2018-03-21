@@ -20,13 +20,6 @@
     state: present
     create: yes
 
-# Automatic updates to chacra dependencies results in chacra being stopped
-- name: Make sure unattended-upgrades is not installed
-  apt:
-    name: unattended-upgrades
-    state: absent
-  become: true
-
 # rabbitmq must be installed after the hostname is set
 - include: rabbitmq.yml
 
