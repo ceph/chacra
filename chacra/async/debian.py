@@ -122,10 +122,14 @@ def create_deb_repo(repo_id):
             continue
         for command in commands:
             logger.info('running command: %s', ' '.join(command))
-            try:
-                subprocess.check_call(command)
-            except subprocess.CalledProcessError:
+            result = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            if result.returncode > 0:
                 logger.error('failed to add binary %s', binary.name)
+            stdout, stderr = result.communicate()
+            for line in stdout.split('\n'):
+                logger.info(line)
+            for line in stderr.split('\n'):
+                logger.warning(line)
 
     logger.info("finished processing repository: %s", repo)
     repo.is_updating = False
