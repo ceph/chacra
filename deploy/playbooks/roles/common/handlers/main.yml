@@ -2,7 +2,6 @@
 
 - name: reload systemd
   become: true
-  become: true
   command: systemctl daemon-reload
 
 - name: restart app
