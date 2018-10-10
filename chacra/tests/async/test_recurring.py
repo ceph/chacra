@@ -37,21 +37,224 @@ class TestPurgeRepos(object):
         recurring.purge_repos(_now=self.now)
         assert Repo.query.all() == []
 
-    def test_does_not_get_rid_of_old_repos_configured_in_days(self, session, fake, monkeypatch):
-        conf.purge_rotation = {'ceph': {'firefly': {'days': 70}}, '__force_dict__': True}
+    def test_does_not_get_rid_of_old_repos_by_ref_configured_in_days(self, session, fake, monkeypatch):
+        conf.purge_rotation = {'ceph': {'ref': {'firefly': {'days': 70}}}, '__force_dict__': True}
         fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
         monkeypatch.setattr(datetime, 'datetime', fake_datetime)
         session.commit()
         recurring.purge_repos(_now=self.now)
         assert len(Repo.query.all()) == 1
 
-    def test_does_not_get_rid_of_old_repos_configured_with_offset(self, session, fake, monkeypatch):
-        conf.purge_rotation = {'ceph': {'firefly': {'keep_minimum': 1}}, '__force_dict__': True}
+    def test_does_not_get_rid_of_old_repos_by_ref_configured_with_offset(self, session, fake, monkeypatch):
+        conf.purge_rotation = {'ceph': {'ref': {'firefly': {'keep_minimum': 1}}}, '__force_dict__': True}
         fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
         monkeypatch.setattr(datetime, 'datetime', fake_datetime)
         session.commit()
         recurring.purge_repos(_now=self.now)
         assert len(Repo.query.all()) == 1
+
+    def test_does_not_get_rid_of_old_repos_by_flavor_configured_in_days(self, session, fake, monkeypatch):
+        conf.purge_rotation = {'ceph': {'flavor': {'default': {'days': 70}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+    def test_does_not_get_rid_of_old_repos_by_flavor_configured_with_offset(self, session, fake, monkeypatch):
+        conf.purge_rotation = {'ceph': {'flavor': {'default': {'keep_minimum': 1}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+    def test_get_rid_of_new_and_old_repos_by_ref_configured_in_days(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'ref': {'next': {'days': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 0
+
+    def test_get_rid_of_new_and_old_repos_by_ref_configured_with_offset(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'ref': {'next': {'keep_minimum': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 0
+
+    def test_get_rid_of_new_and_old_repos_by_flavor_configured_in_days(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'days': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 0
+
+    def test_get_rid_of_new_and_old_repos_by_flavor_configured_with_offset(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 0
+
+    def test_does_not_get_rid_of_old_repos_by_flavor_and_ref(self, session, fake, monkeypatch):
+        conf.purge_rotation = {'ceph': {'flavor': {'default': {'keep_minimum': 1}}, 'ref': {'firefly': {'days': 70}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+    def test_keeps_new_repo_by_flavor_with_days(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0, 'days': 70}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+    def test_keeps_new_repo_by_flavor_with_offset(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 1, 'days': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+
+    def test_keeps_new_repo_by_flavor_with_offset_bad_ref_days(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 1}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+    def test_keeps_new_repo_by_ref_with_days_bad_flavor_offset(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0}}, 'ref': {'next': {'days': 70}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 1
+
+
+    def test_get_rid_of_new_repo_with_ref_and_flavor(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 0
+
+    def test_get_rid_of_new_repos_without_offset(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'days': 0}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 0
+
+
+    def test_get_rid_of_new_and_old_repos_without_days(self, session, fake, monkeypatch):
+        Repo(
+            project=Project('nfs-ganesha'),
+            ref='next',
+            distro='centos',
+            distro_version='7',
+            flavor='ceph_master',
+        )
+
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0}}, 'ref': {'next': {'keep_minimum': 0}}}, '__force_dict__': True}
+        fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
+        monkeypatch.setattr(datetime, 'datetime', fake_datetime)
+        session.commit()
+        recurring.purge_repos(_now=self.now)
+        assert len(Repo.query.all()) == 0
 
     def test_gets_rid_of_other_repos(self, session, fake, monkeypatch):
         Repo(
@@ -61,7 +264,7 @@ class TestPurgeRepos(object):
             distro_version='7',
         )
 
-        conf.purge_rotation = {'ceph': {'firefly': {'keep_minimum': 1}}, '__force_dict__': True}
+        conf.purge_rotation = {'ceph': {'ref': {'firefly': {'keep_minimum': 1}}}, '__force_dict__': True}
         fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
         monkeypatch.setattr(datetime, 'datetime', fake_datetime)
         session.commit()

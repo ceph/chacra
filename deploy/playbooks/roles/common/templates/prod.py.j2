@@ -87,100 +87,138 @@ purge_repos = {{ purge_repos }}
 
 purge_rotation = {
     'ceph-medic': {
-        'master': {
-            'keep_minimum': 5
-        }
+        'ref': {
+            'master': {
+                'keep_minimum': 5
+            },
+        },
     },
     'kernel': {
-        'testing': {
-            'keep_minimum': 10
-        },
-        'master': {
-            'keep_minimum': 5
-        },
-        'for-linus': {
-            'keep_minimum': 5
-        },
-        'nightly_pre-single-major': {
-            'keep_minimum': 1
-        },
-        'ceph-iscsi-stable': {
-            'keep_minimum': 1
-        },
-        'ceph-iscsi-test': {
-            'keep_minimum': 1
+        'ref': {
+            'testing': {
+                'keep_minimum': 10
+            },
+            'master': {
+                'keep_minimum': 5
+            },
+            'for-linus': {
+                'keep_minimum': 5
+            },
+            'nightly_pre-single-major': {
+                'keep_minimum': 1
+            },
+            'ceph-iscsi-stable': {
+                'keep_minimum': 1
+            },
+            'ceph-iscsi-test': {
+                'keep_minimum': 1
+            },
         },
     },
     'calamari': {
-        'master': {
-            'keep_minimum': 5
-        },
-        '1.5': {
-            'keep_minimum': 5
+        'ref': {
+            'master': {
+                'keep_minimum': 5
+            },
+            '1.5': {
+                'keep_minimum': 5
+            },
         },
     },
     'ceph': {
-        'hammer': {
-            'days': 30,
-            'keep_minimum': 5
-        },
-        'infernalis': {
-            'days': 30,
-            'keep_minimum': 5
-        },
-        'jewel': {
-            'days': 14,
-            'keep_minimum': 10
-        },
-        'kraken': {
-            'days': 14,
-            'keep_minimum': 10
-        },
-        'luminous': {
-            'days': 14,
-            'keep_minimum': 10
-        },
-        'mimic': {
-            'days': 14,
-            'keep_minimum': 10
+        'ref': {
+            'hammer': {
+                'days': 30,
+                'keep_minimum': 5
+            },
+            'infernalis': {
+                'days': 30,
+                'keep_minimum': 5
+            },
+            'jewel': {
+                'days': 14,
+                'keep_minimum': 10
+            },
+            'kraken': {
+                'days': 14,
+                'keep_minimum': 10
+            },
+            'luminous': {
+                'days': 14,
+                'keep_minimum': 10
+            },
+            'mimic': {
+                'days': 14,
+                'keep_minimum': 10
+            },
         },
     },
     'ceph-installer': {
-        'master': {
-            'keep_minimum': 10
+        'ref': {
+            'master': {
+                'keep_minimum': 10
+            },
         },
     },
     'ceph-ansible': {
-        'master': {
-            'keep_minimum': 5
-        },
-        'stable-2.1': {
-            'keep_minimum': 5
+        'ref': {
+            'master': {
+                'keep_minimum': 5
+            },
+            'stable-2.1': {
+                'keep_minimum': 5
+            },
         },
     },
     'python-rtslib': {
-        'master': {
-            'keep_minimum': 5
+        'ref': {
+            'master': {
+                'keep_minimum': 5
+            },
         },
     },
     'tcmu-runner': {
-        'master': {
-            'keep_minimum': 5
+        'ref': {
+            'master': {
+                'keep_minimum': 5
+            },
         },
     },
     'ceph-iscsi-config': {
-        'master': {
-            'keep_minimum': 5
+        'ref': {
+            'master': {
+                'keep_minimum': 5
+            },
         },
     },
     'ceph-iscsi-cli': {
-        'master': {
-            'keep_minimum': 5
+        'ref': {
+            'master': {
+                'keep_minimum': 5
+            },
         },
     },
     'ceph-iscsi-tools': {
-        'master': {
-            'keep_minimum': 5
+        'ref': {
+            'master': {
+                'keep_minimum': 5
+            },
+        },
+    },
+    'nfs-ganesha': {
+        'flavor': {
+            'ceph_mimic': {
+                'keep_minimum': 2
+            },
+            'ceph_luminous': {
+                'keep_minimum': 2
+            },
+            'ceph_kraken': {
+                'keep_minimum': 2
+            },
+            'ceph_jewel': {
+                'keep_minimum': 2
+            },
         },
     },
     '__force_dict__': True,
