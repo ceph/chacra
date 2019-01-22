@@ -1,6 +1,6 @@
 import hashlib
 import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, BigInteger
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
@@ -26,7 +26,7 @@ class Binary(Base):
     created = Column(DateTime, index=True)
     modified = Column(DateTime, index=True)
     signed = Column(Boolean(), default=False)
-    size = Column(Integer, default=0)
+    size = Column(BigInteger, default=0)
     checksum = Column(String(256))
 
     project_id = Column(Integer, ForeignKey('projects.id'))
