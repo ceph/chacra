@@ -67,7 +67,7 @@ class RepoController(object):
     @expose('json', generic=True)
     def index(self):
         if self.repo_obj is None:
-            print "no repo, aborting"
+            print("no repo, aborting")
             abort(404)
         return self.repo_obj
 
