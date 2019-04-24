@@ -107,8 +107,10 @@ def purge_repos(_now=None):
                     ref_keep_minimum = ref_attr.get('keep_minimum', 0)
 
                     # in case days was not set in either flavor or ref
-                    if ((flavor_days == None) and (ref_days == None)):
-                        days = 14
+                    days = ref_days
+                    if flavor_days is None:
+                        if ref_days is None:
+                            days = 14
                     elif flavor_days >= ref_days:
                         days = flavor_days
                     else:
