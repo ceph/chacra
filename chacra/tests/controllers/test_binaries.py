@@ -4,6 +4,7 @@ import py.test
 
 from chacra.models import Binary, Project, Repo
 from chacra.tests import util
+from chacra.compat import b_
 
 
 class TestBinaryUniqueness(object):
@@ -13,12 +14,12 @@ class TestBinaryUniqueness(object):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
             '/binaries/ceph/giant/head/centos/el6/x86_64/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
 
         session.app.post(
             '/binaries/ceph-deploy/master/head/centos/el6/i386/',
-            upload_files=[('file', 'ceph-deploy-1.0.0-0.el6.i386.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-deploy-1.0.0-0.el6.i386.rpm', b_('hello tharrrr'))]
         )
 
         # get archs for ceph-deploy
@@ -32,12 +33,12 @@ class TestBinaryUniqueness(object):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
             '/binaries/ceph/giant/head/centos/el6/x86_64/flavors/default/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
 
         session.app.post(
             '/binaries/ceph-deploy/master/head/centos/el6/i386/flavors/default/',
-            upload_files=[('file', 'ceph-deploy-1.0.0-0.el6.i386.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-deploy-1.0.0-0.el6.i386.rpm', b_('hello tharrrr'))]
         )
 
         # get archs for ceph-deploy
@@ -51,12 +52,12 @@ class TestBinaryUniqueness(object):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
             '/binaries/ceph/giant/head/centos/el6/x86_64/flavors/default/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
 
         session.app.post(
             '/binaries/ceph/giant/head/centos/el6/i386/flavors/default/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.i386.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.i386.rpm', b_('hello tharrrr'))]
         )
 
         # get the binary for an i386 url but for a different arch on the same
@@ -81,7 +82,7 @@ class TestBinaryController(object):
         result = session.app.post(
             url,
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         assert result.status_int == 201
 
@@ -94,11 +95,11 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         result = session.app.put(
             url,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))],
             expect_errors=True,
         )
         assert result.status_int == 405
@@ -116,7 +117,7 @@ class TestBinaryController(object):
         result = session.app.post(
             url_post,
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         result = session.app.get(
             url_get,
@@ -136,7 +137,7 @@ class TestBinaryController(object):
         session.app.post(
             url_post,
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         result = session.app.get(url_get)
         assert result.status_int == 200
@@ -146,7 +147,7 @@ class TestBinaryController(object):
         session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         result = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
         assert result.status_int == 200
@@ -190,7 +191,7 @@ class TestBinaryController(object):
         session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         result = session.app.delete('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
         assert result.status_int == 204
@@ -203,12 +204,12 @@ class TestBinaryController(object):
         session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         session.app.post(
             '/binaries/ceph/giant/head/ceph/el7/x86_64/',
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         result = session.app.delete('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/')
         assert result.status_int == 204
@@ -228,7 +229,7 @@ class TestBinaryController(object):
         session.app.post(
             url_post,
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         repo = Repo.get(1)
         assert repo
@@ -243,12 +244,12 @@ class TestBinaryController(object):
         session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.1.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.1.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         repo = Repo.get(1)
         assert repo
@@ -265,7 +266,7 @@ class TestBinaryController(object):
     def test_auth_fails(self, session, url):
         result = session.app.post(
             url,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))],
             headers={'Authorization': util.make_credentials(correct=False)},
             expect_errors=True
         )
@@ -276,15 +277,15 @@ class TestBinaryController(object):
 
         session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         session.app.put(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         session.app.put(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
 
         binary = Binary.get(1)
@@ -303,11 +304,11 @@ class TestBinaryController(object):
         # we do a bunch of requests that do talk to the database
         session.app.post(
             url_post,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         result = session.app.post(
             url_post_2,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')],
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))],
             expect_errors=True
         )
 
@@ -324,11 +325,11 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
             url_post,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         result = session.app.post(
             url_post_2,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         assert result.status_int == 201
 
@@ -336,11 +337,11 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         session.app.put(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'something changed')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('something changed'))]
         )
 
         destination = os.path.join(
@@ -361,7 +362,7 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
             url_post,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         response = session.app.get(url_get).json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['project']
@@ -378,7 +379,7 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
             url_post,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         response = session.app.get(url_get).json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['size']
@@ -395,7 +396,7 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
             url_post,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         response = session.app.get(url_get).json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
@@ -406,7 +407,7 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
         result = session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         response = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/').json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
@@ -414,7 +415,7 @@ class TestBinaryController(object):
         session.app.put(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             params={'force': True},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'something changed')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('something changed'))]
         )
         response = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/').json
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
@@ -431,7 +432,7 @@ class TestBinaryController(object):
         pecan.conf.binary_root = str(tmpdir)
         session.app.post(
             url_post,
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         response = session.app.head(url_head)
         assert response.status_int == 200
@@ -454,7 +455,7 @@ class TestRelatedProjects(object):
         }
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         project = Project.filter_by(name='ceph').first()
         # should've create the ceph project because it didn't exist
@@ -479,7 +480,7 @@ class TestRelatedProjects(object):
         session.commit()
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         project = Project.filter_by(name='ceph').first()
         assert project is not None
@@ -505,7 +506,7 @@ class TestRelatedProjects(object):
         session.commit()
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         ceph_project = Project.filter_by(name='ceph').first()
         rhcs_project = Project.filter_by(name='rhcs').first()
@@ -527,7 +528,7 @@ class TestRelatedProjects(object):
         }
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         project = Project.filter_by(name='ceph').first()
         repo = Repo.filter_by(project=project).first()
@@ -553,7 +554,7 @@ class TestAutomaticRepos(object):
         }
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         project = Project.filter_by(name='ceph').first()
         repo = Repo.filter_by(project=project).first()
@@ -564,7 +565,7 @@ class TestAutomaticRepos(object):
 
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-deploy_10.0.0-0.el6.x86_64.rpm', 'newer version')]
+            upload_files=[('file', 'ceph-deploy_10.0.0-0.el6.x86_64.rpm', b_('newer version'))]
         )
         project = Project.filter_by(name='ceph').first()
         repo = Repo.filter_by(project=project).first()
@@ -585,7 +586,7 @@ class TestAutomaticRepos(object):
         }
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         project = Project.filter_by(name='ceph-deploy').first()
         repo = Repo.filter_by(project=project).first()
@@ -596,7 +597,7 @@ class TestAutomaticRepos(object):
 
         session.app.post(
             url,
-            upload_files=[('file', 'ceph-deploy_10.0.0-0.el6.x86_64.rpm', 'newer version')]
+            upload_files=[('file', 'ceph-deploy_10.0.0-0.el6.x86_64.rpm', b_('newer version'))]
         )
         project = Project.filter_by(name='ceph-deploy').first()
         repo = Repo.filter_by(project=project).first()
