@@ -1,6 +1,7 @@
 import pecan
 import os
 from chacra.models import Project, Binary
+from chacra.compat import b_
 
 
 class TestArchController(object):
@@ -182,6 +183,6 @@ class TestArchController(object):
         result = session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/',
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         assert result.status_int == 201

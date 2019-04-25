@@ -15,8 +15,8 @@ setup(
     license = "MIT",
     install_requires=[
         "pecan",
-        "sqlalchemy==1.0.13",
-        "psycopg2==2.6.1",
+        "sqlalchemy==1.3.0",
+        "psycopg2==2.8.2",
         "pecan-notario",
         "python-statsd",
         "requests",

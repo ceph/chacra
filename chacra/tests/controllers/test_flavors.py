@@ -1,4 +1,5 @@
 from chacra.models import Project, Binary
+from chacra.compat import b_
 
 
 class TestFlavorsController(object):
@@ -77,7 +78,7 @@ class TestFlavorsController(object):
         )
         # default flavor is for a different distro_version in this case
         # and should not show up
-        assert result.json.keys() == ['tcmalloc']
+        assert list(result.json.keys()) == ['tcmalloc']
 
 
 class TestFlavorController(object):
@@ -184,7 +185,7 @@ class TestFlavorController(object):
         result = session.app.post(
             '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/frufru/',
             params={'force': 1},
-            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', 'hello tharrrr')]
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
         )
         assert result.status_int == 201
 

@@ -38,4 +38,4 @@ class TestRefController(object):
         Binary('ceph-1.0.0.deb', p, ref='firefly', sha1="head", distro='ubuntu', distro_version='trusty', arch='i386')
         session.commit()
         result = session.app.get('/binaries/ceph/master/')
-        assert result.json.keys() == ['sha1']
+        assert list(result.json.keys()) == ['sha1']

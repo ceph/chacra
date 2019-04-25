@@ -1,6 +1,6 @@
 % for distro in distributions:
 Codename: ${ distro }
-% for key, value in data.iteritems():
+% for key, value in data.items():
 ${key}: ${value}
 % endfor
 
