@@ -1,6 +1,7 @@
 import os
 import py.test
 from chacra.models import Project, Repo, Binary
+from chacra.compat import b_
 
 
 class TestRepoApiController(object):
@@ -43,7 +44,7 @@ class TestRepoApiController(object):
         )
         session.commit()
         result = session.app.get(url)
-        assert "deb" in result.body
+        assert b_("deb") in result.body
 
     @py.test.mark.parametrize(
             'url',
@@ -63,7 +64,7 @@ class TestRepoApiController(object):
         )
         session.commit()
         result = session.app.get(url)
-        assert "[foobar]" in result.body
+        assert b_("[foobar]") in result.body
 
     @py.test.mark.parametrize(
             'url',
