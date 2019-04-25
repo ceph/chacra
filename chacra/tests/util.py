@@ -9,5 +9,6 @@ def make_credentials(correct=True, username=None, secret=None):
         creds = "%s:%s" % (username, secret)
     else:
         creds = 'you:wrong'
-    return 'Basic %s' % base64.b64encode(creds)
+    garbled_creds = base64.b64encode(creds.encode('utf-8')).decode('utf8')
+    return 'Basic %s' % garbled_creds
 
