@@ -11,6 +11,17 @@ from chacra.constants import DISTRIBUTIONS, REPO_OPTION_KEYS
 logger = logging.getLogger(__name__)
 
 
+def as_string(string):
+    """
+    Ensure that whatever type of string is incoming, it is returned as an
+    actual string, versus 'bytes' which Python 3 likes to use.
+    """
+    if isinstance(string, bytes):
+        # we really ignore here if we can't properly decode with utf-8
+        return string.decode('utf-8', 'ignore')
+    return string
+
+
 def infer_arch_directory(rpm_binary):
     """
     There has to be a better way to do this. The problem here is that chacra
@@ -200,7 +211,7 @@ def makedirs(path):
     try:
         os.makedirs(path)
         return path
-    except OSError, e:
+    except OSError as e:
         if e.errno == errno.EEXIST:
             pass
         else:
@@ -240,6 +251,7 @@ def create_distributions_file(project_name, distributions_path):
     """
     data = get_distributions_file_context(project_name)
     contents = render_mako_template("distributions", data)
+    contents = as_string(contents)
     with open(distributions_path, "w") as f:
         try:
             f.write(contents)
