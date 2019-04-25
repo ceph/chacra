@@ -1,13 +1,17 @@
 import json
 from copy import deepcopy
 from sqlalchemy import types as SATypes
+from chacra.compat import PY3
 
 
 class JSONType(SATypes.TypeDecorator):
     impl = SATypes.UnicodeText
 
     def process_bind_param(self, value, engine):
-        return unicode(json.dumps(value))
+        if PY3:
+            return json.dumps(value)
+        else:
+            return unicode(json.dumps(value))  # noqa
 
     def process_result_value(self, value, engine):
         if value:
