@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 from pecan.deploy import deploy
 
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     #import pecan_mount
     #httpd = make_server('', 8181, pecan_mount.tree)
     httpd = make_server('', 8181, deploy(config_file('config.py')))
-    print "Serving HTTP on port 8181..."
+    print("Serving HTTP on port 8181...")
 
     # Respond to requests until process is killed
     httpd.serve_forever()
