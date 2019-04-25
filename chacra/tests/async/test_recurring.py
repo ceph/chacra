@@ -309,7 +309,7 @@ class TestPurgeRepos(object):
 
     def test_ignores_binaries_that_do_not_exist(self, session, fake, monkeypatch, tmpdir):
         p = tmpdir.join('binary')
-        p.write_text('contents', encoding='utf-8')
+        p.write_text(u'contents', encoding='utf-8')
         fake_datetime = fake(utcnow=lambda: self.old, now=self.now)
         monkeypatch.setattr(datetime, 'datetime', fake_datetime)
         Binary(
