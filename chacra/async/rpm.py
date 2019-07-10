@@ -74,7 +74,11 @@ def create_rpm_repo(repo_id):
             logger.exception('could not symlink')
 
     for d in repo_dirs:
-        subprocess.check_call(['createrepo', d])
+        # this prevents RPM packages that are larger than 2GB (!!!) from
+        # causing the database to fail to store the size and subsequently make
+        # the package uninstallable. Ideally, this types of flag options should
+        # be configurable
+        subprocess.check_call(['createrepo', '--no-database', d])
 
     logger.info("finished processing repository: %s", repo)
     repo.is_updating = False
