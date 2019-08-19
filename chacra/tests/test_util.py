@@ -342,6 +342,19 @@ class TestRepreproCommand(object):
         command = util.reprepro_command('/path', binary)
         assert command[-3] == 'includedeb'
 
+    def test_ddeb_binary(self, session, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
+        binary = models.Binary(
+            'ceph-dbgsym-1.1.ddeb',
+            self.p,
+            ref='firefly',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='all',
+            )
+        command = util.reprepro_command('/path', binary)
+        assert command[-3] == 'includeddeb'
+
     def test_deb_dsc(self, session, tmpdir):
         pecan.conf.distributions_root = str(tmpdir)
         binary = models.Binary(
