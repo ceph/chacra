@@ -97,6 +97,7 @@ distributions = {
         "Architectures": "amd64 armhf i386 source",
         "Suite": "stable",
         "Components": "main",
+        "DDebComponents": "main",
     },
     "ceph": {
         "Description": "Ceph distributed file system",

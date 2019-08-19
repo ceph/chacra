@@ -70,6 +70,7 @@ class Binary(Base):
         extension_map = {
             'rpm': 'rpm',
             'deb': 'deb',
+            'ddeb': 'deb',
             'dsc': 'deb',
             'changes': 'deb'
         }
