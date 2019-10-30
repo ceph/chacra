@@ -2,8 +2,8 @@
 deb [trusted=yes] ${base_url} ${distro_version} main
 % elif type == "rpm":
 [${project_name}]
-name=${project_name} packages for \$basearch
-baseurl=${base_url}\$basearch
+name=${project_name} packages for $basearch
+baseurl=${base_url}$basearch
 enabled=1
 gpgcheck=0
 type=rpm-md
