@@ -35,4 +35,4 @@
 
 - name: Start statsd
   become: true
-  service: name=statsd state=running enabled=yes
+  service: name=statsd state=restarted enabled=yes

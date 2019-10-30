@@ -32,12 +32,12 @@
 
 - name: ensure chacra is enabled and running
   become: true
-  service: name=chacra state=running enabled=yes
+  service: name=chacra state=restarted enabled=yes
 
 - name: ensure chacra-celery is enabled and running
   become: true
-  service: name=chacra-celery state=running enabled=yes
+  service: name=chacra-celery state=restarted enabled=yes
 
 - name: ensure chacra-celerybeat is enabled and running
   become: true
-  service: name=chacra-celerybeat state=running enabled=yes
+  service: name=chacra-celerybeat state=restarted enabled=yes
