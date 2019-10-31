@@ -304,6 +304,7 @@ def reprepro_command(repository_path, binary, distro_version=None):
         '--ignore=wrongdistribution',
         '--ignore=wrongversion',
         '--ignore=undefinedtarget',
+        '--ignore=unknownfield',
         include_flag, distro_version,
         binary.path
     ]
