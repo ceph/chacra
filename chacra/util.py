@@ -289,7 +289,6 @@ def reprepro_command(repository_path, binary, distro_version=None):
     distro_version = distro_version or binary.distro_version
     include_flags = {
         'deb': 'includedeb',
-        'ddeb': 'includeddeb',
         'dsc': 'includedsc',
         'changes': 'include',
     }
