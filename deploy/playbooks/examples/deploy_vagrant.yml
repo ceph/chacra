@@ -1,6 +1,7 @@
 ---
 
-- hosts: all
+- hosts: localhost
+  connection: local
   user: vagrant
   roles:
     - common
@@ -17,8 +18,8 @@
      repos_root: "/opt/repos"
      branch: "master"
      development_server: true
-     short_hostname: "3"
-     fqdn: "3.node.a"
+     short_hostname: "vagranthost"
+     fqdn: "vagranthost.a"
      api_user: "admin"
      api_key: "secret"
 
