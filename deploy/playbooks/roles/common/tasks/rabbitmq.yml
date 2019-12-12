@@ -1,15 +1,15 @@
 ---
-- name: add the rabbitmq official repo
-  become: true
-  apt_repository:
-    repo: "deb http://www.rabbitmq.com/debian/ testing main"
-    state: present
+# - name: add the rabbitmq official repo
+#   become: true
+#   apt_repository:
+#     repo: "deb http://www.rabbitmq.com/debian/ testing main"
+#     state: present
 
-- name: add the rabbitmq public key
-  become: true
-  apt_key:
-    url: "https://www.rabbitmq.com/rabbitmq-release-signing-key.asc"
-    state: present
+# - name: add the rabbitmq public key
+#   become: true
+#   apt_key:
+#     url: "https://www.rabbitmq.com/rabbitmq-release-signing-key.asc"
+#     state: present
 
 - name: update the apt cache
   become: true
