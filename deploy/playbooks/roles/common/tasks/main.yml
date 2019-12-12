@@ -14,7 +14,8 @@
 - name: Prevent cloud-init from changing hostname after reboot
   become: true
   lineinfile:
-    path: /etc/cloud/cloud.cfg
+    # use dest instead of path to be compatible with ansible from Ubuntu 16.04
+    dest: /etc/cloud/cloud.cfg
     regexp: '^preserve_hostname:'
     line: 'preserve_hostname: true'
     state: present
