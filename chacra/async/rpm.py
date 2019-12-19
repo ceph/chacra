@@ -73,12 +73,7 @@ def create_rpm_repo(repo_id):
         except OSError:
             logger.exception('could not symlink')
 
-    for d in repo_dirs:
-        # this prevents RPM packages that are larger than 2GB (!!!) from
-        # causing the database to fail to store the size and subsequently make
-        # the package uninstallable. Ideally, this types of flag options should
-        # be configurable
-        subprocess.check_call(['createrepo', '--no-database', d])
+    _createrepo(paths['absolute'], repo_dirs, repo.distro)
 
     logger.info("finished processing repository: %s", repo)
     repo.is_updating = False
@@ -86,3 +81,16 @@ def create_rpm_repo(repo_id):
     timer.stop()
     counter += 1
     post_ready(repo)
+
+
+def _createrepo(base_path, repo_dirs, distro):
+    if distro.lower() in ['opensuse', 'sle']:
+        # openSUSE/sles zypper expects the repodata on the top level dir
+        subprocess.check_call(['createrepo', '--no-database', base_path])
+    else:
+        for d in repo_dirs:
+            # this prevents RPM packages that are larger than 2GB (!!!) from
+            # causing the database to fail to store the size and subsequently make
+            # the package uninstallable. Ideally, this types of flag options should
+            # be configurable
+            subprocess.check_call(['createrepo', '--no-database', d])
