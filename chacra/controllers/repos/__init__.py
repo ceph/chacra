@@ -138,6 +138,7 @@ class RepoController(object):
         return dict(
             project_name=self.project.name,
             base_url=self.repo_obj.base_url,
+            distro_name=self.distro_name.lower(),
             distro_version=self.repo_obj.distro_version,
             type=self.repo_obj.type,
         )
