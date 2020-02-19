@@ -65,6 +65,30 @@ class TestRepoApiController(object):
         session.commit()
         result = session.app.get(url)
         assert b_("[foobar]") in result.body
+        assert b_("noarch") in result.body
+        assert b_("SRPMS") in result.body
+
+    @py.test.mark.parametrize(
+        'url',
+        ['/repos/foobar-opensuse/firefly/head/opensuse/15.1/repo/',
+         '/repos/foobar-opensuse/firefly/head/opensuse/15.1/flavors/default/repo/']
+    )
+    def test_repo_endpoint_rpm_opensuse_sle(self, session, url):
+        p = Project('foobar-opensuse')
+        Binary(
+            'ceph-1.0.rpm',
+            p,
+            distro='opensuse',
+            distro_version='15.1',
+            arch='x86_64',
+            sha1="head",
+            ref="firefly",
+        )
+        session.commit()
+        result = session.app.get(url)
+        assert b_('[foobar-opensuse]') in result.body
+        assert b_("noarch") not in result.body
+        assert b_("SRPMS") not in result.body
 
     @py.test.mark.parametrize(
             'url',
