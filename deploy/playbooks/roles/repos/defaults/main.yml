@@ -1,5 +1,6 @@
 ---
 reprepro_distros:
+  - buster
   - sid
   - stretch
   - jessie
