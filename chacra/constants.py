@@ -15,6 +15,7 @@ DISTRIBUTIONS = [
     'wily',
     'xenial',
     'bionic',
+    'focal',
 ]
 
 # These are reserved keys that will be ignored when processing repos. Otherwise
