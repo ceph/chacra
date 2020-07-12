@@ -1,7 +1,7 @@
 import logging
 import shutil
 
-from pecan import expose, abort, request
+from pecan import expose, abort, request, response
 from pecan.secure import secure
 from pecan.ext.notario import validate
 
@@ -121,6 +121,24 @@ class RepoController(object):
 
         async.post_requested(self.repo_obj)
         return self.repo_obj
+
+    @secure(basic_auth)
+    @index.when(method='DELETE', template='json')
+    @validate(schemas.repo_schema, handler='/errors/schema')
+    def index_delete(self):
+        repo_path = self.repo_obj.path
+        logger.info('nuke repository path: %s', repo_path)
+        try:
+            shutil.rmtree(repo_path)
+        except OSError:
+            msg = "could not remove repo path: {}".format(repo_path)
+            logger.exception(msg)
+            error('/errors/error/', msg)
+        self.repo_obj.delete()
+        if self.project.repos.count() == 0:
+            self.project.delete()
+        response.status = 204
+        return dict()
 
     @secure(basic_auth)
     @expose('json')
