@@ -1,0 +1,47 @@
+---
+# This playbook can be used to redeploy all chacra nodes without disrupting the CI.
+# It check Jenkins to make sure there are no running jobs either POSTing or planning to POST binaries to each chacra node before proceeding
+#
+# Prerequisites:
+#  - Be using ceph-sepia-secrets ansible inventory
+#  - Have an individual playbook file for each node named {{ inventory_hostname }}.yml
+#  - Have no need to pass additional vars on the command-line
+#    (e.g., `ansible-playbook 1.chacra.ceph.com.yml` should be sufficient)
+- hosts: chacra
+  serial: 1
+  become: true
+  gather_facts: true
+  vars:
+    path_to_playbooks: "~/src/chacra/deploy/playbooks"
+  tasks:
+
+    - name: "Touch /tmp/fail_check on {{ inventory_hostname }}"
+      file:
+        path: /tmp/fail_check
+        state: touch
+
+    # Set current_node since we can't use ansible_host in the next task due to it being delegated to a different host (and not the chacra host we're checking)
+    - set_fact:
+        current_node: "{{ ansible_host }}"
+
+    - name: "Check if {{ inventory_hostname }} has Jenkins jobs using it"
+      shell: "for file in $(sudo lsof -a -u jenkins -c java | grep \"/var/lib/jenkins/jobs\" | grep log | grep -v '(deleted)' | awk '{ print $9 }'); do grep \"chacra_url=https://{{ current_node }}\" $file; done | wc -l"
+      register: jobs
+      delegate_to: jenkins.ceph.com
+      until: 'jobs.stdout == "0"'
+      retries: 360 # A ceph build is roughly 2hrs so 3hrs of retries should be enough
+      delay: 60
+
+    - name: "Redeploy chacra on {{ inventory_hostname }}"
+      shell: "ansible-playbook {{ path_to_playbooks }}/{{ inventory_hostname }}.yml --limit {{ inventory_hostname }}"
+      delegate_to: localhost
+      become: false
+
+# This is obviously the preferred method to run an external playbook but I couldn't get it working with any amount of indentation experimenting.
+#- import_playbook: "{{ path_to_playbooks }}/{{ inventory_hostname }}.yml"
+#  delegate_to: localhost
+
+    - name: "Remove /tmp/fail_check on {{ inventory_hostname }}"
+      file:
+        path: /tmp/fail_check
+        state: absent
