@@ -1,4 +1,5 @@
 import logging
+import os
 import shutil
 
 from pecan import expose, abort, request, response
@@ -134,6 +135,15 @@ class RepoController(object):
             msg = "could not remove repo path: {}".format(repo_path)
             logger.exception(msg)
             error('/errors/error/', msg)
+        for binary in self.repo_obj.binaries:
+            binary_path = binary.binary.path
+            if binary_path:
+                try:
+                    os.remove(binary_path)
+                except (IOError, OSError):
+                    msg = "Could not remove the binary path: %s" % binary_path
+                    logger.exception(msg)
+            binary.delete()
         self.repo_obj.delete()
         if self.project.repos.count() == 0:
             self.project.delete()
