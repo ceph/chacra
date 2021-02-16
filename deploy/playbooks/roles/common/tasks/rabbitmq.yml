@@ -2,7 +2,7 @@
 - name: add the rabbitmq official repo
   become: true
   apt_repository:
-    repo: "deb http://www.rabbitmq.com/debian/ testing main"
+    repo: "deb https://packagecloud.io/rabbitmq/rabbitmq-server/ubuntu/ {{ ansible_lsb.codename }} main"
     state: present
 
 - name: add the rabbitmq public key
