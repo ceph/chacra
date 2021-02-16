@@ -17,6 +17,7 @@ system_packages:
   - python-apt
 #  - libsemanage-python
   - python
+  - liblz4-tool
 
 ssl_requirements:
   - openssl
