@@ -1,10 +1,12 @@
 # {{ ansible_managed }}
+from __future__ import absolute_import
+
 from pecan.hooks import TransactionHook
 from chacra import models
 from chacra import hooks
-from prod_db import sqlalchemy
-from prod_api_creds import api_key, api_user
-from prod_callbacks import callback_url, callback_user, callback_key, health_ping, health_ping_url, callback_verify_ssl, hostname
+from .prod_db import sqlalchemy
+from .prod_api_creds import api_key, api_user
+from .prod_callbacks import callback_url, callback_user, callback_key, health_ping, health_ping_url, callback_verify_ssl, hostname
 
 
 # Server Specific Configurations
