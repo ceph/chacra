@@ -1,5 +1,5 @@
 from pecan import make_app
-from chacra import models, async
+from chacra import models, asynch
 
 
 def setup_app(config):
@@ -14,6 +14,6 @@ def setup_app(config):
     )
 
     # make a series of health checks, post if they are good
-    async.post_if_healthy()
+    asynch.post_if_healthy()
 
     return app

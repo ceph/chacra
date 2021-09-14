@@ -2,7 +2,7 @@ import datetime
 import os
 from pecan import conf
 from chacra.tests import conftest
-from chacra.async import recurring
+from chacra.asynch import recurring
 from chacra.models import Repo, Project, Binary
 
 

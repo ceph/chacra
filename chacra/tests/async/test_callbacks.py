@@ -2,8 +2,8 @@ import os
 import pytest
 from pecan import conf
 import requests
-from chacra import async
-from chacra.async import recurring
+from chacra import asynch
+from chacra.asynch import recurring
 from chacra.models import Repo, Project
 from chacra.tests import conftest
 
@@ -35,7 +35,7 @@ class TestHelpers(object):
     def test_post_request(self, session, recorder, key):
         conf.callback_url = 'http://localhost/callback'
         f_async = recorder()
-        async.post_status('building', self.repo, _callback=f_async)
+        asynch.post_status('building', self.repo, _callback=f_async)
         result = f_async.recorder_calls[0]['kwargs']['args'][0]
         assert key in result
         assert '"building"' in result
@@ -43,14 +43,14 @@ class TestHelpers(object):
     def test_correct_url_for_repos(self, session, recorder):
         conf.callback_url = 'http://localhost/callback'
         f_async = recorder()
-        async.post_status('building', self.repo, _callback=f_async)
+        asynch.post_status('building', self.repo, _callback=f_async)
         result = f_async.recorder_calls[0]['kwargs']['args'][0]
         assert '/r/ceph/firefly/head/centos/7/' in result
 
     def test_correct_url_for_api(self, session, recorder):
         conf.callback_url = 'http://localhost/callback'
         f_async = recorder()
-        async.post_status('building', self.repo, _callback=f_async)
+        asynch.post_status('building', self.repo, _callback=f_async)
         result = f_async.recorder_calls[0]['kwargs']['args'][0]
         assert '/repos/ceph/firefly/head/centos/7/' in result
 

@@ -1,7 +1,7 @@
 import os
 from celery import shared_task
 from chacra import models
-from chacra.async import base, post_ready, post_building
+from chacra.asynch import base, post_ready, post_building
 from chacra import util
 from chacra.metrics import Counter, Timer
 import logging

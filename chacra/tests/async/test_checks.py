@@ -1,6 +1,6 @@
 import pytest
-from chacra.async import checks
-from chacra.async.checks import SystemCheckError
+from chacra.asynch import checks
+from chacra.asynch.checks import SystemCheckError
 
 
 class TestIsHealthy(object):

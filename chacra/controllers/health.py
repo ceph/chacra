@@ -1,6 +1,6 @@
 from pecan import expose, abort
 
-from chacra.async import checks
+from chacra.asynch import checks
 
 
 class HealthController(object):

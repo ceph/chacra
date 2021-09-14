@@ -31,7 +31,7 @@ This would append 'package.module' with `expensive_function`, but
 just the suffix (the last part of the scheme). For a production host, this
 counter could look like::
 
-    secret.chacra1.chacra.async.expensive_function
+    secret.chacra1.chacra.asynch.expensive_function
 
 
 Although not encouraged, it is possible to fully override with a custom name::
