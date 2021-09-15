@@ -8,7 +8,7 @@ import shutil
 from sqlalchemy import desc
 from celery import shared_task
 from chacra import models
-from chacra.async import base, debian, rpm, post_queued, post_deleted
+from chacra.asynch import base, debian, rpm, post_queued, post_deleted
 import logging
 
 logger = logging.getLogger(__name__)

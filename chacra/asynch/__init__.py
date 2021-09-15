@@ -62,9 +62,9 @@ def bootstrap_pecan(signal, sender):
 
 
 app = Celery(
-    'chacra.async',
+    'chacra.asynch',
     broker='amqp://guest@localhost//',
-    include=['chacra.async.rpm', 'chacra.async.debian', 'chacra.async.recurring']
+    include=['chacra.asynch.rpm', 'chacra.asynch.debian', 'chacra.asynch.recurring']
 )
 
 
@@ -77,12 +77,12 @@ except AttributeError:
 app.conf.update(
     CELERYBEAT_SCHEDULE={
         'poll-repos': {
-            'task': 'chacra.async.recurring.poll_repos',
+            'task': 'chacra.asynch.recurring.poll_repos',
             'schedule': timedelta(seconds=seconds),
             'options': {'queue': 'poll_repos'}
         },
         'purge-repos': {
-            'task': 'chacra.async.recurring.purge_repos',
+            'task': 'chacra.asynch.recurring.purge_repos',
             'schedule': timedelta(days=1),
         },
     },
@@ -103,7 +103,7 @@ def post_status(status, repo_obj, _callback=None):
     """
     if not getattr(pecan.conf, 'callback_url', False):
         return
-    from chacra.async import recurring
+    from chacra.asynch import recurring
     # this needs a better implementation
     hostname = getattr(pecan.conf, 'hostname', socket.gethostname())
     host_url = 'https://%s/' % hostname
@@ -161,7 +161,7 @@ def post_if_healthy():
         logger.info("System is not configured to send health ping.")
         return
 
-    from chacra.async import recurring, checks
+    from chacra.asynch import recurring, checks
 
     if not checks.is_healthy():
         logger.error("System is not healthy and will not send health ping.")

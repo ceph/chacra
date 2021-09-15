@@ -1,6 +1,6 @@
 import pytest
 import subprocess
-from chacra.async import rpm
+from chacra.asynch import rpm
 
 
 class TestRPM(object):

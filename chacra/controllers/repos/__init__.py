@@ -9,7 +9,7 @@ from pecan.ext.notario import validate
 from chacra.models import Project
 from chacra.controllers import error
 from chacra.auth import basic_auth
-from chacra import schemas, async
+from chacra import schemas, asynch
 
 
 logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class RepoController(object):
         self.repo_obj.is_updating = False
         self.repo_obj.is_queued = False
 
-        async.post_requested(self.repo_obj)
+        asynch.post_requested(self.repo_obj)
         return self.repo_obj
 
     @secure(basic_auth)
@@ -120,7 +120,7 @@ class RepoController(object):
         self.repo_obj.is_updating = False
         self.repo_obj.is_queued = False
 
-        async.post_requested(self.repo_obj)
+        asynch.post_requested(self.repo_obj)
         return self.repo_obj
 
     @secure(basic_auth)
