@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 
-from celery.task.control import inspect
+from celery.app.control import Inspect
 from errno import errorcode
 from pecan import conf
 from chacra import models
@@ -27,7 +27,7 @@ def celery_has_workers():
     celery worker(s).  An empty/None result will mean that there aren't any
     celery workers in use.
     """
-    stats = inspect().stats()
+    stats = Inspect().stats()
     if not stats:
         raise SystemCheckError('No running Celery worker was found')
 

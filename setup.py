@@ -6,6 +6,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
+
 setup(
     name='chacra',
     version='0.1',
@@ -20,7 +21,16 @@ setup(
         "pecan-notario",
         "python-statsd",
         "requests",
-        "celery<4.0.0",
+        "celery<=6.2.5",
+        # celery imports kombu, which imports importlib_metadata
+        # for py earlier than 3.8 (in 3.8 importlib.metadata is supplied
+        # in py's stdlib).  But there's a deprecated interface that
+        # kombu uses (see https://github.com/celery/kombu/issues/1339).
+        # Constrain the version of the external importlib_metadata
+        # to avoid the compatibility problem.  (kombu will eventually
+        # have to change, as the stdlib version is also removing the
+        # SelectableGroups dict interface.
+        "importlib_metadata<=3.6; python_version<'3.8'",
     ],
     test_suite='chacra',
     zip_safe=False,
@@ -41,5 +51,4 @@ setup(
         [pecan.command]
         populate=chacra.commands.populate:PopulateCommand
         """
-
 )
