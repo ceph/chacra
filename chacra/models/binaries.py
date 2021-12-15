@@ -213,10 +213,16 @@ listen(Binary, 'before_insert', generate_checksum)
 listen(Binary, 'before_update', generate_checksum)
 
 
-# listen for timestamp modifications
-listen(Binary, 'before_insert', update_timestamp)
-listen(Binary, 'before_update', update_timestamp)
+def add_timestamp_listeners():
+    # listen for timestamp modifications
+    listen(Binary, 'before_insert', update_timestamp)
+    listen(Binary, 'before_update', update_timestamp)
 
+def remove_timestamp_listeners():
+    listen(Binary, 'before_insert', update_timestamp)
+    listen(Binary, 'before_update', update_timestamp)
+
+add_timestamp_listeners()
 
 # listen for any changes to mark the repos
 listen(Binary, 'before_insert', update_repo)
