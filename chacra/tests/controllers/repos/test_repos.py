@@ -1,7 +1,9 @@
 import os
+import pecan
 import py.test
 from chacra.models import Project, Repo, Binary
 from chacra.compat import b_
+from chacra import asynch
 
 
 class TestRepoApiController(object):
@@ -474,6 +476,79 @@ class TestRepoCRUDOperations(object):
         )
         assert result.json['needs_update'] is True
         assert result.json['is_queued'] is False
+
+    @py.test.mark.dmick
+    @py.test.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/ubuntu/trusty/',
+             '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/'],
+    )
+    def test_create(self, session, url):
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        repo.path = "some_path"
+        session.commit()
+        repo.get(1)
+        repo.needs_update = False
+        session.commit()
+        # create a raw type repo
+        result = session.app.post_json(
+            url,
+            params={'type': 'raw'},
+        )
+        assert result.json['type'] == 'raw'
+
+        # adding an rpm doesn't change the type
+        Binary(
+            'binary.rpm',
+            p,
+            repo,
+            ref='firefly',
+            sha1='head',
+            flavor='default',
+            distro='ubuntu',
+            distro_version='trusty',
+            arch='arm64',
+        )
+        session.commit()
+        result = session.app.get(url)
+        assert result.json['type'] == 'raw'
+
+    @py.test.mark.dmick
+    def test_raw_post_update(self, session, recorder, monkeypatch):
+        pecan.conf.repos_root = '/tmp/root'
+        url = '/repos/foobar/master/head/windows/999/'
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "master",
+            "windows",
+            "999",
+            sha1="head",
+        )
+        session.commit()
+        repo.get(1)
+        # create a raw type repo
+        result = session.app.post_json(
+            url,
+            params={
+                'type': 'raw',
+                'needs_update': False,
+            },
+        )
+        assert result.json['type'] == 'raw'
+
+        # check that update just marks it 'ready' immediately
+        fake_post_status = recorder()
+        monkeypatch.setattr(asynch, 'post_status', fake_post_status)
+        result = session.app.post(url + 'update/')
+        assert fake_post_status.recorder_calls[0]['args'][0] == 'ready'
 
     @py.test.mark.parametrize(
             'url',
