@@ -12,6 +12,7 @@ Type=forking
 EnvironmentFile=/etc/default/chacra
 User={{ ansible_ssh_user }}
 WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
+RuntimeDirectory=celery
 StandardOutput=journal
 StandardError=journal
 ExecStart={{ app_home }}/bin/celery multi start 5 -Q:1,2 poll_repos,celery -Q:3-5 build_repos -A async --logfile=/var/log/celery/%n%I.log
