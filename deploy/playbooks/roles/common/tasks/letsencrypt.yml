@@ -11,14 +11,9 @@
     update_cache: yes
   become: true
 
-- name: add certbot PPA
-  apt_repository:
-    repo: "ppa:certbot/certbot"
-  become: true
-
 - name: install certbot
   apt:
-    name: python-certbot-nginx
+    name: certbot
     state: latest
     update_cache: yes
   become: true
@@ -30,14 +25,14 @@
     mode: 0755
   become: true
 
+- name: create (or renew) letsencrypt ssl cert
+  command: "{{ letsencrypt_command }}"
+  become: true
+
 - name: reload nginx to make sure latest configs are in use
   service:
     name: nginx
     state: reloaded
-  become: true
-
-- name: create (or renew) letsencrypt ssl cert
-  command: "{{ letsencrypt_command }}"
   become: true
 
 - name: setup a cron to attempt to renew the SSL cert every 15ish days
