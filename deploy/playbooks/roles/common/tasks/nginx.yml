@@ -65,6 +65,11 @@
     - use_letsencrypt
     - not ssl_cert.stat.exists
 
+- name: stop/disable apache2
+  become: true
+  action: service name=apache2 enabled=true state=stopped
+  tags: apachestop
+
 - name: ensure nginx is restarted
   become: true
   action: service name=nginx state=restarted
