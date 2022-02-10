@@ -8,3 +8,4 @@ alembic
 ipython
 python-statsd
 requests
+importlib_metadata<=3.6; python_version<'3.8'
