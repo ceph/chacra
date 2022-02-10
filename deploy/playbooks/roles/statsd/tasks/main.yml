@@ -3,11 +3,9 @@
 - name: Install Statsd Dependencies for Debian
   apt: "name={{ item }} update_cache=yes"
   become: true
-  # nodejs-legacy is required in Xenial so that it provides the `node`
-  # executable
   with_items:
     - git
-    - nodejs-legacy
+    - nodejs
   when: ansible_pkg_mgr == 'apt'
 
 - name: Create node user
