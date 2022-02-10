@@ -48,7 +48,7 @@
     - packages
 
 - name: Create a virtualenv with latest pip.
-  pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade'
+  pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade' virtualenv_python=python3
 
 - name: "pip+git install {{ app_name }} into virtualenv."
   pip: name='git+https://github.com/ceph/chacra@{{ branch }}#egg=chacra' virtualenv={{ app_home }} editable=yes state=forcereinstall
