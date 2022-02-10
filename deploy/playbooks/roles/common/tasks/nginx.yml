@@ -67,7 +67,11 @@
 
 - name: stop/disable apache2
   become: true
-  action: service name=apache2 enabled=true state=stopped
+  service:
+    name: apache2
+    enabled: false
+    state: stopped
+  failed_when: false
   tags: apachestop
 
 - name: ensure nginx is restarted
