@@ -21,6 +21,15 @@
   action: file path=/etc/nginx/sites-enabled/default state=absent
   become: true
 
+- name: check to see if ssl cert needs created
+  stat:
+    path: "{{ nginx_ssl_cert_path }}"
+  become: true
+  register: ssl_cert
+
+- include: ssl.yml
+  when: development_server == true or use_self_signed_ssl
+
 - name: "check if {{ nginx_ssl_cert_path }} exists"
   stat:
     path: "{{ nginx_ssl_cert_path }}"
@@ -50,20 +59,16 @@
     state: "link"
   become: true
 
-- name: check to see if ssl cert needs created
-  stat:
-    path: "{{ nginx_ssl_cert_path }}"
-  become: true
-  register: ssl_cert
-
-- include: ssl.yml
-  when: development_server == true or use_self_signed_ssl
-
 - include: letsencrypt.yml
   when:
     - development_server == false
     - use_letsencrypt
     - not ssl_cert.stat.exists
+
+- name: stop/disable apache2
+  become: true
+  action: service name=apache2 enabled=true state=stopped
+  tags: apachestop
 
 - name: ensure nginx is restarted
   become: true

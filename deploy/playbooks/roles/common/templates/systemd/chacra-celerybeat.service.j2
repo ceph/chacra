@@ -11,7 +11,7 @@ User={{ ansible_ssh_user }}
 WorkingDirectory={{ app_home }}/src/{{ app_name }}/{{ app_name }}
 StandardOutput=journal
 StandardError=journal
-ExecStart={{ app_home }}/bin/celery -A async beat --loglevel=info
+ExecStart={{ app_home }}/bin/celery -A asynch beat --loglevel=info
 
 [Install]
 WantedBy=multi-user.target

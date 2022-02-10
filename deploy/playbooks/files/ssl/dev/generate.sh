@@ -35,7 +35,7 @@ DNS.1 = *.${domain}"
 
 echo "-> generating openssl.cnf configuration file"
 echo "$template" > openssl.cnf
-command="openssl req -new -newkey rsa:2048 -sha1 -days 3650 -nodes -x509 -keyout ssl.key -out ssl.crt -config openssl.cnf"
+command="openssl req -new -newkey rsa:2048 -sha256 -days 3650 -nodes -x509 -keyout ssl.key -out ssl.crt -config openssl.cnf"
 echo "-> running: $command"
-openssl req -new -newkey rsa:2048 -sha1 -days 3650 -nodes -x509 -keyout ssl.key -out ssl.crt -config openssl.cnf
+eval $command
 echo "-> completed self signed certs"

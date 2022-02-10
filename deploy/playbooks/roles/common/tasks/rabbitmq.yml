@@ -1,20 +1,66 @@
 ---
-- name: add the rabbitmq official repo
+- name: add the rabbitmq signing key
   become: true
-  apt_repository:
-    repo: "deb https://packagecloud.io/rabbitmq/rabbitmq-server/ubuntu/ {{ ansible_lsb.codename }} main"
+  shell:
+    cmd: "curl -1sLf 'https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA' | sudo gpg --dearmor | sudo tee /usr/share/keyrings/com.rabbitmq.team.gpg"
+    warn: no
+
+- name: add the Erlang Launchpad PPA key
+  become: true
+  apt_key:
+    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf77f1eda57ebb1cc"
     state: present
 
 - name: add the rabbitmq public key
   become: true
   apt_key:
-    url: "https://www.rabbitmq.com/rabbitmq-release-signing-key.asc"
+    url: "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey"
+    state: present
+
+- name: add the Erlang Launchpad PPA
+  become: true
+  apt_repository:
+    repo: "deb http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu {{ ansible_lsb.codename }} main"
+    state: present
+
+- name: add the rabbitmq official repo
+  become: true
+  apt_repository:
+    repo: "deb https://packagecloud.io/rabbitmq/rabbitmq-server/ubuntu/  {{ ansible_lsb.codename }} main"
     state: present
 
 - name: update the apt cache
   become: true
   apt:
     update_cache: true
+
+- name: install pkg-config
+  become: true
+  apt:
+    name: pkg-config
+
+- name: install erlang
+  become: true
+  apt:
+    name:
+      - erlang-base
+      - erlang-asn1
+      - erlang-crypto
+      - erlang-eldap
+      - erlang-ftp
+      - erlang-inets
+      - erlang-mnesia
+      - erlang-os-mon
+      - erlang-parsetools
+      - erlang-public-key
+      - erlang-runtime-tools
+      - erlang-snmp
+      - erlang-ssl
+      - erlang-syntax-tools
+      - erlang-tftp
+      - erlang-tools
+      - erlang-xmerl
+    state: present
 
 - name: install rabbitmq-server
   become: true

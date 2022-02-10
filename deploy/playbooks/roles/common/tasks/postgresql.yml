@@ -5,11 +5,15 @@
     state: started
   become: true
 
+- name: get postgres version number
+  shell:
+    cmd: dpkg -l | awk '{print $2;}' | grep -P 'postgresql-\d\d' | sed 's/.*-//'
+  register: postgres_version
+
 - name: allow users to connect locally
   become: true
   lineinfile:
-     # TODO: should not hardcode that version
-     dest: /etc/postgresql/9.5/main/pg_hba.conf
+     dest: /etc/postgresql/{{ postgres_version.stdout }}/main/pg_hba.conf
      regexp: '^host\s+all\s+all\s+127.0.0.1/32'
      line: 'host    all             all             127.0.0.1/32            md5'
      backrefs: yes

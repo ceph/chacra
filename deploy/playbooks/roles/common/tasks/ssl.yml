@@ -17,7 +17,7 @@
     src: "{{ ssl_cert_path }}"
     dest: "/etc/ssl/certs/{{ fqdn }}-bundled.crt"
     mode: 0777
-    force: no
+    force: yes
   become: true
   notify: restart nginx
 
@@ -25,6 +25,6 @@
   copy:
     src: "{{ ssl_key_path }}"
     dest: "/etc/ssl/private/{{ fqdn }}.key"
-    force: no
+    force: yes
   become: true
   notify: restart nginx
