@@ -2,6 +2,7 @@
 
 system_packages:
   - python-dev
+  - python3-dev
   - git
   - g++
   - gcc
