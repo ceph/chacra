@@ -7,6 +7,7 @@ from errno import errorcode
 from pecan import conf
 from chacra import models
 from sqlalchemy.exc import OperationalError
+from chacra.asynch import app
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ def celery_has_workers():
     celery worker(s).  An empty/None result will mean that there aren't any
     celery workers in use.
     """
-    stats = Inspect().stats()
+    stats = app.control.inspect().stats()
     if not stats:
         raise SystemCheckError('No running Celery worker was found')
 
