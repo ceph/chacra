@@ -317,6 +317,13 @@ The default repository structure URL looks like::
 
     /repos/{project}/{ref}/{sha1}/{distro}/{distro version}/{REPO}
 
+The type of repository (rpm or deb) is usually inferred from the type
+of binaries uploaded; however, 'raw' repos are also supported.  To set
+the repo type, POST to the repo URL and include a data payload that contains
+a JSON structure
+
+    {"type": "raw"}
+
 
 Defining custom repositories
 ----------------------------

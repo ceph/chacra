@@ -10,6 +10,7 @@ from chacra.models import Project
 from chacra.controllers import error
 from chacra.auth import basic_auth
 from chacra import schemas, asynch
+from chacra import util
 
 
 logger = logging.getLogger(__name__)
@@ -90,12 +91,33 @@ class RepoController(object):
                 '/errors/not_allowed',
                 'only POST request are accepted for this url'
             )
-        # Just mark the repo so that celery picks it up
-        self.repo_obj.needs_update = True
-        self.repo_obj.is_updating = False
-        self.repo_obj.is_queued = False
+        if self.repo_obj.type == 'raw':
+            # raw repos need no asynch construction.  Create
+            # the paths, symlink the binaries, mark them ready.
+            self.repo_obj.path = util.repo_paths(self.repo_obj)['absolute']
+            util.makedirs(self.repo_obj.path)
+            for binary in self.repo_obj.binaries:
+                src = binary.path
+                dest = os.path.join(
+                        self.repo_obj.path,
+                        os.path.join(binary.arch, binary.name)
+                       )
+                try:
+                    if not os.path.exists(dest):
+                        os.symlink(src, dest)
+                except OSError:
+                    logger.exception(
+                        f'could not symlink raw binary {src} -> {dest}')
 
-        asynch.post_requested(self.repo_obj)
+            self.repo_obj.needs_update = False
+            asynch.post_ready(self.repo_obj)
+        else:
+            # Just mark the repo so that celery picks it up
+            self.repo_obj.needs_update = True
+            self.repo_obj.is_updating = False
+            self.repo_obj.is_queued = False
+            asynch.post_requested(self.repo_obj)
+
         return self.repo_obj
 
     @secure(basic_auth)
