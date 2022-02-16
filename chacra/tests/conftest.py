@@ -17,6 +17,9 @@ import pytest
 
 DBNAME = 'chacratest'
 BIND = 'postgresql+psycopg2://'
+# for sqlite, use something like this (DBNAME is the name of the file)
+# DBNAME = 'chacratest.db'
+# BIND = 'sqlite://'
 
 
 def config_file():
@@ -98,8 +101,9 @@ def connection(app, request):
     print("=" * 80)
     print("CREATING TEMPORARY DATABASE FOR TESTS")
     print("=" * 80)
-    subprocess.call(['dropdb', DBNAME])
-    subprocess.call(['createdb', DBNAME])
+    if BIND.startswith('postgresql'):
+        subprocess.call(['dropdb', DBNAME])
+        subprocess.call(['createdb', DBNAME])
 
     # Bind and create the database tables
     _db.clear()
@@ -144,7 +148,6 @@ def session(connection, request):
     connection.start()
 
     def teardown():
-        from sqlalchemy.engine import reflection
 
         # Tear down and dispose the DB binding
         connection.clear()
@@ -154,14 +157,17 @@ def session(connection, request):
         conn = engine.connect()
         trans = conn.begin()
 
-        inspector = reflection.Inspector.from_engine(engine)
 
         # gather all data first before dropping anything.
         # some DBs lock after things have been dropped in
         # a transaction.
-        conn.execute("TRUNCATE TABLE %s RESTART IDENTITY CASCADE" % (
-            ', '.join(inspector.get_table_names())
-        ))
+        if BIND.startswith('postgresql'):
+            conn.execute("TRUNCATE TABLE %s RESTART IDENTITY CASCADE" % (
+                ', '.join(engine.table_names())
+            ))
+        elif BIND.startswith('sqlite'):
+            for table in engine.table_names():
+                conn.execute("DELETE FROM %s" % table)
 
         trans.commit()
         conn.close()

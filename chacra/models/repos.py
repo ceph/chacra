@@ -4,7 +4,7 @@ import socket
 from pecan import conf
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.orm import relationship, backref, deferred
-from sqlalchemy.event import listen
+from sqlalchemy.event import listen, remove
 from sqlalchemy.orm.exc import DetachedInstanceError
 from chacra.models import Base, update_timestamp
 from chacra.models.types import JSONType
@@ -117,6 +117,13 @@ class Repo(Base):
     def archs(self):
         return list(set(b.arch for b in self.binaries))
 
-# listen for timestamp modifications
-listen(Repo, 'before_insert', update_timestamp)
-listen(Repo, 'before_update', update_timestamp)
+def add_timestamp_listeners():
+    # listen for timestamp modifications
+    listen(Repo, 'before_insert', update_timestamp)
+    listen(Repo, 'before_update', update_timestamp)
+
+def remove_timestamp_listeners():
+    remove(Repo, 'before_insert', update_timestamp)
+    remove(Repo, 'before_update', update_timestamp)
+
+add_timestamp_listeners()
