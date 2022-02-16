@@ -63,7 +63,7 @@ def bootstrap_pecan(signal, sender, **kw):
 
 app = Celery(
     'chacra.asynch',
-    broker='amqp://guest@localhost//',
+    broker='pyamqp://guest@localhost//',
     include=['chacra.asynch.rpm', 'chacra.asynch.debian', 'chacra.asynch.recurring']
 )
 

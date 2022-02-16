@@ -183,10 +183,8 @@ def generate_checksum(mapper, connection, target):
     if not target.path:
         return
     chsum = hashlib.sha512()
-    with open(target.path) as f:
-        for chunk in iter(lambda: f.read(4096), ""):
-            if not isinstance(chunk, bytes):
-                chunk = chunk.encode('utf-8')
+    with open(target.path, 'rb') as f:
+        for chunk in iter(lambda: f.read(4096), b''):
             chsum.update(chunk)
         target.checksum = chsum.hexdigest()
 

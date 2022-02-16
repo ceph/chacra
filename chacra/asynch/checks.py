@@ -2,11 +2,11 @@ import logging
 import os
 import subprocess
 
-from celery.app.control import Inspect
 from errno import errorcode
 from pecan import conf
 from chacra import models
 from sqlalchemy.exc import OperationalError
+from chacra.asynch import app
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def celery_has_workers():
     celery worker(s).  An empty/None result will mean that there aren't any
     celery workers in use.
     """
-    stats = Inspect().stats()
+    stats = app.control.inspect().stats()
     if not stats:
         raise SystemCheckError('No running Celery worker was found')
 
@@ -61,19 +61,28 @@ def database_connection():
 
 def disk_has_space(_popen=None):
     """
-    If the disk where repos/binaries doesn't have enough space, fail the health
-    check to prevent failing when the binaries are getting posted
+    If the disk where repos/binaries live doesn't have enough space,
+    fail the health check to prevent failing when the binaries are posted
     """
     popen = _popen or subprocess.Popen
-    command = ['df', conf.get('repo_path', '/')]
-    result = popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    if result.returncode > 0:
-        raise SystemCheckError("failed disk check: %s" % result.stderr.read())
-    out = result.communicate()[0]
-    device, size, used, available, percent, mountpoint = out.split('\n')[1].split()
-    if int(percent.strip().split('%')[0]) > 85:
-        msg = 'disk %s almost full. Used: %s' % (device, percent)
-        raise SystemCheckError(msg)
+    paths = [conf.get('repos_root'), conf.get('binary_root')]
+    for path in paths:
+        if not path:
+            continue
+        command = ['df', path]
+        result = popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        result.wait(timeout=30)
+        if result.returncode > 0:
+            raise SystemCheckError(
+                "failed disk check for %s: %s" %
+                (path, result.stderr.read().decode())
+            )
+        out = result.communicate()[0].decode()
+        device, size, used, available, percent, mountpoint = \
+            out.split('\n')[1].split()
+        if int(percent.strip().split('%')[0]) > 85:
+            msg = 'disk %s almost full. Used: %s%%' % (device, percent)
+            raise SystemCheckError(msg)
 
 
 def fail_health_check():
