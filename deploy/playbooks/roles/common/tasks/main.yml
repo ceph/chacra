@@ -105,6 +105,14 @@
     - "{{ binary_root }}"
     - "{{ repos_root }}"
 
+- name: ensure there's a /var/run/celery
+  file:
+    state: directory
+    owner: "{{ ansible_ssh_user }}"
+    group: "{{ ansible_ssh_user }}"
+    path: /var/run/celery
+  become: true
+
 - include: postgresql.yml
   tags:
     - postgres
