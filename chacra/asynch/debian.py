@@ -126,6 +126,8 @@ def create_deb_repo(repo_id):
             stdout, stderr = result.communicate()
             if result.returncode > 0:
                 logger.error('failed to add binary %s', binary.name)
+            stdout = stdout.decode()
+            stderr = stderr.decode()
             for line in stdout.split('\n'):
                 logger.info(line)
             for line in stderr.split('\n'):
