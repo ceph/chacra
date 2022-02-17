@@ -123,9 +123,9 @@ def create_deb_repo(repo_id):
         for command in commands:
             logger.info('running command: %s', ' '.join(command))
             result = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            stdout, stderr = result.communicate()
             if result.returncode > 0:
                 logger.error('failed to add binary %s', binary.name)
-            stdout, stderr = result.communicate()
             for line in stdout.split('\n'):
                 logger.info(line)
             for line in stderr.split('\n'):
