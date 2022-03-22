@@ -14,7 +14,7 @@
      ansible_ssh_port: 2222
      binary_root: "/opt/binaries"
      repos_root: "/opt/repos"
-     branch: "master"
+     branch: "main"
      development_server: false
      purge_repos: True
      fqdn: "{{ inventory_hostname }}"

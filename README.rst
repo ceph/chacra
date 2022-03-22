@@ -51,7 +51,7 @@ can be consumed to dig deeper into the URL structure:
 
     {
         "ceph": ["firefly", "giant", "hammer"],
-        "ceph-deploy": ["master"]
+        "ceph-deploy": ["main"]
     }
 
 

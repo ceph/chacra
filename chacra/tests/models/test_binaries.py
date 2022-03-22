@@ -35,7 +35,7 @@ class TestBinaryModification(object):
             )
         session.commit()
         initial_modified = binary.modified.time()
-        binary.ref = 'master'
+        binary.ref = 'main'
         session.commit()
         binary = Binary.get(1)
 
@@ -51,7 +51,7 @@ class TestBinaryModification(object):
             )
         session.commit()
         initial_created = binary.created.time()
-        binary.ref = 'master'
+        binary.ref = 'main'
         session.commit()
         binary = Binary.get(1)
 

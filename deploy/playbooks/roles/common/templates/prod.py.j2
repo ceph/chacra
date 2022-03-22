@@ -88,7 +88,7 @@ purge_repos = {{ purge_repos }}
 purge_rotation = {
     'ceph-medic': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
         },
@@ -98,7 +98,7 @@ purge_rotation = {
             'testing': {
                 'keep_minimum': 10
             },
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
             'for-linus': {
@@ -117,7 +117,7 @@ purge_rotation = {
     },
     'calamari': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
             '1.5': {
@@ -159,14 +159,14 @@ purge_rotation = {
     },
     'ceph-installer': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 10
             },
         },
     },
     'ceph-ansible': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
             'stable-2.1': {
@@ -176,42 +176,42 @@ purge_rotation = {
     },
     'python-rtslib': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
         },
     },
     'tcmu-runner': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
         },
     },
     'ceph-iscsi': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
         },
     },
     'ceph-iscsi-config': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
         },
     },
     'ceph-iscsi-cli': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
         },
     },
     'ceph-iscsi-tools': {
         'ref': {
-            'master': {
+            'main': {
                 'keep_minimum': 5
             },
         },
@@ -244,11 +244,11 @@ quiet_time = 20
 repos = {
     'ceph': {
         'automatic': False,
-        # ceph-deploy production builds should go into the "ref" master
+        # ceph-deploy production builds should go into the "ref" main
         # because otherwise we would be forced to list every "vN.N.N" ref
         # here to avoid getting cruft like "test" builds
         'all': {
-            'ceph-medic': ['master'],
+            'ceph-medic': ['main'],
         },
         'hammer': {
             'ceph-release': ['hammer'],
@@ -268,27 +268,27 @@ repos = {
         },
         'luminous': {
             'ceph-release': ['luminous'],
-            'ceph-deploy': ['master'],
+            'ceph-deploy': ['main'],
         },
         'mimic': {
             'ceph-release': ['mimic'],
-            'ceph-deploy': ['master'],
+            'ceph-deploy': ['main'],
         },
         'nautilus': {
             'ceph-release': ['nautilus'],
-            'ceph-deploy': ['master'],
+            'ceph-deploy': ['main'],
         },
         'octopus': {
             'ceph-release': ['octopus'],
-            'ceph-deploy': ['master'],
+            'ceph-deploy': ['main'],
         },
         'pacific': {
             'ceph-release': ['pacific'],
-            'ceph-deploy': ['master'],
+            'ceph-deploy': ['main'],
         },
         'quincy': {
             'ceph-release': ['quincy'],
-            'ceph-deploy': ['master'],
+            'ceph-deploy': ['main'],
         },
         # when more 'testing' refs are built, we need to add them here as well
         'testing': {
@@ -301,12 +301,12 @@ repos = {
         {% endif %}
     },
     'cephmetrics': {
-        'master': {
-            'cephmetrics-deps': ['master'],
+        'main': {
+            'cephmetrics-deps': ['main'],
         },
         # For testing cephmetrics changes against existing deps
         'develop': {
-            'cephmetrics-deps': ['master'],
+            'cephmetrics-deps': ['main'],
         },
         # Release!
         '1.0': {
