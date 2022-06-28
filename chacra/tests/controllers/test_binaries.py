@@ -18,13 +18,13 @@ class TestBinaryUniqueness(object):
         )
 
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/el6/i386/',
+            '/binaries/ceph-deploy/main/head/centos/el6/i386/',
             upload_files=[('file', 'ceph-deploy-1.0.0-0.el6.i386.rpm', b_('hello tharrrr'))]
         )
 
         # get archs for ceph-deploy
         result = session.app.get(
-            '/binaries/ceph-deploy/master/head/centos/el6/',
+            '/binaries/ceph-deploy/main/head/centos/el6/',
         )
 
         assert result.json['i386'] == ['ceph-deploy-1.0.0-0.el6.i386.rpm']
@@ -37,13 +37,13 @@ class TestBinaryUniqueness(object):
         )
 
         session.app.post(
-            '/binaries/ceph-deploy/master/head/centos/el6/i386/flavors/default/',
+            '/binaries/ceph-deploy/main/head/centos/el6/i386/flavors/default/',
             upload_files=[('file', 'ceph-deploy-1.0.0-0.el6.i386.rpm', b_('hello tharrrr'))]
         )
 
         # get archs for ceph-deploy
         result = session.app.get(
-            '/binaries/ceph-deploy/master/head/centos/el6/',
+            '/binaries/ceph-deploy/main/head/centos/el6/',
         )
 
         assert result.json['i386'] == ['ceph-deploy-1.0.0-0.el6.i386.rpm']
@@ -442,14 +442,14 @@ class TestRelatedProjects(object):
 
     @py.test.mark.parametrize(
             'url',
-            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
-             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+            ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
     )
     def test_marks_nonexsitent_related_project(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
-                'all': {'ceph-deploy': ['master']}
+                'all': {'ceph-deploy': ['main']}
             },
             '__force_dict__': True,
         }
@@ -465,14 +465,14 @@ class TestRelatedProjects(object):
 
     @py.test.mark.parametrize(
             'url',
-            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
-             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+            ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
     )
     def test_marks_existing_related_project(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
-                'all': {'ceph-deploy': ['master']}
+                'all': {'ceph-deploy': ['main']}
             },
             '__force_dict__': True,
         }
@@ -489,17 +489,17 @@ class TestRelatedProjects(object):
 
     @py.test.mark.parametrize(
             'url',
-            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
-             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+            ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
     )
     def test_marks_multiple_projects(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
-                'all': {'ceph-deploy': ['master']},
+                'all': {'ceph-deploy': ['main']},
             },
             'rhcs': {
-                'all': {'ceph-deploy': ['master']},
+                'all': {'ceph-deploy': ['main']},
             },
             '__force_dict__': True,
         }
@@ -515,14 +515,14 @@ class TestRelatedProjects(object):
 
     @py.test.mark.parametrize(
             'url',
-            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
-             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+            ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
     )
     def test_marks_nonexsitent_related_project_type(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
-                'all': {'ceph-deploy': ['master']}
+                'all': {'ceph-deploy': ['main']}
             },
             '__force_dict__': True,
         }
@@ -540,15 +540,15 @@ class TestAutomaticRepos(object):
 
     @py.test.mark.parametrize(
             'url',
-            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
-             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+            ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
     )
     def test_skips_marking_needs_update_on_related_repos(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)
         pecan.conf.repos = {
             'ceph': {
                 'automatic': False,
-                'all': {'ceph-deploy': ['master']}
+                'all': {'ceph-deploy': ['main']}
             },
             '__force_dict__': True,
         }
@@ -573,8 +573,8 @@ class TestAutomaticRepos(object):
 
     @py.test.mark.parametrize(
             'url',
-            ['/binaries/ceph-deploy/master/head/centos/6/x86_64/',
-             '/binaries/ceph-deploy/master/head/centos/6/x86_64/flavors/default/']
+            ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
+             '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
     )
     def test_skips_marking_needs_update(self, session, tmpdir, url):
         pecan.conf.binary_root = str(tmpdir)

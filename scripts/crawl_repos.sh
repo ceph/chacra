@@ -5,31 +5,31 @@
 ## DEBs
 
 # Debian
-pecan crawl --project ceph-deploy --ref master --distro debian --version wheezy --arch all --has bpo70 --startswith ceph-deploy config.py ~/repos
-pecan crawl --project ceph-deploy --ref master --distro debian --version squeeze --arch all --has bpo60 --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro debian --version wheezy --arch all --has bpo70 --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro debian --version squeeze --arch all --has bpo60 --startswith ceph-deploy config.py ~/repos
 
 # Ubuntu
 
 # precise
-pecan crawl --project ceph-deploy --ref master --distro ubuntu --version "12.04" --arch all --has precise --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro ubuntu --version "12.04" --arch all --has precise --startswith ceph-deploy config.py ~/repos
 
 # quantal
-pecan crawl --project ceph-deploy --ref master --distro ubuntu --version "12.10" --arch all --has quantal --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro ubuntu --version "12.10" --arch all --has quantal --startswith ceph-deploy config.py ~/repos
 
 # raring
-pecan crawl --project ceph-deploy --ref master --distro ubuntu --version "13.04" --arch all --has raring --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro ubuntu --version "13.04" --arch all --has raring --startswith ceph-deploy config.py ~/repos
 
 # saucy
-pecan crawl --project ceph-deploy --ref master --distro ubuntu --version "13.10" --arch all --has saucy --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro ubuntu --version "13.10" --arch all --has saucy --startswith ceph-deploy config.py ~/repos
 
 # trusty
-pecan crawl --project ceph-deploy --ref master --distro ubuntu --version "14.04" --arch all --has trusty --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro ubuntu --version "14.04" --arch all --has trusty --startswith ceph-deploy config.py ~/repos
 
 # utopic
-pecan crawl --project ceph-deploy --ref master --distro ubuntu --version "14.10" --arch all --has utopic --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro ubuntu --version "14.10" --arch all --has utopic --startswith ceph-deploy config.py ~/repos
 
 # vivid
-pecan crawl --project ceph-deploy --ref master --distro ubuntu --version "15.04" --arch all --has vivid --startswith ceph-deploy config.py ~/repos
+pecan crawl --project ceph-deploy --ref main --distro ubuntu --version "15.04" --arch all --has vivid --startswith ceph-deploy config.py ~/repos
 
 #########
 
@@ -37,39 +37,39 @@ pecan crawl --project ceph-deploy --ref master --distro ubuntu --version "15.04"
 
 # centos 6
 # all these paths because we don't have checks for path matching, and we don't want to miss a binary that may be in an older release only
-pecan crawl --project ceph-deploy --ref master --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/el6
-pecan crawl --project ceph-deploy --ref master --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/el6
-pecan crawl --project ceph-deploy --ref master --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/el6
-pecan crawl --project ceph-deploy --ref master --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/el6
-pecan crawl --project ceph-deploy --ref master --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/el6
 
 # centos 7
-pecan crawl --project ceph-deploy --ref master --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/el6
-pecan crawl --project ceph-deploy --ref master --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/el6
-pecan crawl --project ceph-deploy --ref master --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/el6
-pecan crawl --project ceph-deploy --ref master --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/el6
-pecan crawl --project ceph-deploy --ref master --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/el6
+pecan crawl --project ceph-deploy --ref main --distro centos --version el7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/el6
 
 # Fedora Core 20
-pecan crawl --project ceph-deploy --ref master --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/fc20
-pecan crawl --project ceph-deploy --ref master --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/fc20
-pecan crawl --project ceph-deploy --ref master --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/fc20
-pecan crawl --project ceph-deploy --ref master --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/fc20
-pecan crawl --project ceph-deploy --ref master --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/fc20
+pecan crawl --project ceph-deploy --ref main --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/fc20
+pecan crawl --project ceph-deploy --ref main --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/fc20
+pecan crawl --project ceph-deploy --ref main --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/fc20
+pecan crawl --project ceph-deploy --ref main --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/fc20
+pecan crawl --project ceph-deploy --ref main --distro fedora --version fc20 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/fc20
 
 # rhel 6
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/rhel6
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/rhel6
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/rhel6
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/rhel6
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/rhel6
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/rhel6
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/rhel6
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/rhel6
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/rhel6
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 6 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/rhel6
 
 # rhel 7
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/rhel7
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/rhel7
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/rhel7
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/rhel7
-pecan crawl --project ceph-deploy --ref master --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/rhel7
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-dumpling/rhel7
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-emperor/rhel7
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-firefly/rhel7
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-giant/rhel7
+pecan crawl --project ceph-deploy --ref main --distro rhel --version 7 --arch noarch --has noarch --startswith ceph-deploy --endswith rpm config.py ~/repos/rpm-hammer/rhel7
 
 
 ################################################################################

@@ -85,7 +85,7 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
         # cause lifespan for this repo to be 0 days, thus remove it
         conf.purge_rotation = {'nfs-ganesha': {'ref': {'next': {'days': 0}}}, '__force_dict__': True}
@@ -99,7 +99,7 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
         repo.modified = self.one_minute
 
@@ -114,12 +114,12 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
         repo.modified = self.one_minute
 
         # cause lifespan for this repo to be 0 days, thus remove it
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'days': 0}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'days': 0}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 0
@@ -130,11 +130,11 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
         repo.modified = self.one_minute
 
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'keep_minimum': 0}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 1
@@ -151,10 +151,10 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
 
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0, 'days': 70}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'keep_minimum': 0, 'days': 70}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 1
@@ -165,10 +165,10 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
 
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 1, 'days': 0}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'keep_minimum': 1, 'days': 0}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 1
@@ -180,10 +180,10 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
 
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 1}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'keep_minimum': 1}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 1
@@ -194,10 +194,10 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
 
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0}}, 'ref': {'next': {'days': 70}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'keep_minimum': 0}}, 'ref': {'next': {'days': 70}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 1
@@ -209,10 +209,10 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
 
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'keep_minimum': 0}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 0
@@ -223,10 +223,10 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
 
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'days': 0}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'days': 0}}, 'ref': {'next': {'days': 0}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 0
@@ -238,11 +238,11 @@ class TestPurgeRepos(object):
             ref='next',
             distro='centos',
             distro_version='7',
-            flavor='ceph_master',
+            flavor='ceph_main',
         )
         repo.modified = self.three_weeks_ago
 
-        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_master': {'keep_minimum': 0}}, 'ref': {'next': {'keep_minimum': 0}}}, '__force_dict__': True}
+        conf.purge_rotation = {'nfs-ganesha': {'flavor': {'ceph_main': {'keep_minimum': 0}}, 'ref': {'next': {'keep_minimum': 0}}}, '__force_dict__': True}
         session.commit()
         recurring.purge_repos()
         assert len(Repo.query.all()) == 0

@@ -85,7 +85,7 @@ class TestRepoPaths(object):
     def setup(self):
         self.repo = models.Repo(
             models.Project('ceph-deploy'),
-            'master',
+            'main',
             'centos',
             'el7'
         )
@@ -93,7 +93,7 @@ class TestRepoPaths(object):
     def test_relative(self):
         pecan.conf.repos_root = '/tmp/repos'
         result = util.repo_paths(self.repo)
-        assert result['relative'] == 'master/head/centos/el7/flavors/default'
+        assert result['relative'] == 'main/head/centos/el7/flavors/default'
 
     def test_root(self):
         pecan.conf.repos_root = '/tmp/repos'
@@ -103,19 +103,19 @@ class TestRepoPaths(object):
     def test_absolute(self):
         pecan.conf.repos_root = '/tmp/repos'
         result = util.repo_paths(self.repo)['absolute']
-        assert result == '/tmp/repos/ceph-deploy/master/head/centos/el7/flavors/default'
+        assert result == '/tmp/repos/ceph-deploy/main/head/centos/el7/flavors/default'
 
     def test_custom_flavor(self):
         self.repo = models.Repo(
             models.Project('ceph'),
-            'master',
+            'main',
             'centos',
             'el7',
             flavor='wakawaka',
         )
         pecan.conf.repos_root = '/tmp/repos'
         result = util.repo_paths(self.repo)['absolute']
-        assert result == '/tmp/repos/ceph/master/head/centos/el7/flavors/wakawaka'
+        assert result == '/tmp/repos/ceph/main/head/centos/el7/flavors/wakawaka'
 
 class TestMakeDirs(object):
 
@@ -136,19 +136,19 @@ class TestGetExtraRepos(object):
 
     def test_fallback_to_all_repos(self):
         conf = {'ceph': {'all': {'ceph-deploy': ['all']}}}
-        # master is not defined, so 'all' is used
-        result = util.get_extra_repos('ceph', 'master',  repo_config=conf)
+        # main is not defined, so 'all' is used
+        result = util.get_extra_repos('ceph', 'main',  repo_config=conf)
         assert result == {'ceph-deploy': ['all']}
 
     def test_fallback_to_all_repos_gets_empty_dict(self):
-        conf = {'ceph': {'master': {'ceph-deploy': ['all']}}}
+        conf = {'ceph': {'main': {'ceph-deploy': ['all']}}}
         # 'firefly' is not defined, so 'all' is attempted
         result = util.get_extra_repos('ceph', 'firefly',  repo_config=conf)
         assert result == {}
 
     def test_no_matching_project(self):
         conf = {'ceph': {'all': {'ceph-deploy': ['all']}}}
-        result = util.get_extra_repos('ceph-deploy', 'master',  repo_config=conf)
+        result = util.get_extra_repos('ceph-deploy', 'main',  repo_config=conf)
         assert result == {}
 
     def test_matching_project_ref(self):
@@ -158,12 +158,12 @@ class TestGetExtraRepos(object):
 
     def test_matching_ref_over_all(self):
         conf = {'ceph': {
-            'all': {'ceph-deploy': ['master']},
+            'all': {'ceph-deploy': ['main']},
             'firefly': {'ceph-deploy': ['all']}
             }
         }
         result = util.get_extra_repos('ceph', 'firefly',  repo_config=conf)
-        assert result == {'ceph-deploy': ['master']}
+        assert result == {'ceph-deploy': ['main']}
 
     def test_matching_project_ref_and_all_refs(self):
         # all versions of ceph-deploy for this repo, and just the 'firefly'
@@ -221,7 +221,7 @@ class TestGetBinaries(object):
     def test_no_matching_ref_with_specific_ref(self, session):
         models.commit()
         result = util.get_extra_binaries(
-            'ceph', 'ubuntu', 'precise', ref='master')
+            'ceph', 'ubuntu', 'precise', ref='main')
         assert result == []
 
     def test_no_ref_matches_binaries(self, session):
@@ -256,14 +256,14 @@ class TestGetBinaries(object):
         models.Binary(
             'ceph-1.0.deb',
             self.p,
-            ref='master',
+            ref='main',
             distro='ubuntu',
             distro_version='trusty',
             arch='all',
             )
 
         models.commit()
-        result = util.get_extra_binaries('ceph', 'ubuntu', 'trusty', ref='master')
+        result = util.get_extra_binaries('ceph', 'ubuntu', 'trusty', ref='main')
         assert len(result) == 1
 
     def test_ref_matches_binaries_from_distro_versions(self, session):
@@ -557,11 +557,11 @@ repos_conf = {
     'ceph': {
         'all': {
             # both ceph-deploy and radosgw-agent production builds should go
-            # into the "ref" master because otherwise we would be forced to
+            # into the "ref" main because otherwise we would be forced to
             # list every "vN.N.N" ref here to avoid getting cruft like "test"
             # builds
-            'ceph-deploy': ['master'],
-            'radosgw-agent': ['master'],
+            'ceph-deploy': ['main'],
+            'radosgw-agent': ['main'],
         },
         'infernalis': {
             'ceph-release': ['infernalis'],
@@ -601,7 +601,7 @@ class TestRelatedProjects(object):
 
     def test_project_is_related_with_all_refs(self):
         self.conf['ceph'] = {
-            'all': {'ceph-deploy': ['master']},
+            'all': {'ceph-deploy': ['main']},
             'firefly': {'ceph-release': ['firefly']}
         }
         result = util.get_related_projects('ceph-deploy', repo_config=self.conf)
@@ -613,8 +613,8 @@ class TestRelatedProjects(object):
 
     def test_project_is_related_multiple_refs(self):
         self.conf['ceph'] = {
-            'hammer': {'ceph-deploy': ['master']},
-            'firefly': {'ceph-deploy': ['master']}
+            'hammer': {'ceph-deploy': ['main']},
+            'firefly': {'ceph-deploy': ['main']}
         }
         result = util.get_related_projects('ceph-deploy', repo_config=self.conf)
         assert sorted(result['ceph']) == sorted(['hammer',  'firefly'])

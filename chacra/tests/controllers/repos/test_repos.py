@@ -523,11 +523,11 @@ class TestRepoCRUDOperations(object):
     @py.test.mark.dmick
     def test_raw_post_update(self, session, recorder, monkeypatch):
         pecan.conf.repos_root = '/tmp/root'
-        url = '/repos/foobar/master/head/windows/999/'
+        url = '/repos/foobar/main/head/windows/999/'
         p = Project('foobar')
         repo = Repo(
             p,
-            "master",
+            "main",
             "windows",
             "999",
             sha1="head",

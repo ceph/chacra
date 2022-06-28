@@ -57,7 +57,7 @@ def repo_paths(repo):
     """
     paths = {}
 
-    # e.g. ceph-deploy/master/ubuntu/trusty
+    # e.g. ceph-deploy/main/ubuntu/trusty
     paths['relative'] = '{ref}/{sha1}/{distro}/{version}/flavors/{flavor}'.format(
         ref=repo.ref,
         sha1=repo.sha1,
@@ -319,7 +319,7 @@ def reprepro_commands(repository_path, binary,
     binary.
 
     A binary like ceph-deploy_1.5.30_all.deb that lives in a path like
-    ceph-deploy/master/debian/universal/all/ will generate a reprepro command
+    ceph-deploy/main/debian/universal/all/ will generate a reprepro command
     that attempts to add the binary to a repo using "universal" as the distro
     version, which doesn't exist.
 

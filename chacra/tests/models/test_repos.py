@@ -115,7 +115,7 @@ class TestRepoMetricNames(object):
     def test_full_metric_name(self, session):
         Repo(
             self.p,
-            ref="master",
+            ref="main",
             distro='ubuntu',
             distro_version='trusty',
             arch='aarch64',

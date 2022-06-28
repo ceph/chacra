@@ -15,7 +15,7 @@
      restart_app: true
      binary_root: "/opt/binaries"
      repos_root: "/opt/repos"
-     branch: "master"
+     branch: "main"
      development_server: true
      short_hostname: "3"
      fqdn: "3.node.a"

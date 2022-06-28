@@ -58,8 +58,8 @@ class TestProjectController(object):
 
     def test_get_project_refs(self, session):
         p = Project('foobar')
-        Binary('ceph-1.0.0.rpm', p, ref='master', sha1="HEAD", distro='centos', distro_version='el6', arch='i386')
+        Binary('ceph-1.0.0.rpm', p, ref='main', sha1="HEAD", distro='centos', distro_version='el6', arch='i386')
         Binary('ceph-1.0.0.rpm', p, ref='firefly', sha1="HEAD", distro='centos', distro_version='el6', arch='i386')
         session.commit()
         result = session.app.get('/binaries/foobar/')
-        assert result.json == {'firefly': ['HEAD'], 'master': ['HEAD']}
+        assert result.json == {'firefly': ['HEAD'], 'main': ['HEAD']}
