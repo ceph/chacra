@@ -18,6 +18,7 @@ system_packages:
 #  - libsemanage-python
   - python
   - liblz4-tool
+  - zstd
 
 ssl_requirements:
   - openssl
