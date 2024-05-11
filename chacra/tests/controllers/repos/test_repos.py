@@ -1,6 +1,6 @@
 import os
 import pecan
-import py.test
+import pytest
 from chacra.models import Project, Repo, Binary
 from chacra.compat import b_
 from chacra import asynch
@@ -8,7 +8,7 @@ from chacra import asynch
 
 class TestRepoApiController(object):
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -28,7 +28,7 @@ class TestRepoApiController(object):
         result = session.app.get(url)
         assert result.json['archs'] == ['x86_64']
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/repo/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/repo/']
@@ -48,7 +48,7 @@ class TestRepoApiController(object):
         result = session.app.get(url)
         assert b_("deb") in result.body
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/centos/7/repo/',
              '/repos/foobar/firefly/head/centos/7/flavors/default/repo/']
@@ -70,7 +70,7 @@ class TestRepoApiController(object):
         assert b_("noarch") in result.body
         assert b_("SRPMS") in result.body
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
         'url',
         ['/repos/foobar-opensuse/firefly/head/opensuse/15.1/repo/',
          '/repos/foobar-opensuse/firefly/head/opensuse/15.1/flavors/default/repo/']
@@ -92,7 +92,7 @@ class TestRepoApiController(object):
         assert b_("noarch") not in result.body
         assert b_("SRPMS") not in result.body
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -115,7 +115,7 @@ class TestRepoApiController(object):
         assert result.json["ref"] == "firefly"
         assert result.json["sha1"] == "head"
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -138,7 +138,7 @@ class TestRepoApiController(object):
         assert result.json["sha1"] == "head"
 
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -158,7 +158,7 @@ class TestRepoApiController(object):
         assert result.status_int == 200
         assert result.json["is_queued"] is False
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -178,7 +178,7 @@ class TestRepoApiController(object):
         assert result.status_int == 200
         assert result.json["is_updating"] is False
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -198,7 +198,7 @@ class TestRepoApiController(object):
         assert result.status_int == 200
         assert result.json["type"] is None
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/precise/',
              '/repos/foobar/firefly/head/ubuntu/precise/flavors/default/']
@@ -217,7 +217,7 @@ class TestRepoApiController(object):
         result = session.app.get(url, expect_errors=True)
         assert result.status_int == 404
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/centos/trusty/',
              '/repos/foobar/firefly/head/centos/trusty/flavors/default/']
@@ -236,7 +236,7 @@ class TestRepoApiController(object):
         result = session.app.get(url, expect_errors=True)
         assert result.status_int == 404
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/hammer/head/ubuntu/trusty/',
              '/repos/foobar/hammer/head/ubuntu/trusty/flavors/default/']
@@ -255,7 +255,7 @@ class TestRepoApiController(object):
         result = session.app.get('/repos/foobar/hammer/head/ubuntu/trusty/', expect_errors=True)
         assert result.status_int == 404
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/sha1/ubuntu/trusty/',
              '/repos/foobar/firefly/sha1/ubuntu/trusty/flavors/default/']
@@ -274,7 +274,7 @@ class TestRepoApiController(object):
         result = session.app.get(url, expect_errors=True)
         assert result.status_int == 404
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -293,7 +293,7 @@ class TestRepoApiController(object):
         result = session.app.get(url)
         assert result.json['extra'] == {}
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/extra/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/extra/']
@@ -318,7 +318,7 @@ class TestRepoApiController(object):
         updated_repo = Repo.get(repo_id)
         assert updated_repo.extra == {"version": "0.94.8", 'distros': ['precise']}
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -345,7 +345,7 @@ class TestRepoApiController(object):
         assert updated_repo.distro_version == "precise"
         assert result.json['distro_version'] == "precise"
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -374,7 +374,7 @@ class TestRepoApiController(object):
         assert result.json['distro_version'] == "7"
         assert result.json['distro'] == "centos"
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -401,7 +401,7 @@ class TestRepoApiController(object):
         updated_repo = Repo.get(repo_id)
         assert updated_repo.distro == "ubuntu"
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -424,7 +424,7 @@ class TestRepoApiController(object):
         )
         assert result.status_int == 400
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/']
@@ -451,7 +451,7 @@ class TestRepoApiController(object):
 
 class TestRepoCRUDOperations(object):
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/update',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/update']
@@ -477,8 +477,8 @@ class TestRepoCRUDOperations(object):
         assert result.json['needs_update'] is True
         assert result.json['is_queued'] is False
 
-    @py.test.mark.dmick
-    @py.test.mark.parametrize(
+    @pytest.mark.dmick
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/'],
@@ -520,7 +520,7 @@ class TestRepoCRUDOperations(object):
         result = session.app.get(url)
         assert result.json['type'] == 'raw'
 
-    @py.test.mark.dmick
+    @pytest.mark.dmick
     def test_raw_post_update(self, session, recorder, monkeypatch):
         pecan.conf.repos_root = '/tmp/root'
         url = '/repos/foobar/main/head/windows/999/'
@@ -550,7 +550,7 @@ class TestRepoCRUDOperations(object):
         result = session.app.post(url + 'update/')
         assert fake_post_status.recorder_calls[0]['args'][0] == 'ready'
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/update',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/update']
@@ -569,7 +569,7 @@ class TestRepoCRUDOperations(object):
         result = session.app.head(url)
         assert result.status_int == 200
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/recreate',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate']
@@ -591,7 +591,7 @@ class TestRepoCRUDOperations(object):
         assert result.json['needs_update'] is True
         assert result.json['is_queued'] is False
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/recreate',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate']
@@ -616,7 +616,7 @@ class TestRepoCRUDOperations(object):
         assert result.json['needs_update'] is True
         assert result.json['is_queued'] is False
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/recreate',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate']
@@ -638,7 +638,7 @@ class TestRepoCRUDOperations(object):
         assert os.path.exists(path) is True
         assert result.json['needs_update'] is True
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/recreate',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate']
@@ -657,7 +657,7 @@ class TestRepoCRUDOperations(object):
         result = session.app.head(url)
         assert result.status_int == 200
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/recreate',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate']
@@ -670,7 +670,7 @@ class TestRepoCRUDOperations(object):
         )
         assert result.status_int == 404
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/recreate',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate']

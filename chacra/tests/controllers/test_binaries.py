@@ -1,6 +1,6 @@
 import os
 import pecan
-import py.test
+import pytest
 
 from chacra.models import Binary, Project, Repo
 from chacra.tests import util
@@ -72,7 +72,7 @@ class TestBinaryUniqueness(object):
 
 class TestBinaryController(object):
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph/giant/head/ceph/el6/x86_64/',
              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/']
@@ -86,7 +86,7 @@ class TestBinaryController(object):
         )
         assert result.status_int == 201
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph/giant/head/ceph/el6/x86_64/',
              '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/']
@@ -104,7 +104,7 @@ class TestBinaryController(object):
         )
         assert result.status_int == 405
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_get',
             [('/binaries/ceph/giant/head/ceph/el7/x86_64/',
               '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
@@ -125,7 +125,7 @@ class TestBinaryController(object):
         )
         assert result.status_int == 404
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_get',
             [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
             '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/'),
@@ -156,7 +156,7 @@ class TestBinaryController(object):
         result = session.app.get('/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/', expect_errors=True)
         assert result.status_int == 404
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/']
@@ -175,7 +175,7 @@ class TestBinaryController(object):
         result = session.app.delete(url, expect_errors=True)
         assert result.status_int == 204
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/']
@@ -216,7 +216,7 @@ class TestBinaryController(object):
         p = Project.get(1)
         assert p.name == "ceph"
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_delete',
             [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
             '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/'),
@@ -258,7 +258,7 @@ class TestBinaryController(object):
         repo = Repo.get(1)
         assert repo.needs_update
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/',
             '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/default/ceph-9.0.0-0.el6.x86_64.rpm/']
@@ -291,7 +291,7 @@ class TestBinaryController(object):
         binary = Binary.get(1)
         assert binary.path.endswith('ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm')
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_post_2',
             [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
               '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
@@ -314,7 +314,7 @@ class TestBinaryController(object):
 
         assert result.status_int == 400
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_post_2',
             [('/binaries/ceph/giant/head/ceph/el7/x86_64/',
               '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
@@ -351,7 +351,7 @@ class TestBinaryController(object):
         contents = open(destination).read()
         assert contents == 'something changed'
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_get',
             [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
               '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
@@ -368,7 +368,7 @@ class TestBinaryController(object):
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['project']
         assert result == 'ceph'
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_get',
             [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
               '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
@@ -385,7 +385,7 @@ class TestBinaryController(object):
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['size']
         assert result == 13
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_get',
             [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
               '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
@@ -421,7 +421,7 @@ class TestBinaryController(object):
         result = response['ceph-9.0.0-0.el6.x86_64.rpm']['checksum']
         assert result.startswith('a5725e467')
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url_post, url_head',
             [('/binaries/ceph/giant/head/ceph/el6/x86_64/',
               '/binaries/ceph/giant/head/ceph/el6/x86_64/'),
@@ -440,7 +440,7 @@ class TestBinaryController(object):
 
 class TestRelatedProjects(object):
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
              '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
@@ -463,7 +463,7 @@ class TestRelatedProjects(object):
         repo = Repo.filter_by(project=project).first()
         assert repo.needs_update is True
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
              '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
@@ -487,7 +487,7 @@ class TestRelatedProjects(object):
         repo = Repo.filter_by(project=project).first()
         assert repo.needs_update is True
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
              '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
@@ -513,7 +513,7 @@ class TestRelatedProjects(object):
         assert Repo.filter_by(project=ceph_project).first().needs_update is True
         assert Repo.filter_by(project=rhcs_project).first().needs_update is True
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
              '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
@@ -538,7 +538,7 @@ class TestRelatedProjects(object):
 class TestAutomaticRepos(object):
     # these are not unittests :(
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
              '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
@@ -571,7 +571,7 @@ class TestAutomaticRepos(object):
         repo = Repo.filter_by(project=project).first()
         assert repo.needs_update is False
 
-    @py.test.mark.parametrize(
+    @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
              '/binaries/ceph-deploy/main/head/centos/6/x86_64/flavors/default/']
