@@ -31,7 +31,7 @@
 # config file then we will fail to reset it next time around. This would
 # leave the app without the access to the database.
 - name: generate pseudo-random password for the database connection
-  shell: python -c "exec 'import os; print os.urandom(30).encode(\'base64\')[:${length}]'"
+  shell: python3 -c "exec('import os; import base64; print(base64.b64encode(os.urandom(30))[:${length}])')"
   register: db_password
   changed_when: false
 
