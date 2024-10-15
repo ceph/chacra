@@ -1,39 +1,41 @@
 import hashlib
 import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, BigInteger
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import backref
 from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
 from sqlalchemy.exc import InvalidRequestError
+from sqlmodel import Field, SQLModel, Relationship
 from chacra.models import Base, update_timestamp
+from chacra.models.projects import Project
 from chacra.models.repos import Repo
-from chacra.controllers import util
+from chacra.routers import util
 
 
-class Binary(Base):
+class Binary(SQLModel, Base, table=True):
 
     __tablename__ = 'binaries'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(256), nullable=False, index=True)
-    path = Column(String(256))
-    ref = Column(String(256), index=True)
-    sha1 = Column(String(256), index=True, default='head')
-    distro = Column(String(256), nullable=False, index=True)
-    distro_version = Column(String(256), nullable=False, index=True)
-    arch = Column(String(256), nullable=False, index=True)
-    flavor = Column(String(256), nullable=False, index=True, default='default')
-    built_by = Column(String(256))
-    created = Column(DateTime, index=True)
-    modified = Column(DateTime, index=True)
-    signed = Column(Boolean(), default=False)
-    size = Column(BigInteger, default=0)
-    checksum = Column(String(256))
+    id: int = Field(primary_key=True)
+    name: str = Field(max_length=256, index=True)
+    path: str | None = Field(max_length=256, default=None)
+    ref: str | None = Field(max_length=256, default=None, index=True)
+    sha1: str = Field(max_length=256, index=True, default='head')
+    distro: str = Field(max_length=256, nullable=False, index=True)
+    distro_version: str = Field(max_length=256, nullable=False, index=True)
+    arch: str = Field(max_length=256, nullable=False, index=True)
+    flavor: str = Field(max_length=256, nullable=False, index=True, default='default')
+    built_by: str | None = Field(max_length=256)
+    created: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
+    modified: datetime.datetime = Field(default_factory=lambda: datetime.datetime.utcnow())
+    signed: bool = Field(default=False)
+    size: int | None = Field(sa_column=BigInteger(), default=0)
+    checksum: str | None = Field(max_length=256)
 
-    project_id = Column(Integer, ForeignKey('projects.id'))
-    project = relationship('Project', backref=backref('binaries', lazy='dynamic'))
+    project_id: int = Field(foreign_key='projects.id')
+    project: Project = Relationship(back_populates='binaries')
 
-    repo_id = Column(Integer, ForeignKey('repos.id'))
-    repo = relationship('Repo', backref=backref('binaries', lazy='dynamic'))
+    repo_id: int = Field(foreign_key='repos.id')
+    repo: Repo =  Relationship(back_populates='binaries')
 
     allowed_keys = [
         'path',

@@ -1,15 +1,16 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.exc import DetachedInstanceError
+from sqlmodel import Field, SQLModel
 from chacra.models import Base
 from chacra.models.repos import Repo
 from chacra.models.binaries import Binary
 
 
-class Project(Base):
+class Project(SQLModel, Base, table=True):
 
     __tablename__ = 'projects'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(256), nullable=False, unique=True, index=True)
+    id: int = Field(primary_key=True)
+    name: str = Field(max_length=256, nullable=False, unique=True, index=True)
 
     def __init__(self, name):
         self.name = name

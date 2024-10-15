@@ -3,34 +3,35 @@ import os
 import socket
 from pecan import conf
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
-from sqlalchemy.orm import relationship, backref, deferred
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.event import listen, remove
 from sqlalchemy.orm.exc import DetachedInstanceError
+from sqlmodel import Column, Field, SQLModel
 from chacra.models import Base, update_timestamp
 from chacra.models.types import JSONType
 
 
-class Repo(Base):
+class Repo(SQLModel, Base, table=True):
 
     __tablename__ = 'repos'
-    id = Column(Integer, primary_key=True)
-    path = Column(String(256))
-    ref = Column(String(256), index=True)
-    sha1 = Column(String(256), index=True, default='head')
-    distro = Column(String(256), nullable=False, index=True)
-    distro_version = Column(String(256), nullable=False, index=True)
-    flavor = Column(String(256), nullable=False, index=True, default='default')
-    modified = Column(DateTime, index=True)
-    signed = Column(Boolean(), default=False)
-    needs_update = Column(Boolean(), default=True)
-    is_updating = Column(Boolean(), default=False)
-    is_queued = Column(Boolean(), default=False)
-    type = Column(String(12))
-    size = Column(Integer, default=0)
-    extra = deferred(Column(JSONType(), default={}))
+    id: int = Field(primary_key=True)
+    path: str | None = Field(max_length=256, default=None)
+    ref: str | None = Field(max_length=256, default=None, index=True)
+    sha1: str = Field(max_length=256, index=True, default='head')
+    distro: str = Field(max_length=256, nullable=False, index=True)
+    distro_version: str = Field(max_length=256, nullable=False, index=True)
+    flavor: str = Field(max_length=256, nullable=False, index=True, default='default')
+    modified: datetime.datetime = Field(default_factory=lambda: datetime.datetime.utcnow())
+    signed: bool = Field(default=False)
+    needs_update: bool = Field(default=True)
+    is_updating: bool = Field(default=False)
+    is_queued: bool = Field(default=False)
+    type: str | None = Field(default=None)
+    size: int = Field(default=0)
+    #extra: dict = Field(default={})
 
-    project_id = Column(Integer, ForeignKey('projects.id'))
-    project = relationship('Project', backref=backref('repos', lazy='dynamic'))
+    #project_id = Column(Integer, ForeignKey('projects.id'))
+    #project = relationship('Project', backref=backref('repos', lazy='dynamic'))
 
     def __init__(self, project, ref, distro, distro_version, **kwargs):
         self.project = project

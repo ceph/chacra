@@ -1,8 +1,12 @@
 import datetime
-from sqlalchemy import create_engine, MetaData, event
+from typing import Annotated
+from fastapi import Depends
+from sqlalchemy import MetaData, event
 from sqlalchemy.orm import scoped_session, sessionmaker, object_session, mapper
 from sqlalchemy.ext.declarative import declarative_base
+from sqlmodel import Session, create_engine, SQLModel
 from pecan import conf
+
 
 
 class _EntityBase(object):
@@ -37,10 +41,26 @@ class _EntityBase(object):
             setattr(self, key, data[key])
 
 
-Session = scoped_session(sessionmaker())
+def _engine_from_config():
+    url = 'sqlite:///dev'
+    return create_engine(url)
+
+
+def create_db_and_tables():
+    engine = _engine_from_config()
+    SQLModel.metadata.create_all(engine)
+
+
+def get_session():
+    engine = _engine_from_config()
+    with Session(engine) as session:
+        yield session
+
+
+#Session = scoped_session(sessionmaker())
+Session = Annotated[Session, Depends(get_session)]
 metadata = MetaData()
 Base = declarative_base(cls=_EntityBase)
-Base.query = Session.query_property()
 
 
 # Listeners:
@@ -85,14 +105,8 @@ def init_model():
         Base.metadata.create_all(conf.sqlalchemy.engine)
 
     """
-    conf.sqlalchemy.engine = _engine_from_config(conf.sqlalchemy)
-    Session.configure(bind=conf.sqlalchemy.engine)
-
-
-def _engine_from_config(configuration):
-    configuration = dict(configuration)
-    url = configuration.pop('url')
-    return create_engine(url, **configuration)
+    engine = _engine_from_config()
+    Session.configure(bind=engine)
 
 
 def start():
