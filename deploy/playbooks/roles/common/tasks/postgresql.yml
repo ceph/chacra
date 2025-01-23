@@ -96,3 +96,4 @@
   command: "{{ app_home }}/bin/pecan populate {{ app_home }}/src/{{ app_name }}/prod.py"
   environment:
     ALEMBIC_CONFIG: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
+    PYTHONPATH: "."
