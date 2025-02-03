@@ -1,5 +1,6 @@
 import hashlib
 import datetime
+import pecan
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, BigInteger
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.event import listen
@@ -169,24 +170,18 @@ class Binary(Base):
 # Listeners
 
 
-def generate_checksum(mapper, connection, target):
-    try:
-        target.path
-    except AttributeError:
-        target.checksum = None
-        return
+def generate_checksum(self, binary):
+    # S3 requires SHA256
+    chsum = None
+    if pecan.conf.storage_method == 's3':
+        chsum = hashlib.sha256()
+    else:
+        chsum = hashlib.sha512()
 
-    # FIXME
-    # sometimes we can accept binaries without a path and that is probably something
-    # that should not happen. The core purpose of this binary is that it works with
-    # paths and files, this should be required.
-    if not target.path:
-        return
-    chsum = hashlib.sha512()
-    with open(target.path, 'rb') as f:
+    with open(binary, 'rb') as f:
         for chunk in iter(lambda: f.read(4096), b''):
             chsum.update(chunk)
-        target.checksum = chsum.hexdigest()
+    return chsum.hexdigest()
 
 
 def update_repo(mapper, connection, target):
@@ -205,11 +200,6 @@ def update_repo(mapper, connection, target):
         # target may be None in certain cases, and we don't care which one
         # triggered it because there is nothing we need to do
         pass
-
-# listen for checksum changes
-listen(Binary, 'before_insert', generate_checksum)
-listen(Binary, 'before_update', generate_checksum)
-
 
 def add_timestamp_listeners():
     # listen for timestamp modifications

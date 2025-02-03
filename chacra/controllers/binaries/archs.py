@@ -1,11 +1,13 @@
 import logging
 import os
+import boto3
+from botocore.exceptions import ClientError
 import pecan
 from pecan import response
 from pecan.secure import secure
 from pecan import expose, abort, request
 from webob.static import FileIter
-from chacra.models import Binary
+from chacra.models.binaries import Binary, generate_checksum
 from chacra import models, util
 from chacra.controllers import error
 from chacra.controllers.util import repository_is_automatic
@@ -26,6 +28,7 @@ class ArchController(object):
         self.distro_version = request.context['distro_version']
         self.ref = request.context['ref']
         self.sha1 = request.context['sha1']
+        self.checksum = None
         request.context['arch'] = self.arch
 
     @expose(generic=True, template='json')
@@ -89,7 +92,7 @@ class ArchController(object):
                 if request.POST.get('force', False) is False:
                     error('/errors/invalid', 'resource already exists and "force" key was not used')
 
-        full_path = self.save_file(file_obj)
+        full_path, size = self.save_file(file_obj)
 
         if self.binary is None:
             path = full_path
@@ -102,14 +105,17 @@ class ArchController(object):
             self.binary = Binary(
                 self.binary_name, self.project, arch=arch,
                 distro=distro, distro_version=distro_version,
-                ref=ref, sha1=sha1, path=path, size=os.path.getsize(path)
+                ref=ref, sha1=sha1, path=path, size=size,
+                checksum=self.checksum
             )
         else:
             self.binary.path = full_path
+            self.binary.checksum = self.checksum
 
         # check if this binary is interesting for other configured projects,
         # and if so, then mark those other repos so that they can be re-built
         self.mark_related_repos()
+
         return dict()
 
     def mark_related_repos(self):
@@ -175,8 +181,32 @@ class ArchController(object):
             for chunk in file_iterable:
                 f.write(chunk)
 
+        size = os.path.getsize(destination)
+        self.checksum = generate_checksum(destination)
+
+        if pecan.conf.storage_method == 's3':
+            bucket = pecan.conf.bucket
+            object_destination = os.path.relpath(destination, pecan.conf.binary_root)
+
+            s3_client = boto3.client('s3')
+            try:
+                with open(destination, 'rb') as f:
+                    s3_client.put_object(Body=f,
+                                         Bucket=bucket,
+                                         Key=object_destination,
+                                         ChecksumAlgorithm='sha256',
+                                         ChecksumSHA256=self.checksum
+                    )
+            except ClientError as e:
+                error('/errors/error/', 'file object upload to S3 failed with error %s' % e)
+
+            # Remove the local file after S3 upload
+            os.remove(destination)
+
+            destination = 's3://' + object_destination[1:]
+
         # return the full path to the saved object:
-        return destination
+        return destination, size
 
     @expose()
     def _lookup(self, name, *remainder):
