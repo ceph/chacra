@@ -1,87 +1,77 @@
-from pecan import expose, abort, request
-from chacra import models
-from chacra.controllers import error
-from chacra.controllers.binaries.archs import ArchController
+from fastapi import APIRouter, HTTPException, Request, Depends
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from chacra.database import get_db
+from chacra import models, util
+from chacra.routers.util import repository_is_automatic
 
 
-class DistroVersionController(object):
+class DistroVersion(BaseModel):
+    distro_version: str
 
-    def __init__(self, distro_version):
-        self.distro_version = distro_version
-        self.project = models.Project.get(request.context['project_id'])
-        self.distro_name = request.context['distro']
-        self.ref = request.context['ref']
-        self.sha1 = request.context['sha1']
-        request.context['distro_version'] = self.distro_version
+class Distro(BaseModel):
+    distro_name: str
 
-    @expose('json', generic=True)
-    def index(self):
-        if self.distro_version not in self.project.distro_versions:
-            abort(404)
+router = APIRouter(
+    prefix='/binaries/distros',
+    responses={405: {'description': 'Method not allowed'}}
+)
 
-        resp = {}
-        for arch in self.project.archs:
-            binaries = [
-                b.name for b in models.Binary.filter_by(
-                    project=self.project,
-                    distro_version=self.distro_version,
-                    distro=self.distro_name,
-                    ref=self.ref,
-                    sha1=self.sha1,
-                    arch=arch).all()]
-            if binaries:
-                resp[arch] = list(set(binaries))
-        return resp
+@router.get('/{distro_name}/{distro_version}', response_model=dict)
+async def get_distro_version(distro_name: str, distro_version: str, request: Request, db: Session = Depends(get_db)):
+    project_id = request.state.project_id
+    ref = request.state.ref
+    sha1 = request.state.sha1
 
-    @index.when(method='POST', template='json')
-    def index_post(self):
-        error('/errors/not_allowed', 'POST requests to this url are not allowed')
+    project = db.query(models.Project).get(project_id)
+    if not project or distro_version not in project.distro_versions:
+        raise HTTPException(status_code=404)
 
-    @expose()
-    def _lookup(self, name, *remainder):
-        if request.method in  ['HEAD', 'GET']:
-            if self.distro_version not in self.project.distro_versions:
-                abort(404)
-        return ArchController(name), remainder
+    resp = {}
+    for arch in project.archs:
+        binaries = db.query(models.Binary).filter_by(
+            project=project,
+            distro_version=distro_version,
+            distro=distro_name,
+            ref=ref,
+            sha1=sha1,
+            arch=arch).all()
+        if binaries:
+            resp[arch] = list(set(b.name for b in binaries))
+    return resp
 
+@router.post('/{distro_name}/{distro_version}')
+async def post_distro_version():
+    raise HTTPException(status_code=405, detail='POST requests to this URL are not allowed')
 
-class DistroController(object):
-    def __init__(self, distro_name):
-        self.distro_name = distro_name
-        self.project = models.Project.get(request.context['project_id'])
-        self.ref = request.context['ref']
-        self.sha1 = request.context['sha1']
-        request.context['distro'] = distro_name
+@router.get('/{distro_name}', response_model=dict)
+async def get_distro(distro_name: str, request: Request, db: Session = Depends(get_db)):
+    project_id = request.state.project_id
+    ref = request.state.ref
+    sha1 = request.state.sha1
 
-    @expose('json', generic=True)
-    def index(self):
-        resp = {}
+    project = db.query(models.Project).get(project_id)
+    if not project:
+        raise HTTPException(status_code=404)
 
-        binaries = models.Binary.filter_by(
-            project=self.project,
-            distro=self.distro_name,
-            ref=self.ref,
-            sha1=self.sha1).all()
+    resp = {}
+    binaries = db.query(models.Binary).filter_by(
+        project=project,
+        distro=distro_name,
+        ref=ref,
+        sha1=sha1).all()
 
-        if not binaries:
-            abort(404)
+    if not binaries:
+        raise HTTPException(status_code=404)
 
-        distro_versions = set([b.distro_version for b in binaries])
+    distro_versions = set(b.distro_version for b in binaries)
+    for distro_version in distro_versions:
+        resp[distro_version] = list(set(b.arch for b in binaries if b.distro_version == distro_version))
+    if not resp:
+        raise HTTPException(status_code=404)
+    return resp
 
-        for distro_version in distro_versions:
-            resp[distro_version] = list(
-                set(
-                    [b.arch for b in binaries if b.distro_version == distro_version]
-                )
-            )
-        if not resp:
-            abort(404)
-        return resp
-
-    @index.when(method='POST', template='json')
-    def index_post(self):
-        error('/errors/not_allowed', 'POST requests to this url are not allowed')
-
-    @expose()
-    def _lookup(self, name, *remainder):
-        return DistroVersionController(name), remainder
+@router.post('/{distro_name}')
+async def post_distro():
+    raise HTTPException(status_code=405, detail='POST requests to this URL are not allowed')
