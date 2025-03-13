@@ -1,5 +1,6 @@
 psycopg2-binary==2.9.9
-fastapi
+gunicorn<20.1.0
+pecan
 sqlalchemy==1.3.0
 celery[librabbitmq]
 alembic

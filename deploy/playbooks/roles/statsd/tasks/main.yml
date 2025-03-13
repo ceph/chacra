@@ -24,7 +24,7 @@
   file: path={{ app_home }}/src/statsd owner=node group=node
   when: permissions.stat.pw_name != 'node'
 
-- include: systemd.yml
+- include_tasks: systemd.yml
 
 - name: Configure statsd
   become: true

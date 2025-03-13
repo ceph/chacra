@@ -27,7 +27,7 @@
   become: true
   register: ssl_cert
 
-- include: ssl.yml
+- include_tasks: ssl.yml
   when: development_server == true or use_self_signed_ssl
 
 - name: "check if {{ nginx_ssl_cert_path }} exists"
@@ -59,7 +59,7 @@
     state: "link"
   become: true
 
-- include: letsencrypt.yml
+- include_tasks: letsencrypt.yml
   when:
     - development_server == false
     - use_letsencrypt

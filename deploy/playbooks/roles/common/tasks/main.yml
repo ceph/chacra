@@ -21,7 +21,7 @@
     create: yes
 
 # rabbitmq must be installed after the hostname is set
-- include: rabbitmq.yml
+- include_tasks: rabbitmq.yml
 
 - name: "ensure a home for {{ app_name }}"
   become: true
@@ -105,14 +105,14 @@
     - "{{ binary_root }}"
     - "{{ repos_root }}"
 
-- include: postgresql.yml
+- include_tasks: postgresql.yml
   tags:
     - postgres
 
-- include: systemd.yml
+- include_tasks: systemd.yml
   tags:
     - systemd
 
-- include: nginx.yml
+- include_tasks: nginx.yml
   tags:
     - nginx
