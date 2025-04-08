@@ -3,7 +3,7 @@ from chacra.models import Binary, Project, Repo
 
 class TestBinaryModification(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = Project('ceph')
 
     def test_created_equals_modified_first_time_around(self, session):
@@ -156,7 +156,7 @@ class TestBinaryModification(object):
 
 class TestGenericBinaries(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = Project('ceph')
 
     def test_binary_is_generic(self, session):

@@ -25,7 +25,7 @@ def no_update_timestamp():
 
 class TestPurgeRepos(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = Project('ceph')
         self.repo = Repo(
             self.p,
@@ -34,7 +34,7 @@ class TestPurgeRepos(object):
             distro_version='7',
             )
 
-        self.now = datetime.datetime.utcnow()
+        self.now = datetime.datetime.now(datetime.UTC)
         # slightly old
         self.one_minute = self.now - datetime.timedelta(minutes=1)
         # really old
@@ -43,7 +43,7 @@ class TestPurgeRepos(object):
         self.repo.modified = self.three_weeks_ago
         conf.purge_repos = True
 
-    def teardown(self):
+    def teardown_method(self):
         # callback settings added in test_post_request are "sticky", this
         # ensures they are reset for other tests that rely on pristine conf
         # settings

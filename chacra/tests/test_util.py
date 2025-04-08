@@ -82,7 +82,7 @@ class TestRepoDirectory(object):
 
 class TestRepoPaths(object):
 
-    def setup(self):
+    def setup_method(self):
         self.repo = models.Repo(
             models.Project('ceph-deploy'),
             'main',
@@ -206,11 +206,12 @@ class TestCombined(object):
 
 class TestGetBinaries(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = models.Project('ceph')
 
     def test_no_project(self, session):
-        result = util.get_extra_binaries('f', 'ubuntu', 'precise')
+        with session.Session.no_autoflush:
+            result = util.get_extra_binaries('f', 'ubuntu', 'precise')
         assert result == []
 
     def test_no_matching_ref_without_specific_ref(self, session):
@@ -326,7 +327,7 @@ class TestGetBinaries(object):
 
 class TestRepreproCommand(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = models.Project('ceph')
 
     def test_deb_binary(self, session, tmpdir):
@@ -384,7 +385,7 @@ class TestRepreproCommand(object):
 
 class TestRepreproCommands(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = models.Project('ceph')
 
     def test_no_distro_versions_binary_non_generic(self, session, tmpdir):
@@ -474,7 +475,7 @@ class TestRepreproCommands(object):
 
 class TestGetDistributionsFileContext(object):
 
-    def setup(self):
+    def setup_method(self):
         self.distro_conf = {
             "defaults": {
                 "foo": "bar",
@@ -519,7 +520,7 @@ class TestGetDistributionsFileContext(object):
 
 class TestRepositoryIsDisabled(object):
 
-    def teardown(self):
+    def teardown_method(self):
         conftest.reload_config()
 
     def test_nothing_is_configured(self):
@@ -582,7 +583,7 @@ repos_conf = {
 
 class TestRelatedProjects(object):
 
-    def setup(self):
+    def setup_method(self):
         self.conf = dict()
 
     def test_nothing_is_related(self):

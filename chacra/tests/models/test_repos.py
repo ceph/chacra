@@ -3,7 +3,7 @@ from chacra.models import Project, Repo, Binary
 
 class TestRepoModification(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = Project('ceph')
 
     def test_created_slaps_a_modified_attr(self, session):
@@ -42,7 +42,7 @@ class TestRepoModification(object):
 
 class TestInferType(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = Project('ceph')
 
     def test_rpm_is_inferred(self, session):
@@ -72,7 +72,7 @@ class TestInferType(object):
 
 class TestRepoArch(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = Project('ceph')
 
     def test_x86_64(self, session):
@@ -109,7 +109,7 @@ class TestRepoArch(object):
 
 class TestRepoMetricNames(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = Project('ceph')
 
     def test_full_metric_name(self, session):
