@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import logging
 from pecan import conf
 
@@ -17,8 +17,8 @@ def repository_is_automatic(project_name, repo_config=None):
 
 
 def last_seen(timestamp):
-    now = datetime.utcnow()
-    difference = now - timestamp
+    now = datetime.now(UTC)
+    difference = now - timestamp.replace(tzinfo=UTC)
     formatted = ReadableSeconds(difference.seconds)
     return "%s ago" % formatted
 
