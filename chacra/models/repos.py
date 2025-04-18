@@ -37,7 +37,7 @@ class Repo(Base):
         self.ref = ref
         self.distro = distro
         self.distro_version = distro_version
-        self.modified = datetime.datetime.utcnow()
+        self.modified = datetime.datetime.now(datetime.UTC)
         self.sha1 = kwargs.get('sha1', 'head')
         self.flavor = kwargs.get('flavor', 'default')
 

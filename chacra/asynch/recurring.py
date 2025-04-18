@@ -67,7 +67,7 @@ def purge_repos(_now=None):
         return
 
     # default value for repo life
-    now = _now or datetime.datetime.utcnow()
+    now = _now or datetime.datetime.now(datetime.UTC)
     default_lifespan = now - datetime.timedelta(days=14)
     default_keep_minimum = 0
 
