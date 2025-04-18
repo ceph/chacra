@@ -16,7 +16,7 @@ repo_keys = [
 
 class TestHelpers(object):
 
-    def setup(self):
+    def setup_method(self):
         self.p = Project('ceph')
         self.repo = Repo(
             self.p,
@@ -25,7 +25,7 @@ class TestHelpers(object):
             distro_version='7',
             )
 
-    def teardown(self):
+    def teardown_method(self):
         # callback settings added in test_post_request are "sticky", this
         # ensures they are reset for other tests that rely on pristine conf
         # settings
@@ -57,10 +57,10 @@ class TestHelpers(object):
 
 class TestCallbackInvalidConf(object):
 
-    def setup(self):
+    def setup_method(self):
         conf.callback_url = 'http://localhost/callback'
 
-    def teardown(self):
+    def teardown_method(self):
         # callback settings added in setup are "sticky", this ensures they are
         # reset for other tests that rely on pristine conf settings
         conftest.reload_config()
@@ -79,12 +79,12 @@ class TestCallbackInvalidConf(object):
 
 class TestCallback(object):
 
-    def setup(self):
+    def setup_method(self):
         conf.callback_url = 'http://localhost/callback'
         conf.callback_user = 'admin'
         conf.callback_key = 'key'
 
-    def teardown(self):
+    def teardown_method(self):
         # callback settings added in setup are "sticky", this ensures they are
         # reset for other tests that rely on pristine conf settings
         conftest.reload_config()

@@ -4,7 +4,7 @@ import shutil
 
 from pecan import expose, abort, request, response
 from pecan.secure import secure
-from pecan.ext.notario import validate
+from pecan_notario import validate
 
 from chacra.models import Project
 from chacra.controllers import error
