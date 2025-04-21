@@ -63,10 +63,16 @@ sqlalchemy = {
     'encoding':      'utf-8'
 }
 
+# Where to store the data. Options are 's3' or 'local'
+storage_method = 'local'
+
 # location for storing uploaded binaries
 binary_root = '%(confdir)s/public'
 repos_root = '%(confdir)s/repos'
 distributions_root = '%(confdir)s/distributions'
+
+# If storage method is s3, provide a bucket name
+bucket = ''
 
 # When True it will set the headers so that Nginx can serve the download
 # instead of Pecan.
