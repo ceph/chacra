@@ -437,6 +437,21 @@ class TestBinaryController(object):
         response = session.app.head(url_head)
         assert response.status_int == 200
 
+    @pytest.mark.parametrize(
+            'url_post',
+            ['/binaries/project/branch-with-cephadm-in-it/sha1/distro/distroversion/arch/',
+             '/binaries/project/branch-with-cephadm-in-it/sha1/distro/distroversion/arch/flavors/flav/',
+            ]
+    )
+    def test_create_binary_in_path_with_same_name(self, session, tmpdir, url_post):
+        pecan.conf.binary_root = str(tmpdir)
+        response = session.app.post(
+            url_post,
+            upload_files=[('file', 'cephadm', b_('hello tharrrr'))]
+        )
+        assert response.status_int == 201
+        expected_path = os.path.join(str(tmpdir), url_post[len('/binaries/'):], 'cephadm')
+        assert(os.path.exists(expected_path))
 
 class TestRelatedProjects(object):
 

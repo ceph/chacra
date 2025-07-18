@@ -12,6 +12,7 @@ from chacra.controllers.util import repository_is_automatic
 from chacra.controllers.binaries import BinaryController
 from chacra.controllers.binaries import flavors as _flavors
 from chacra.auth import basic_auth
+from pathlib import Path
 
 
 logger = logging.getLogger(__name__)
@@ -151,10 +152,13 @@ class ArchController(object):
                     repo.type = self.binary._get_repo_type()
 
     def create_directory(self):
-        end_part = request.url.split('binaries/')[-1].rstrip('/')
-        # take out the binary name
-        end_part = end_part.split(self.binary_name)[0]
-        path = os.path.join(pecan.conf.binary_root, end_part.lstrip('/'))
+        urlpath = Path(request.url)
+        # remove binary_name if it exists
+        if urlpath.name == self.binary_name:
+            urlpath = urlpath.parent
+        # replace '...binaries' with binary_root
+        rootindex = urlpath.parts.index('binaries')
+        path = Path(pecan.conf.binary_root, *(urlpath.parts[rootindex+1:]))
         if not os.path.isdir(path):
             os.makedirs(path)
         return path
