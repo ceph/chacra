@@ -318,7 +318,7 @@ The default repository structure URL looks like::
     /repos/{project}/{ref}/{sha1}/{distro}/{distro version}/{REPO}
 
 The type of repository (rpm or deb) is usually inferred from the type
-of binaries uploaded; however, 'raw' repos are also supported.  To set
+of binaries uploaded; however, 'raw' repos are also supported. To set
 the repo type, POST to the repo URL and include a data payload that contains
 a JSON structure
 
@@ -454,6 +454,53 @@ but it can be usueful when you have many projects with similar values in their d
 
 If you want to add keys or modify keys that exist in ``defaults`` for a specific project, add that project name as
 a key of ``distributions`` and define the keys you'd need to override or add there.
+
+Purging old repos
+-----------------
+
+Chacra can periodically remove stale repos. To enable, set in the configuration::
+
+        purge_repos = True
+
+The default is to purge any repos older than 14 days. To configure
+purge settings for a repo, create a configuration named ``purge_rotation``.
+Each key is a project name; within a project name, you can specify
+``ref`` to name refs or ``flavor`` to name flavors. Within ``ref`` or
+``flavor``, specify the refname or flavor name. Within that section,
+you may specify ``keep_minimum`` to set the number of repos to keep
+regardless of age, and/or ``days`` to set the maximum age of a repo.
+If a project/ref or project/flavor has any repos older than ``days``,
+they will be removed, unless they are the newest ``keep_minimum`` repos.
+
+For example::
+
+    purge_repos = True
+    purge_rotation = {
+        'myproject': {
+            'ref': {
+                'mybranch1': {
+                    'keep_minimum': 2,
+                    'days': 7,
+                },
+                'mybranch2': {
+                    'keep_minimum': 1,
+                },
+            },
+            'flavor': {
+                'myflavor1': {
+                    'days': 7,
+                },
+            },
+        },
+    }
+
+will keep repos for ``myproject`` for the default 14 days, except for repos
+for ref ``mybranch1``, which will be removed after 7 days, as long as
+there are at least 2 repos left. Repos for ``mybranch2`` will be deleted
+after the default 14 days, except for the last one. Repos for project
+``myproject`` flavor ``myflavor1`` will be deleted after a week. No minimum
+number will remain; if all repos were older than a week, they will all be
+purged.
 
 Authentication
 ==============
