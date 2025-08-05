@@ -13,6 +13,11 @@ from chacra.models.binaries import (
     add_timestamp_listeners as add_binary_listeners,
     remove_timestamp_listeners as remove_binary_listeners
 )
+try:
+    from datetime import UTC
+except:
+    UTC=datetime.timezone.utc
+
 
 @pytest.fixture
 def no_update_timestamp():
@@ -34,7 +39,7 @@ class TestPurgeRepos(object):
             distro_version='7',
             )
 
-        self.now = datetime.datetime.now(datetime.UTC)
+        self.now = datetime.datetime.now(UTC)
         # slightly old
         self.one_minute = self.now - datetime.timedelta(minutes=1)
         # really old

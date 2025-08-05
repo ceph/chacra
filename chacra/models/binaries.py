@@ -8,6 +8,10 @@ from sqlalchemy.exc import InvalidRequestError
 from chacra.models import Base, update_timestamp
 from chacra.models.repos import Repo
 from chacra.controllers import util
+try:
+    from datetime import UTC
+except:
+    UTC=datetime.timezone.utc
 
 
 class Binary(Base):
@@ -50,7 +54,7 @@ class Binary(Base):
     def __init__(self, name, project, repo=None, **kw):
         self.name = name
         self.project = project
-        now = datetime.datetime.now(datetime.UTC)
+        now = datetime.datetime.now(UTC)
         self.created = now
         self.modified = now
         self.sha1 = kw.get('sha1', 'head')
