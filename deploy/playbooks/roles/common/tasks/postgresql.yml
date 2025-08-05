@@ -7,7 +7,7 @@
 
 - name: get postgres version number
   shell:
-    cmd: dpkg -l | awk '{print $2;}' | grep -P 'postgresql-\d\d' | sed 's/.*-//'
+    cmd: dpkg -l | awk '{print $2;}' | grep -P 'postgresql-\d\d' | sed 's/.*-//' | tail -1
   register: postgres_version
 
 - name: allow users to connect locally
