@@ -10,6 +10,11 @@ from celery import shared_task
 from chacra import models
 from chacra.asynch import base, debian, rpm, post_queued, post_deleted
 import logging
+try:
+    from datetime import UTC
+except:
+    import datetime
+    UTC=datetime.timezone.utc
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +72,7 @@ def purge_repos(_now=None):
         return
 
     # default value for repo life
-    now = _now or datetime.datetime.now(datetime.UTC)
+    now = _now or datetime.datetime.now(UTC)
     default_lifespan = now - datetime.timedelta(days=14)
     default_keep_minimum = 0
 
