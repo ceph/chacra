@@ -2,30 +2,12 @@
 - name: add the rabbitmq signing key
   become: true
   shell:
-    cmd: "curl -1sLf 'https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA' | sudo gpg --dearmor | > /usr/share/keyrings/com.rabbitmq.team.gpg"
-
-- name: add the Erlang Launchpad PPA key
-  become: true
-  apt_key:
-    url: "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf77f1eda57ebb1cc"
-    state: present
-
-- name: add the rabbitmq public key
-  become: true
-  apt_key:
-    url: "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey"
-    state: present
-
-- name: add the Erlang Launchpad PPA
-  become: true
-  apt_repository:
-    repo: "deb http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu {{ ansible_lsb.codename }} main"
-    state: present
+    cmd: "curl -1sLf 'https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA' | sudo gpg --dearmor > /usr/share/keyrings/com.rabbitmq.team.gpg"
 
 - name: add the rabbitmq official repo
   become: true
   apt_repository:
-    repo: "deb https://packagecloud.io/rabbitmq/rabbitmq-server/ubuntu/  {{ ansible_lsb.codename }} main"
+    repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://deb1.rabbitmq.com/rabbitmq-erlang/ubuntu/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main"
     state: present
 
 - name: update the apt cache
