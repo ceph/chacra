@@ -1,4 +1,7 @@
 # {{ ansible_managed }}
+import sys, os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from pecan.hooks import TransactionHook
 from chacra import models
 from chacra import hooks
