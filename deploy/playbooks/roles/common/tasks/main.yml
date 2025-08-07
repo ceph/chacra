@@ -86,12 +86,14 @@
 - name: install python requirements in virtualenv
   pip:
     requirements: "{{ app_home }}/src/{{ app_name }}/requirements.txt"
-    state: present
+    state: forcereinstall
     virtualenv: "{{ app_home }}"
   notify:
     - restart app
     - restart chacra-celery
     - restart chacra-celerybeat
+  tags:
+    - req
 
 - name: ensure file paths are set properly
   become: true
