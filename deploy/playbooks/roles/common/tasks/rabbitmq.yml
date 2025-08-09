@@ -7,6 +7,12 @@
 - name: add the rabbitmq official repo
   become: true
   apt_repository:
+    repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://deb1.rabbitmq.com/rabbitmq-server/ubuntu/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main"
+    state: present
+
+- name: add the rabbitmq erlang repo
+  become: true
+  apt_repository:
     repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://deb1.rabbitmq.com/rabbitmq-erlang/ubuntu/{{ ansible_lsb.codename }} {{ ansible_lsb.codename }} main"
     state: present
 
@@ -19,29 +25,6 @@
   become: true
   apt:
     name: pkg-config
-
-- name: install erlang
-  become: true
-  apt:
-    name:
-      - erlang-base
-      - erlang-asn1
-      - erlang-crypto
-      - erlang-eldap
-      - erlang-ftp
-      - erlang-inets
-      - erlang-mnesia
-      - erlang-os-mon
-      - erlang-parsetools
-      - erlang-public-key
-      - erlang-runtime-tools
-      - erlang-snmp
-      - erlang-ssl
-      - erlang-syntax-tools
-      - erlang-tftp
-      - erlang-tools
-      - erlang-xmerl
-    state: present
 
 - name: install rabbitmq-server
   become: true
