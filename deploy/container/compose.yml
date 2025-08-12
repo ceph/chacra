@@ -1,0 +1,63 @@
+services:
+
+  db:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: chacra
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+
+    ports:
+      - 5432:5432   # PostgreSQL
+      - 5672:5672   # RabbitMQ
+      - 15672:15672 # RabbitMQ WebUI
+      - 8000:8000   # chacra raw restful API
+      - 80:80
+
+  rabbitmq:
+    image: rabbitmq
+    restart: always
+    network_mode: "service:db"
+  
+  services:
+  # image is build from ./chacra_image, with tag latest or other else
+    image: chacra
+    restart: always
+    depends_on:
+      - db
+      - rabbitmq
+    network_mode: "service:db"
+
+    volumes:
+      - ./bin:/opt/chacra/binaries
+      - ./repos:/opt/chacra/repos
+
+      # we can modify below mount location to override the origin conf,like prod_api_creds.
+      # this doesn't need to rebuild the image
+
+      # below file is fine to override. like src:dest, u can modify src.
+      # - ./chacra_image/conf/prod_api_creds.py:/opt/chacra/src/chacra/prod_api_creds.py
+      # - ./chacra_image/conf/prod.py:/opt/chacra/src/chacra/prod.py
+      # - ./chacra_image/conf/nginx.conf:/etc/nginx/nginx.conf
+      # - ./chacra_image/conf/nginx_site.conf:/etc/nginx/sites-available/chacra.conf
+      # - ./chacra_image/conf/alembic-prod.ini:/opt/chacra/src/chacra/alembic-prod.ini
+
+      - ./logs/celery/:/var/log/celery/
+
+  # SQL manager WebUI,optional.
+  # adminer:
+  #   image: adminer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080

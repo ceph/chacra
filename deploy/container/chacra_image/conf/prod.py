@@ -1,0 +1,370 @@
+from pecan.hooks import TransactionHook
+from chacra import models
+from chacra import hooks
+from prod_db import sqlalchemy
+from prod_api_creds import api_key, api_user
+
+
+# Server Specific Configurations
+server = {"port": "8000", "host": "0.0.0.0"}
+
+# Pecan Application Configurations
+app = {
+    "root": "chacra.controllers.root.RootController",
+    "modules": ["chacra"],
+    "guess_content_type_from_ext": False,
+    "template_path": "%(confdir)s/chacra/templates",
+    "hooks": [
+        TransactionHook(
+            models.start,
+            models.start_read_only,
+            models.commit,
+            models.rollback,
+            models.clear,
+        ),
+        hooks.CustomErrorHook(),
+    ],
+    "debug": False,
+}
+
+logging = {
+    "disable_existing_loggers": False,
+    "loggers": {
+        "root": {"level": "INFO", "handlers": ["console"]},
+        "chacra": {"level": "DEBUG", "handlers": ["console"]},
+        "pecan": {"level": "WARNING", "handlers": ["console"]},
+        "pecan.commands.serve": {"level": "DEBUG", "handlers": ["console"]},
+        "py.warnings": {"handlers": ["console"]},
+        "__force_dict__": True,
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        }
+    },
+    "formatters": {
+        "simple": {
+            "format": (
+                "%(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s"
+            )
+        },
+        "color": {
+            "()": "pecan.log.ColorFormatter",
+            "format": (
+                "%(asctime)s [%(padded_color_levelname)s] [%(name)s]"
+                "[%(threadName)s] %(message)s"
+            ),
+            "__force_dict__": True,
+        },
+    },
+}
+
+# graphite/statsd settings
+graphite_api_key = "xxxxxx666666"
+# this value will be used when sending metrics to graphite
+short_hostname = "ubuntu"
+
+# When True it will set the headers so that Nginx can serve the download
+# instead of Pecan.
+delegate_downloads = True
+
+# location for storing uploaded binaries
+binary_root = "/opt/chacra/binaries"
+repos_root = "/opt/chacra/repos"
+distributions_root = "%(confdir)s/distributions"
+
+# Celery options
+# How often (in seconds) the database should be queried for repos that need to
+# be rebuilt
+polling_cycle = 120
+
+# {% if purge_repos is defined %}
+# purge_repos = {{ purge_repos }}
+
+# purge_rotation = {
+#     'ceph-medic': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'kernel': {
+#         'ref': {
+#             'testing': {
+#                 'keep_minimum': 10
+#             },
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#             'for-linus': {
+#                 'keep_minimum': 5
+#             },
+#             'nightly_pre-single-major': {
+#                 'keep_minimum': 1
+#             },
+#             'ceph-iscsi-stable': {
+#                 'keep_minimum': 1
+#             },
+#             'ceph-iscsi-test': {
+#                 'keep_minimum': 1
+#             },
+#         },
+#     },
+#     'calamari': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#             '1.5': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'ceph': {
+#         'ref': {
+#             'reef-nvmeof': {
+#                 'keep_minimum': 2
+#             },
+# 	    'squid-nvmeof': {
+#                 'keep_minimum': 2
+#             },
+#             'squid-nvmeof-8.0': {
+#                 'keep_minimum': 2
+#             },
+#             'hammer': {
+#                 'days': 30,
+#                 'keep_minimum': 5
+#             },
+#             'infernalis': {
+#                 'days': 30,
+#                 'keep_minimum': 5
+#             },
+#             'jewel': {
+#                 'days': 14,
+#                 'keep_minimum': 10
+#             },
+#             'kraken': {
+#                 'days': 14,
+#                 'keep_minimum': 10
+#             },
+#             'luminous': {
+#                 'days': 14,
+#                 'keep_minimum': 10
+#             },
+#             'mimic': {
+#                 'days': 14,
+#                 'keep_minimum': 10
+#             },
+#             'nautilus': {
+#                 'days': 14,
+#                 'keep_minimum': 10
+#             },
+#         },
+#     },
+#     'ceph-installer': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 10
+#             },
+#         },
+#     },
+#     'ceph-ansible': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#             'stable-2.1': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'python-rtslib': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'tcmu-runner': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'ceph-iscsi': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'ceph-iscsi-config': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'ceph-iscsi-cli': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'ceph-iscsi-tools': {
+#         'ref': {
+#             'main': {
+#                 'keep_minimum': 5
+#             },
+#         },
+#     },
+#     'nfs-ganesha': {
+#         'flavor': {
+#             'ceph_mimic': {
+#                 'keep_minimum': 2
+#             },
+#             'ceph_luminous': {
+#                 'keep_minimum': 2
+#             },
+#             'ceph_kraken': {
+#                 'keep_minimum': 2
+#             },
+#             'ceph_jewel': {
+#                 'keep_minimum': 2
+#             },
+#         },
+#     },
+#     '__force_dict__': True,
+# }
+
+# {% endif %}
+
+# Once a "create repo" task is called, how many seconds (if any) to wait before actually
+# creating the repository
+quiet_time = 20
+
+repos = {
+    "ceph": {
+        # 'automatic': False,
+        # ceph-deploy production builds should go into the "ref" main
+        # because otherwise we would be forced to list every "vN.N.N" ref
+        # here to avoid getting cruft like "test" builds
+        "all": {
+            "ceph-medic": ["main"],
+        },
+        "hammer": {
+            "ceph-release": ["hammer"],
+            "ceph-deploy": ["1.5"],
+        },
+        "infernalis": {
+            "ceph-release": ["infernalis"],
+            "ceph-deploy": ["1.5"],
+        },
+        "jewel": {
+            "ceph-release": ["jewel"],
+            "ceph-deploy": ["1.5"],
+        },
+        "kraken": {
+            "ceph-release": ["kraken"],
+            "ceph-deploy": ["1.5"],
+        },
+        "luminous": {
+            "ceph-release": ["luminous"],
+            "ceph-deploy": ["main"],
+        },
+        "mimic": {
+            "ceph-release": ["mimic"],
+            "ceph-deploy": ["main"],
+        },
+        "nautilus": {
+            "ceph-release": ["nautilus"],
+            "ceph-deploy": ["main"],
+        },
+        "octopus": {
+            "ceph-release": ["octopus"],
+            "ceph-deploy": ["main"],
+        },
+        "pacific": {
+            "ceph-release": ["pacific"],
+            "ceph-deploy": ["main"],
+        },
+        "quincy": {
+            "ceph-release": ["quincy"],
+            "ceph-deploy": ["main"],
+        },
+        "reef": {
+            "ceph-release": ["reef"],
+            "ceph-deploy": ["main"],
+        },
+        "squid": {
+            "ceph-release": ["squid"],
+            "ceph-deploy": ["main"],
+        },
+        # when more 'testing' refs are built, we need to add them here as well
+        "testing": {
+            "ceph": ["jewel-rc"],
+        },
+        # {% if combine_deb_repos|default(True) %}
+        # note: 'universal' binaries will be included to all these distro
+        # versions since they do not belong to any one in particular.
+        "combined": [
+            "bookworm",
+            "bullseye",
+            "buster",
+            "stretch",
+            "wheezy",
+            "trusty",
+            "precise",
+            "jessie",
+            "xenial",
+            "bionic",
+            "focal",
+            "jammy",
+            "noble",
+        ],
+        # {% endif %}
+    },
+    "libboost": {"master": {}},
+    "cephmetrics": {
+        "main": {
+            "cephmetrics-deps": ["main"],
+        },
+        # For testing cephmetrics changes against existing deps
+        "develop": {
+            "cephmetrics-deps": ["main"],
+        },
+        # Release!
+        "1.0": {
+            "cephmetrics-deps": ["1.0"],
+        },
+    },
+    "__force_dict__": True,
+}
+
+
+# Use this to define how distributions files will be created per project
+distributions = {
+    "defaults": {
+        "DebIndices": "Packages Release . .gz .bz2",
+        "DscIndices": "Sources Release .gz .bz2",
+        "Contents": ".gz .bz2",
+        "Origin": "ceph.com",
+        "Description": "",
+        "Architectures": "amd64 arm64 armhf i386 source",
+        "Suite": "stable",
+        "Components": "main",
+    },
+    "ceph": {
+        "Description": "Ceph distributed file system",
+    },
+}
+
+# if this file exists the check at /health/ will fail
+fail_check_trigger_path = "/tmp/fail_check"
+
+# production database configurations are imported from prod_db.py
