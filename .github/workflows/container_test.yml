@@ -38,7 +38,7 @@ jobs:
           EOF
 
       - name: view container log
-        run: docker logs --tail 1000 chacra-containerize-services-1
+        run: docker logs --tail 1000 container-services-1
 
       - name: test
         run: |
