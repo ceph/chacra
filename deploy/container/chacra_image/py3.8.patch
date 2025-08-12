@@ -1,0 +1,65 @@
+diff --git a/chacra/controllers/util.py b/chacra/controllers/util.py
+index 389a1f8..91084db 100644
+--- a/chacra/controllers/util.py
++++ b/chacra/controllers/util.py
+@@ -1,4 +1,7 @@
+-from datetime import datetime, timedelta, UTC
++from datetime import datetime, timedelta, timezone
++
++UTC = timezone.utc
++
+ import logging
+ from pecan import conf
+ 
+diff --git a/chacra/models/__init__.py b/chacra/models/__init__.py
+index 0f610bc..ae3d0e1 100644
+--- a/chacra/models/__init__.py
++++ b/chacra/models/__init__.py
+@@ -54,7 +54,7 @@ def update_timestamp(mapper, connection, target):
+     """
+     Automate the 'modified' attribute when a model changes
+     """
+-    target.modified = datetime.datetime.now(datetime.UTC)
++    target.modified = datetime.datetime.now(datetime.timezone.utc)
+ 
+ 
+ # Utilities:
+diff --git a/chacra/models/binaries.py b/chacra/models/binaries.py
+index 6fcbd08..fd2626f 100644
+--- a/chacra/models/binaries.py
++++ b/chacra/models/binaries.py
+@@ -50,7 +50,7 @@ class Binary(Base):
+     def __init__(self, name, project, repo=None, **kw):
+         self.name = name
+         self.project = project
+-        now = datetime.datetime.now(datetime.UTC)
++        now = datetime.datetime.now(datetime.timezone.utc)
+         self.created = now
+         self.modified = now
+         self.sha1 = kw.get('sha1', 'head')
+diff --git a/chacra/models/repos.py b/chacra/models/repos.py
+index 8a236e6..1d298df 100644
+--- a/chacra/models/repos.py
++++ b/chacra/models/repos.py
+@@ -37,7 +37,7 @@ class Repo(Base):
+         self.ref = ref
+         self.distro = distro
+         self.distro_version = distro_version
+-        self.modified = datetime.datetime.now(datetime.UTC)
++        self.modified = datetime.datetime.now(datetime.timezone.utc)
+         self.sha1 = kwargs.get('sha1', 'head')
+         self.flavor = kwargs.get('flavor', 'default')
+ 
+diff --git a/chacra/tests/async/test_recurring.py b/chacra/tests/async/test_recurring.py
+index 4b8f133..e48baed 100644
+--- a/chacra/tests/async/test_recurring.py
++++ b/chacra/tests/async/test_recurring.py
+@@ -34,7 +34,7 @@ class TestPurgeRepos(object):
+             distro_version='7',
+             )
+ 
+-        self.now = datetime.datetime.now(datetime.UTC)
++        self.now = datetime.datetime.now(datetime.timezone.utc)
+         # slightly old
+         self.one_minute = self.now - datetime.timedelta(minutes=1)
+         # really old
