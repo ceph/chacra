@@ -10,6 +10,12 @@ psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5432 --username postgres --dbname postgr
 psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5432 --username postgres --dbname postgres -c \
     "CREATE DATABASE chacra;"
 
+
+psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5432 --username postgres --dbname postgres -tc \
+    "SELECT 1 FROM pg_database WHERE datname = 'chacratest'" | grep -q 1 || \
+psql -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 5432 --username postgres --dbname postgres -c \
+    "CREATE DATABASE chacratest;"
+
 echo "init success"
 echo "chacra database is prepare done."
 echo "check chacra database weather to be fill data..."

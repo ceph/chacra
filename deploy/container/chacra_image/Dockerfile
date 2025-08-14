@@ -28,7 +28,8 @@ RUN virtualenv ${APP_HOME} \
     && . ${APP_HOME}/bin/activate \
     && pip install --upgrade pip setuptools\
     && pip install -I -e git+https://github.com/ceph/chacra@main#egg=chacra \
-    && pip install -r  ${APP_HOME}/src/${APP_NAME}/requirements.txt
+    && pip install -r  ${APP_HOME}/src/${APP_NAME}/requirements.txt \
+    && pip install tox
 
 COPY ./main.sh /bin/main.sh
 COPY ./init-chacra-db.sh ${APP_HOME}/init-chacra-db.sh
@@ -36,6 +37,10 @@ COPY ./init-chacra-db.sh ${APP_HOME}/init-chacra-db.sh
 COPY ./conf/prod.py ${APP_HOME}/src/${APP_NAME}/prod.py
 COPY ./conf/prod_db.py ${APP_HOME}/src/${APP_NAME}/${APP_NAME}/prod_db.py
 COPY ./conf/prod_api_creds.py ${APP_HOME}/src/${APP_NAME}/${APP_NAME}/prod_api_creds.py
+
+# override origin conf.py to pass tox
+COPY ./conf/test-conf.py ${APP_HOME}/src/${APP_NAME}/${APP_NAME}/tests/config.py
+COPY ./conf/conftest.py ${APP_HOME}/src/${APP_NAME}/${APP_NAME}/tests/conftest.py
 
 COPY ./conf/alembic-prod.ini ${APP_HOME}/src/${APP_NAME}/alembic-prod.ini
 

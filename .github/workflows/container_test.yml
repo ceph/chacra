@@ -54,6 +54,9 @@ jobs:
 
           ls -l
 
+      - name: tox run
+        run: docker exec  container-services-1 bash -c "source /opt/chacra/bin/activate && cd /opt/chacra/src/chacra && tox run"
+
       - name: clean
         working-directory: deploy/container
         run: |
