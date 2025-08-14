@@ -40,7 +40,6 @@ COPY ./conf/prod_db.py ${APP_HOME}/src/${APP_NAME}/${APP_NAME}/prod_db.py
 COPY ./conf/prod_api_creds.py ${APP_HOME}/src/${APP_NAME}/${APP_NAME}/prod_api_creds.py
 
 # override origin conf.py to pass tox
-COPY ./conf/test-conf.py ${APP_HOME}/src/${APP_NAME}/${APP_NAME}/tests/config.py
 COPY ./conf/conftest.py ${APP_HOME}/src/${APP_NAME}/${APP_NAME}/tests/conftest.py
 
 COPY ./conf/alembic-prod.ini ${APP_HOME}/src/${APP_NAME}/alembic-prod.ini
@@ -48,7 +47,9 @@ COPY ./conf/alembic-prod.ini ${APP_HOME}/src/${APP_NAME}/alembic-prod.ini
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./conf/nginx_site.conf /etc/nginx/sites-available/${APP_NAME}.conf
 
-RUN ln -s /etc/nginx/sites-available/${APP_NAME}.conf  /etc/nginx/sites-enabled/${APP_NAME}.conf 
+RUN ln -s /etc/nginx/sites-available/${APP_NAME}.conf  /etc/nginx/sites-enabled/${APP_NAME}.conf \
+    && sed -i 's/2\.9\.9/2.9.10/g' ${APP_HOME}/src/${APP_NAME}/setup.py \
+    && sed -i 's/2\.9\.9/2.9.10/g' ${APP_HOME}/src/${APP_NAME}/requirements.txt
 
 ENV PECAN_CONFIG=${APP_HOME}/src/${APP_NAME}/prod.py
 
