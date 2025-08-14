@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # env like APP_NAME,APP_HOME is pass by dockerfile
+set -x
 echo $APP_NAME
 echo $APP_HOME
 echo "init chacra database..."

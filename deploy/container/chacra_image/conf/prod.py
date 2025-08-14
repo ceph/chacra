@@ -1,8 +1,8 @@
 from pecan.hooks import TransactionHook
 from chacra import models
 from chacra import hooks
-from prod_db import sqlalchemy
-from prod_api_creds import api_key, api_user
+from chacra.prod_db import sqlalchemy
+from chacra.prod_api_creds import api_key, api_user
 
 
 # Server Specific Configurations
