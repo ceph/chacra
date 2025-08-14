@@ -29,7 +29,8 @@ RUN virtualenv ${APP_HOME} \
     && pip install --upgrade pip setuptools\
     && pip install -I -e git+https://github.com/ceph/chacra@main#egg=chacra \
     && pip install -r  ${APP_HOME}/src/${APP_NAME}/requirements.txt \
-    && pip install tox
+    && pip install tox uv \
+    && uv python install 3.11 3.12
 
 COPY ./main.sh /bin/main.sh
 COPY ./init-chacra-db.sh ${APP_HOME}/init-chacra-db.sh
