@@ -1,5 +1,6 @@
 # a list of distro versions that chacra will generate a distributions file for
 DISTRIBUTIONS = [
+    'trixie',
     'bookworm',
     'bullseye',
     'buster',
