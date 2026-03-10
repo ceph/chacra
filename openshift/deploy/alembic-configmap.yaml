@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chacra-alembic
+  namespace: chacra
+  labels:
+    app: chacra
+data:
+  alembic.ini: |
+    [alembic]
+    # Tell Alembic where the migration scripts live in the container
+    script_location = /alembic
+
+    # (Optional) logging sections can be omitted; the above is sufficient
+    # sqlalchemy.url is provided via '-x dburl=...' at runtime
+    
+
+    sqlalchemy.url = sqlite:///dev.db
+
+
+    # Logging configuration
+    [loggers]
+    keys = root,sqlalchemy,alembic
+
+    [handlers]
+    keys = console
+
+    [formatters]
+    keys = generic
+
+    [logger_root]
+    level = WARN
+    handlers = console
+    qualname =
+
+    [logger_sqlalchemy]
+    level = WARN
+    handlers =
+    qualname = sqlalchemy.engine
+
+    [logger_alembic]
+    level = INFO
+    handlers =
+    qualname = alembic
+
+    [handler_console]
+    class = StreamHandler
+    args = (sys.stderr,)
+    level = NOTSET
+    formatter = generic
+
+    [formatter_generic]
+    format = %(levelname)-5.5s [%(name)s] %(message)s
+    datefmt = %H:%M:%S

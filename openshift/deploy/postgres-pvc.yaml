@@ -1,0 +1,12 @@
+# openshift/deploy/postgres-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: chacra
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: cephfs-rwx   # or omit this line to use the default
+  resources:
+    requests:
+      storage: 50Gi
