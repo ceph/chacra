@@ -1,0 +1,351 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chacra-api
+  namespace: chacra
+  labels: { app: chacra, tier: api }
+  annotations:
+    image.openshift.io/triggers: |
+      [
+        {
+          "from": { "kind": "ImageStreamTag", "name": "chacra:latest" },
+          "fieldPath": "spec.template.spec.containers[?(@.name==\"api\")].image"
+        }
+      ]
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: chacra, tier: api }
+  template:
+    metadata:
+      labels: { app: chacra, tier: api }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      initContainers:
+        - name: init-volumes
+          image: registry.access.redhat.com/ubi9/ubi-minimal
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-lc"]
+          args:
+            - >
+              set -e;
+              mkdir -p /mnt/data/binaries /mnt/data/repos;
+              echo "[init] ensured /mnt/data/binaries and /mnt/data/repos exist";
+              exit 0
+          volumeMounts:
+            - { name: data, mountPath: /mnt/data }
+      containers:
+        - name: api
+          image: chacra:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-lc"]
+          args:
+            - >
+              exec /opt/venv/bin/gunicorn
+              --bind 0.0.0.0:${PORT:-8000}
+              --workers ${GUNICORN_WORKERS:-4}
+              --timeout ${GUNICORN_TIMEOUT:-120}
+              --log-level ${LOG_LEVEL:-info}
+              'wsgi_wrapper:application'
+          ports: [ { name: http, containerPort: 8000 } ]
+          env:
+            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
+            - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
+            - { name: PORT,          value: "8000" }
+            - { name: LOG_LEVEL,     value: "INFO" }
+            - { name: STORAGE_ROOT,  value: "/data" }
+            - { name: PECAN_CONFIG,  value: "/etc/chacra/config.py" }
+            - { name: POLLING_CYCLE, value: "60" }
+            - name: SECRET_KEY
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: SECRET_KEY } }
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
+            - name: CELERY_BROKER_URL
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_BROKER_URL } }
+            - name: CELERY_RESULT_BACKEND
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_RESULT_BACKEND } }
+            - { name: MIGRATE_ON_START, value: "false" }
+            - name: CHACRA_API_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
+            - name: CHACRA_API_KEY
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }
+
+          volumeMounts:
+            - { name: data,   mountPath: /data }
+            - { name: config, mountPath: /etc/chacra }
+            - { name: wsgi,   mountPath: /opt/chacra }
+            # <<< ADDED: mount the callbacks secret as a single file
+            - name: callbacks
+              mountPath: /etc/chacra-callbacks/prod_callbacks.py
+              subPath: prod_callbacks.py
+              readOnly: true
+          readinessProbe:
+            httpGet: { path: "/", port: 8000 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet: { path: "/", port: 8000 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits:   { cpu: "1",  memory: 1Gi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: chacra-shared-rwx }   # RWX claim
+        - name: config
+          configMap: { name: chacra-config }
+        - name: wsgi
+          configMap:
+            name: chacra-wsgi
+            items: [ { key: wsgi_wrapper.py, path: wsgi_wrapper.py } ]
+        # <<< ADDED: secret holding prod_callbacks.py
+        - name: callbacks
+          secret:
+            secretName: chacra-callbacks
+            items:
+              - key: prod_callbacks.py
+                path: prod_callbacks.py
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chacra-beat
+  namespace: chacra
+  labels: { app: chacra, tier: beat }
+  annotations:
+    image.openshift.io/triggers: |
+      [
+        {
+          "from": { "kind": "ImageStreamTag", "name": "chacra:latest" },
+          "fieldPath": "spec.template.spec.containers[?(@.name==\"beat\")].image"
+        }
+      ]
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: chacra, tier: beat }
+  template:
+    metadata:
+      labels: { app: chacra, tier: beat }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      initContainers:
+        - name: init-volumes
+          image: registry.access.redhat.com/ubi9/ubi-minimal
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-lc"]
+          args:
+            - >
+              set -e;
+              mkdir -p /mnt/data/binaries /mnt/data/repos;
+              echo "[init] ensured /mnt/data/binaries and /mnt/data/repos exist";
+              exit 0
+          volumeMounts:
+            - { name: data, mountPath: /mnt/data }
+      containers:
+        - name: beat
+          image: chacra:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-lc"]
+          args:
+            - >
+              exec /opt/venv/bin/celery -A chacra.asynch
+              beat
+              --loglevel ${LOG_LEVEL:-INFO}
+              --schedule /srv/chacra/run/celerybeat-schedule
+              --pidfile /srv/chacra/run/celery-beat.pid
+          env:
+            - { name: LOG_LEVEL,     value: "INFO" }
+            - { name: STORAGE_ROOT,  value: "/data" }
+            - { name: PECAN_CONFIG,  value: "/etc/chacra/config.py" }
+            - { name: POLLING_CYCLE, value: "60" }
+            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
+            - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
+            - name: CELERY_BROKER_URL
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_BROKER_URL } }
+            - name: CELERY_RESULT_BACKEND
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_RESULT_BACKEND } }
+            - name: CHACRA_API_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
+            - name: CHACRA_API_KEY                                                                                                                                                                                                              
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }  
+          volumeMounts:
+            - { name: data,   mountPath: /data }
+            - { name: config, mountPath: /etc/chacra }
+            - { name: run,    mountPath: /srv/chacra/run }
+            - { name: log,    mountPath: /srv/chacra/log }
+            # <<< ADDED: mount the callbacks secret
+            - name: callbacks
+              mountPath: /etc/chacra-callbacks/prod_callbacks.py
+              subPath: prod_callbacks.py
+              readOnly: true
+          livenessProbe:
+            exec:
+              command: [ /bin/sh, -lc, 'test -s /srv/chacra/run/celery-beat.pid && kill -0 $(cat /srv/chacra/run/celery-beat.pid)' ]
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command: [ /bin/sh, -lc, 'test -s /srv/chacra/run/celery-beat.pid && kill -0 $(cat /srv/chacra/run/celery-beat.pid)' ]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits:   { cpu: 500m, memory: 512Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: chacra-shared-rwx }   # RWX claim
+        - name: config
+          configMap: { name: chacra-config }
+        - name: run
+          emptyDir: {}
+        - name: log
+          emptyDir: {}
+        # <<< ADDED: secret holding prod_callbacks.py
+        - name: callbacks
+          secret:
+            secretName: chacra-callbacks
+            items:
+              - key: prod_callbacks.py
+                path: prod_callbacks.py
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chacra-celery
+  namespace: chacra
+  labels: { app: chacra, tier: worker }
+  annotations:
+    image.openshift.io/triggers: |
+      [
+        {
+          "from": { "kind": "ImageStreamTag", "name": "chacra:latest" },
+          "fieldPath": "spec.template.spec.containers[?(@.name==\"worker\")].image"
+        }
+      ]
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: chacra, tier: worker }
+  template:
+    metadata:
+      labels: { app: chacra, tier: worker }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      initContainers:
+        - name: init-volumes
+          image: registry.access.redhat.com/ubi9/ubi-minimal
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-lc"]
+          args:
+            - >
+              set -e;
+              mkdir -p /mnt/data/binaries /mnt/data/repos;
+              echo "[init] ensured /mnt/data/binaries and /mnt/data/repos exist";
+              exit 0
+          volumeMounts:
+            - { name: data, mountPath: /mnt/data }
+      containers:
+        - name: worker
+          image: chacra:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-lc"]
+          args:
+            - >
+              exec /opt/venv/bin/celery -A chacra.asynch
+              worker
+              --loglevel ${LOG_LEVEL:-INFO}
+              --concurrency ${CELERY_CONCURRENCY:-2}
+              -Q ${CELERY_QUEUES:-default}
+              --pidfile /srv/chacra/run/celery-worker.pid
+              --logfile /srv/chacra/log/celery-worker.log
+          env:
+            - { name: LOG_LEVEL,     value: "INFO" }
+            - { name: STORAGE_ROOT,  value: "/data" }
+            - { name: PECAN_CONFIG,  value: "/etc/chacra/config.py" }
+            - { name: POLLING_CYCLE, value: "60" }
+            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
+            - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
+            - name: CELERY_BROKER_URL
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_BROKER_URL } }
+            - name: CELERY_RESULT_BACKEND
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_RESULT_BACKEND } }
+            - { name: CELERY_CONCURRENCY, value: "2" }
+            - { name: CELERY_QUEUES,      value: "build_repos,poll_repos,celery,default" }
+            - name: CHACRA_API_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
+            - name: CHACRA_API_KEY
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }
+          volumeMounts:
+            - { name: data,   mountPath: /data }
+            - { name: config, mountPath: /etc/chacra }
+            - { name: run,    mountPath: /srv/chacra/run }
+            - { name: log,    mountPath: /srv/chacra/log }
+            # <<< ADDED: mount the callbacks secret
+            - name: callbacks
+              mountPath: /etc/chacra-callbacks/prod_callbacks.py
+              subPath: prod_callbacks.py
+              readOnly: true
+          livenessProbe:
+            exec:
+              command: [ /bin/sh, -lc, 'test -s /srv/chacra/run/celery-worker.pid && kill -0 $(cat /srv/chacra/run/celery-worker.pid)' ]
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command: [ /bin/sh, -lc, 'test -s /srv/chacra/run/celery-worker.pid && kill -0 $(cat /srv/chacra/run/celery-worker.pid)' ]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits:   { cpu: "1",  memory: 1Gi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: chacra-shared-rwx }   # RWX claim
+        - name: config
+          configMap: { name: chacra-config }
+        - name: run
+          emptyDir: {}
+        - name: log
+          emptyDir: {}
+        # <<< ADDED: secret holding prod_callbacks.py
+        - name: callbacks
+          secret:
+            secretName: chacra-callbacks
+            items:
+              - key: prod_callbacks.py
+                path: prod_callbacks.py

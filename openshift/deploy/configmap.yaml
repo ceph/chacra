@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chacra-config
+  labels: { app: chacra }
+data:
+  config.py: |
+    import os
+    STORAGE_ROOT = os.environ.get("STORAGE_ROOT", "/data")
+    polling_cycle = int(os.environ.get("POLLING_CYCLE", "60"))
+    sqlalchemy = {
+      "url": os.environ.get("DATABASE_URL"),
+      "echo": False,
+      "pool_recycle": 3600,
+    }
+    celery_broker_url = os.environ.get("CELERY_BROKER_URL")
+    app = {
+      "root": "chacra.controllers.root.RootController",
+      "modules": ["chacra"],
+      "debug": False,
+    }
+    server = { "host": "0.0.0.0", "port": int(os.environ.get("PORT", "8000")) }
+
+    # --- required by Chacra for uploads and repo building ---
+    binary_root          = os.path.join(STORAGE_ROOT, "binaries")
+    distributions_root   = os.path.join(STORAGE_ROOT, "repos")  # Debian repos live here
+    repos_root           = os.path.join(STORAGE_ROOT, "repos")  # used by code checks/tasks
+
+
+    # ADD: API credentials required for POST/DELETE
+    api_user = os.environ.get("CHACRA_API_USER")
+    api_key  = os.environ.get("CHACRA_API_KEY")
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chacra-wsgi
+  labels: { app: chacra }
+data:
+  # This module will be imported as "wsgi_wrapper"
+  # and Gunicorn will run 'wsgi_wrapper:application'.
+  #
+  # It deploys the Pecan app using our config map at /etc/chacra/config.py
+  wsgi_wrapper.py: |
+    from pecan.deploy import deploy
+    application = deploy("/etc/chacra/config.py")
