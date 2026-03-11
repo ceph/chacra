@@ -28,7 +28,12 @@ spec:
           image: registry.access.redhat.com/ubi9/ubi-minimal
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh","-lc"]
-          args: [ 'echo "[init] skipping volume prep"; exit 0' ]
+          args:
+            - >
+              set -e;
+              mkdir -p /mnt/data/binaries /mnt/data/repos;
+              echo "[init] ensured /mnt/data/binaries and /mnt/data/repos exist";
+              exit 0
           volumeMounts:
             - { name: data, mountPath: /mnt/data }
       containers:
@@ -46,7 +51,8 @@ spec:
               'wsgi_wrapper:application'
           ports: [ { name: http, containerPort: 8000 } ]
           env:
-            - { name: PYTHONPATH,    value: "/opt/chacra:${PYTHONPATH}" }
+            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
+            - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
             - { name: PORT,          value: "8000" }
             - { name: LOG_LEVEL,     value: "INFO" }
             - { name: STORAGE_ROOT,  value: "/data" }
@@ -61,10 +67,20 @@ spec:
             - name: CELERY_RESULT_BACKEND
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_RESULT_BACKEND } }
             - { name: MIGRATE_ON_START, value: "false" }
+            - name: CHACRA_API_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
+            - name: CHACRA_API_KEY
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }
+
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
             - { name: wsgi,   mountPath: /opt/chacra }
+            # <<< ADDED: mount the callbacks secret as a single file
+            - name: callbacks
+              mountPath: /etc/chacra-callbacks/prod_callbacks.py
+              subPath: prod_callbacks.py
+              readOnly: true
           readinessProbe:
             httpGet: { path: "/", port: 8000 }
             initialDelaySeconds: 10
@@ -92,6 +108,13 @@ spec:
           configMap:
             name: chacra-wsgi
             items: [ { key: wsgi_wrapper.py, path: wsgi_wrapper.py } ]
+        # <<< ADDED: secret holding prod_callbacks.py
+        - name: callbacks
+          secret:
+            secretName: chacra-callbacks
+            items:
+              - key: prod_callbacks.py
+                path: prod_callbacks.py
 
 ---
 apiVersion: apps/v1
@@ -124,7 +147,12 @@ spec:
           image: registry.access.redhat.com/ubi9/ubi-minimal
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh","-lc"]
-          args: [ 'echo "[init] skipping volume prep"; exit 0' ]
+          args:
+            - >
+              set -e;
+              mkdir -p /mnt/data/binaries /mnt/data/repos;
+              echo "[init] ensured /mnt/data/binaries and /mnt/data/repos exist";
+              exit 0
           volumeMounts:
             - { name: data, mountPath: /mnt/data }
       containers:
@@ -144,18 +172,28 @@ spec:
             - { name: STORAGE_ROOT,  value: "/data" }
             - { name: PECAN_CONFIG,  value: "/etc/chacra/config.py" }
             - { name: POLLING_CYCLE, value: "60" }
-            - { name: PYTHONPATH,    value: "/opt/chacra:${PYTHONPATH}" }
+            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
+            - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
             - name: CELERY_BROKER_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_BROKER_URL } }
             - name: CELERY_RESULT_BACKEND
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_RESULT_BACKEND } }
+            - name: CHACRA_API_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
+            - name: CHACRA_API_KEY                                                                                                                                                                                                              
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }  
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
             - { name: run,    mountPath: /srv/chacra/run }
             - { name: log,    mountPath: /srv/chacra/log }
+            # <<< ADDED: mount the callbacks secret
+            - name: callbacks
+              mountPath: /etc/chacra-callbacks/prod_callbacks.py
+              subPath: prod_callbacks.py
+              readOnly: true
           livenessProbe:
             exec:
               command: [ /bin/sh, -lc, 'test -s /srv/chacra/run/celery-beat.pid && kill -0 $(cat /srv/chacra/run/celery-beat.pid)' ]
@@ -185,6 +223,13 @@ spec:
           emptyDir: {}
         - name: log
           emptyDir: {}
+        # <<< ADDED: secret holding prod_callbacks.py
+        - name: callbacks
+          secret:
+            secretName: chacra-callbacks
+            items:
+              - key: prod_callbacks.py
+                path: prod_callbacks.py
 
 ---
 apiVersion: apps/v1
@@ -217,7 +262,12 @@ spec:
           image: registry.access.redhat.com/ubi9/ubi-minimal
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh","-lc"]
-          args: [ 'echo "[init] skipping volume prep"; exit 0' ]
+          args:
+            - >
+              set -e;
+              mkdir -p /mnt/data/binaries /mnt/data/repos;
+              echo "[init] ensured /mnt/data/binaries and /mnt/data/repos exist";
+              exit 0
           volumeMounts:
             - { name: data, mountPath: /mnt/data }
       containers:
@@ -239,7 +289,8 @@ spec:
             - { name: STORAGE_ROOT,  value: "/data" }
             - { name: PECAN_CONFIG,  value: "/etc/chacra/config.py" }
             - { name: POLLING_CYCLE, value: "60" }
-            - { name: PYTHONPATH,    value: "/opt/chacra:${PYTHONPATH}" }
+            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
+            - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
             - name: CELERY_BROKER_URL
@@ -247,12 +298,21 @@ spec:
             - name: CELERY_RESULT_BACKEND
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_RESULT_BACKEND } }
             - { name: CELERY_CONCURRENCY, value: "2" }
-            - { name: CELERY_QUEUES,      value: "default" }
+            - { name: CELERY_QUEUES,      value: "build_repos,poll_repos,celery,default" }
+            - name: CHACRA_API_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
+            - name: CHACRA_API_KEY
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
             - { name: run,    mountPath: /srv/chacra/run }
             - { name: log,    mountPath: /srv/chacra/log }
+            # <<< ADDED: mount the callbacks secret
+            - name: callbacks
+              mountPath: /etc/chacra-callbacks/prod_callbacks.py
+              subPath: prod_callbacks.py
+              readOnly: true
           livenessProbe:
             exec:
               command: [ /bin/sh, -lc, 'test -s /srv/chacra/run/celery-worker.pid && kill -0 $(cat /srv/chacra/run/celery-worker.pid)' ]
@@ -282,3 +342,10 @@ spec:
           emptyDir: {}
         - name: log
           emptyDir: {}
+        # <<< ADDED: secret holding prod_callbacks.py
+        - name: callbacks
+          secret:
+            secretName: chacra-callbacks
+            items:
+              - key: prod_callbacks.py
+                path: prod_callbacks.py

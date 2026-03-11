@@ -21,6 +21,17 @@ data:
     }
     server = { "host": "0.0.0.0", "port": int(os.environ.get("PORT", "8000")) }
 
+    # --- required by Chacra for uploads and repo building ---
+    binary_root          = os.path.join(STORAGE_ROOT, "binaries")
+    distributions_root   = os.path.join(STORAGE_ROOT, "repos")  # Debian repos live here
+    repos_root           = os.path.join(STORAGE_ROOT, "repos")  # used by code checks/tasks
+
+
+    # ADD: API credentials required for POST/DELETE
+    api_user = os.environ.get("CHACRA_API_USER")
+    api_key  = os.environ.get("CHACRA_API_KEY")
+
+
 ---
 apiVersion: v1
 kind: ConfigMap

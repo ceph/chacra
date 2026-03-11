@@ -49,4 +49,10 @@ RUN mkdir -p /srv/chacra/log /srv/chacra/run /data/binaries /data/repos /etc/cha
  && chgrp -R 0 /srv/chacra /data /etc/chacra \
  && chmod -R g+rwX /srv/chacra /data /etc/chacra
 
+# Add Debian repo tooling for Chacra repo builds
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      apt-utils dpkg-dev gnupg && \
+    rm -rf /var/lib/apt/lists/*
+
 EXPOSE 8000
