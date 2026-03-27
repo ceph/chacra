@@ -5,33 +5,258 @@ metadata:
   labels: { app: chacra }
 data:
   config.py: |
+    # /etc/chacra/config.py
     import os
+    from pecan.hooks import TransactionHook
+    from chacra import models
+    from chacra import hooks
+    
+    # --------------------------
+    # Server
+    # --------------------------
+    server = {
+        'port': '8000',
+        'host': '0.0.0.0'
+    }
+    
+    # --------------------------
+    # Storage roots
+    # --------------------------
     STORAGE_ROOT = os.environ.get("STORAGE_ROOT", "/data")
-    polling_cycle = int(os.environ.get("POLLING_CYCLE", "60"))
-    sqlalchemy = {
-      "url": os.environ.get("DATABASE_URL"),
-      "echo": False,
-      "pool_recycle": 3600,
-    }
-    celery_broker_url = os.environ.get("CELERY_BROKER_URL")
-    app = {
-      "root": "chacra.controllers.root.RootController",
-      "modules": ["chacra"],
-      "debug": False,
-    }
-    server = { "host": "0.0.0.0", "port": int(os.environ.get("PORT", "8000")) }
-
-    # --- required by Chacra for uploads and repo building ---
-    binary_root          = os.path.join(STORAGE_ROOT, "binaries")
-    distributions_root   = os.path.join(STORAGE_ROOT, "repos")  # Debian repos live here
-    repos_root           = os.path.join(STORAGE_ROOT, "repos")  # used by code checks/tasks
-
-
-    # ADD: API credentials required for POST/DELETE
+    binary_root        = os.path.join(STORAGE_ROOT, "binaries")
+    distributions_root = os.path.join(STORAGE_ROOT, "repos")
+    repos_root         = os.path.join(STORAGE_ROOT, "repos")
+    
+    # --------------------------
+    # API credentials (for POST/DELETE)
+    # --------------------------
     api_user = os.environ.get("CHACRA_API_USER")
     api_key  = os.environ.get("CHACRA_API_KEY")
-
-
+    
+    # --------------------------
+    # Database (sqlalchemy)
+    # Prefer a single URL if given; else compose from parts
+    # --------------------------
+    DB_URL = os.environ.get("CHACRA_DB_URL")
+    if not DB_URL:
+        DB_USER = os.environ.get("CHACRA_DB_USER", "chacra")
+        DB_PASSWORD = os.environ.get("CHACRA_DB_PASSWORD", "chacra")
+        DB_HOST = os.environ.get("CHACRA_DB_HOST", "postgres")
+        DB_PORT = os.environ.get("CHACRA_DB_PORT", "5432")
+        DB_NAME = os.environ.get("CHACRA_DB_NAME", "chacra")
+        DB_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    
+    _SQLA_POOL_RECYCLE_RAW = os.environ.get("SQLA_POOL_RECYCLE", "3600")
+    try:
+        _SQLA_POOL_RECYCLE = int(_SQLA_POOL_RECYCLE_RAW)
+    except Exception:
+        _SQLA_POOL_RECYCLE = 3600
+    
+    _SQLA_ECHO = str(os.environ.get("SQLA_ECHO", "false")).strip().lower() in ("1", "true", "yes", "on")
+    
+    sqlalchemy = {
+        'url': DB_URL,
+        'pool_recycle': _SQLA_POOL_RECYCLE,
+        'echo': _SQLA_ECHO,
+    }
+    
+    # --------------------------
+    # Callbacks / health ping (optional)
+    # --------------------------
+    callback_url        = os.environ.get("CHACRA_CALLBACK_URL")
+    callback_user       = os.environ.get("CHACRA_CALLBACK_USER")
+    callback_key        = os.environ.get("CHACRA_CALLBACK_KEY")
+    callback_verify_ssl = str(os.environ.get("CHACRA_CALLBACK_VERIFY_SSL", "true")).strip().lower() in ("1","true","yes","on")
+    
+    hostname        = os.environ.get("CHACRA_HOSTNAME")
+    health_ping     = str(os.environ.get("CHACRA_HEALTH_PING", "false")).strip().lower() in ("1","true","yes","on")
+    health_ping_url = os.environ.get("CHACRA_HEALTH_PING_URL")
+    
+    # --------------------------
+    # Celery / maintenance knobs
+    # --------------------------
+    _PC_RAW = os.environ.get("CHACRA_POLLING_CYCLE", "120")
+    try:
+        polling_cycle = int(_PC_RAW)
+    except Exception:
+        polling_cycle = 120
+    
+    _QT_RAW = os.environ.get("CHACRA_QUIET_TIME", "20")
+    try:
+        quiet_time = int(_QT_RAW)
+    except Exception:
+        quiet_time = 20
+    
+    purge_repos = str(os.environ.get("CHACRA_PURGE_REPOS", "true")).strip().lower() in ("1","true","yes","on")
+    
+    # --------------------------
+    # Pecan Application Config
+    # --------------------------
+    app = {
+        'root': 'chacra.controllers.root.RootController',
+        'modules': ['chacra'],
+        'guess_content_type_from_ext': False,
+        'template_path': '%(confdir)s/chacra/templates',
+        'hooks': [
+            TransactionHook(
+                models.start,
+                models.start_read_only,
+                models.commit,
+                models.rollback,
+                models.clear
+            ),
+            hooks.CustomErrorHook(),
+        ],
+        'debug': False,
+    }
+    
+    logging = {
+        'disable_existing_loggers': False,
+        'loggers': {
+            'root': {'level': 'INFO', 'handlers': ['console']},
+            'chacra': {'level': 'DEBUG', 'handlers': ['console']},
+            'pecan': {'level': 'WARNING', 'handlers': ['console']},
+            'pecan.commands.serve': {'level': 'DEBUG', 'handlers': ['console']},
+            'py.warnings': {'handlers': ['console']},
+            '__force_dict__': True
+        },
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple'
+            }
+        },
+        'formatters': {
+            'simple': {
+                'format': ('%(asctime)s %(levelname)-5.5s [%(name)s]'
+                           '[%(threadName)s] %(message)s')
+            },
+            'color': {
+                '()': 'pecan.log.ColorFormatter',
+                'format': ('%(asctime)s [%(padded_color_levelname)s] [%(name)s]'
+                           '[%(threadName)s] %(message)s'),
+                '__force_dict__': True
+            }
+        }
+    }
+    
+    # Nginx can serve downloads directly
+    delegate_downloads = True
+    
+    # Repo purge policy (unchanged)
+    purge_rotation = {
+        'ceph-medic': {
+            'ref': {
+                'main': {'keep_minimum': 5},
+            },
+        },
+        'kernel': {
+            'ref': {
+                'testing': {'keep_minimum': 10},
+                'main': {'keep_minimum': 5},
+                'for-linus': {'keep_minimum': 5},
+            },
+        },
+        'calamari': {
+            'ref': {
+                'main': {'keep_minimum': 5},
+                '1.5': {'keep_minimum': 5},
+            },
+        },
+        'ceph': {
+            'ref': {
+                'reef-nvmeof': {'keep_minimum': 2},
+                'squid-nvmeof': {'keep_minimum': 2},
+                'squid-nvmeof-8.0': {'keep_minimum': 2},
+                'wip-rbd-cgsm-base': {'keep_minimum': 2},
+                'hammer': {'days': 30, 'keep_minimum': 5},
+                'infernalis': {'days': 30, 'keep_minimum': 5},
+                'jewel': {'days': 14, 'keep_minimum': 10},
+                'kraken': {'days': 14, 'keep_minimum': 10},
+                'luminous': {'days': 14, 'keep_minimum': 10},
+                'mimic': {'days': 14, 'keep_minimum': 10},
+                'nautilus': {'days': 14, 'keep_minimum': 10},
+            },
+        },
+        'ceph-installer': {
+            'ref': {
+                'main': {'keep_minimum': 10},
+            },
+        },
+        'ceph-ansible': {
+            'ref': {
+                'main': {'keep_minimum': 5},
+                'stable-2.1': {'keep_minimum': 5},
+            },
+        },
+        'python-rtslib': {'ref': {'main': {'keep_minimum': 5}}},
+        'tcmu-runner': {'ref': {'main': {'keep_minimum': 5}}},
+        'ceph-iscsi': {'ref': {'main': {'keep_minimum': 5}}},
+        'ceph-iscsi-config': {'ref': {'main': {'keep_minimum': 5}}},
+        'ceph-iscsi-cli': {'ref': {'main': {'keep_minimum': 5}}},
+        'ceph-iscsi-tools': {'ref': {'main': {'keep_minimum': 5}}},
+        'nfs-ganesha': {
+            'flavor': {
+                'ceph_mimic': {'keep_minimum': 2},
+                'ceph_luminous': {'keep_minimum': 2},
+                'ceph_kraken': {'keep_minimum': 2},
+                'ceph_jewel': {'keep_minimum': 2},
+            },
+        },
+        '__force_dict__': True,
+    }
+    
+    # Delay before creating repos after "create repo" task
+    # (kept as env-driven value above)
+    # quiet_time already set
+    
+    repos = {
+        'ceph': {
+            'automatic': False,
+            'all': {'ceph-medic': ['main']},
+            'hammer': {'ceph-release': ['hammer'], 'ceph-deploy': ['1.5']},
+            'infernalis': {'ceph-release': ['infernalis'], 'ceph-deploy': ['1.5']},
+            'jewel': {'ceph-release': ['jewel'], 'ceph-deploy': ['1.5']},
+            'kraken': {'ceph-release': ['kraken'], 'ceph-deploy': ['1.5']},
+            'luminous': {'ceph-release': ['luminous'], 'ceph-deploy': ['main']},
+            'mimic': {'ceph-release': ['mimic'], 'ceph-deploy': ['main']},
+            'nautilus': {'ceph-release': ['nautilus'], 'ceph-deploy': ['main']},
+            'octopus': {'ceph-release': ['octopus'], 'ceph-deploy': ['main']},
+            'pacific': {'ceph-release': ['pacific'], 'ceph-deploy': ['main']},
+            'quincy': {'ceph-release': ['quincy'], 'ceph-deploy': ['main']},
+            'reef': {'ceph-release': ['reef'], 'ceph-deploy': ['main']},
+            'squid': {'ceph-release': ['squid'], 'ceph-deploy': ['main']},
+            'tentacle': {'ceph-release': ['tentacle'], 'ceph-deploy': ['main']},
+            'testing': {'ceph': ['jewel-rc']},
+        },
+        'cephmetrics': {
+            'main': {'cephmetrics-deps': ['main']},
+            'develop': {'cephmetrics-deps': ['main']},
+            '1.0': {'cephmetrics-deps': ['1.0']},
+        },
+        '__force_dict__': True,
+    }
+    
+    # Distributions
+    distributions = {
+        "defaults": {
+            "DebIndices": "Packages Release . .gz .bz2",
+            "DscIndices": "Sources Release .gz .bz2",
+            "Contents": ".gz .bz2",
+            "Origin": "ceph.com",
+            "Description": "",
+            "Architectures": "amd64 arm64 armhf i386 source",
+            "Suite": "stable",
+            "Components": "main",
+        },
+        "ceph": {
+            "Description": "Ceph distributed file system",
+        },
+    }
+    
+    # If this file exists the check at /health/ will fail
+    fail_check_trigger_path = "/tmp/fail_check"
 ---
 apiVersion: v1
 kind: ConfigMap
