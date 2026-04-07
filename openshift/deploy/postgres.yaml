@@ -1,49 +1,107 @@
-# openshift/deploy/postgres.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
   namespace: chacra
   labels: { app: postgres }
+
 spec:
   replicas: 1
-  selector: { matchLabels: { app: postgres } }
+
+  # FIX 1: Prevent multi-attach
+  strategy:
+    type: Recreate
+
+  selector:
+    matchLabels:
+      app: postgres
+
   template:
     metadata:
-      labels: { app: postgres }
+      labels:
+        app: postgres
+
     spec:
       securityContext:
         runAsNonRoot: true
+
+      # FIX 2: Prevent scheduling conflicts (optional but recommended)
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: postgres
+              topologyKey: kubernetes.io/hostname
+
       containers:
         - name: postgres
           image: quay.io/sclorg/postgresql-16-c9s
           imagePullPolicy: IfNotPresent
-          ports: [{ containerPort: 5432, name: pg }]
+
+          ports:
+            - containerPort: 5432
+              name: pg
+
           env:
             - name: POSTGRESQL_USER
-              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_USER } }
+              valueFrom:
+                secretKeyRef:
+                  name: chacra-secrets
+                  key: CHACRA_DB_USER
+
             - name: POSTGRESQL_PASSWORD
-              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_PASS } }
+              valueFrom:
+                secretKeyRef:
+                  name: chacra-secrets
+                  key: CHACRA_DB_PASS
+
             - name: POSTGRESQL_DATABASE
-              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_NAME } }
+              valueFrom:
+                secretKeyRef:
+                  name: chacra-secrets
+                  key: CHACRA_DB_NAME
+            
+            
+            - name: POSTGRESQL_PG_HBA_CONF
+              value: |
+                host all all 172.30.0.0/16 md5
+
+          # FIX 3: Ensure DB fully starts before traffic
+          startupProbe:
+            tcpSocket:
+              port: pg
+            failureThreshold: 30
+            periodSeconds: 5
+
           readinessProbe:
-            tcpSocket: { port: pg }
+            tcpSocket:
+              port: pg
             initialDelaySeconds: 10
             periodSeconds: 10
+
           livenessProbe:
-            tcpSocket: { port: pg }
+            tcpSocket:
+              port: pg
             initialDelaySeconds: 30
             periodSeconds: 15
+
           securityContext:
             allowPrivilegeEscalation: false
-            capabilities: { drop: ["ALL"] }
-            seccompProfile: { type: RuntimeDefault }
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+
           volumeMounts:
-            - { name: pgdata, mountPath: /var/lib/pgsql/data }
+            - name: pgdata
+              mountPath: /var/lib/pgsql/data
+
       volumes:
         - name: pgdata
           persistentVolumeClaim:
             claimName: postgres-data
+
 ---
 apiVersion: v1
 kind: Service

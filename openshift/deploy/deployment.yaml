@@ -13,7 +13,7 @@ metadata:
         }
       ]
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels: { app: chacra, tier: api }
   template:
@@ -51,7 +51,6 @@ spec:
               'wsgi_wrapper:application'
           ports: [ { name: http, containerPort: 8000 } ]
           env:
-            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
             - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
             - { name: PORT,          value: "8000" }
             - { name: LOG_LEVEL,     value: "INFO" }
@@ -71,12 +70,18 @@ spec:
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
             - name: CHACRA_API_KEY
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }
-
+            - name: CHACRA_HEALTH_PING
+              value: "false"
+            - name: CHACRA_HEALTH_PING_URL
+              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api"
+            - name: CHACRA_HOSTNAME
+              value: "chacra-api"
+            - name: CHACRA_CALLBACK_VERIFY_SSL
+              value: "false"  
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
             - { name: wsgi,   mountPath: /opt/chacra }
-            # <<< ADDED: mount the callbacks secret as a single file
             - name: callbacks
               mountPath: /etc/chacra-callbacks/prod_callbacks.py
               subPath: prod_callbacks.py
@@ -108,7 +113,6 @@ spec:
           configMap:
             name: chacra-wsgi
             items: [ { key: wsgi_wrapper.py, path: wsgi_wrapper.py } ]
-        # <<< ADDED: secret holding prod_callbacks.py
         - name: callbacks
           secret:
             secretName: chacra-callbacks
@@ -132,7 +136,7 @@ metadata:
         }
       ]
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels: { app: chacra, tier: beat }
   template:
@@ -172,7 +176,6 @@ spec:
             - { name: STORAGE_ROOT,  value: "/data" }
             - { name: PECAN_CONFIG,  value: "/etc/chacra/config.py" }
             - { name: POLLING_CYCLE, value: "60" }
-            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
             - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
@@ -184,12 +187,19 @@ spec:
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
             - name: CHACRA_API_KEY                                                                                                                                                                                                              
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }  
+            - name: CHACRA_HEALTH_PING
+              value: "false"
+            - name: CHACRA_HEALTH_PING_URL
+              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api"
+            - name: CHACRA_HOSTNAME
+              value: "chacra-beat"
+            - name: CHACRA_CALLBACK_VERIFY_SSL
+              value: "false"         
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
             - { name: run,    mountPath: /srv/chacra/run }
             - { name: log,    mountPath: /srv/chacra/log }
-            # <<< ADDED: mount the callbacks secret
             - name: callbacks
               mountPath: /etc/chacra-callbacks/prod_callbacks.py
               subPath: prod_callbacks.py
@@ -247,7 +257,7 @@ metadata:
         }
       ]
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels: { app: chacra, tier: worker }
   template:
@@ -289,7 +299,6 @@ spec:
             - { name: STORAGE_ROOT,  value: "/data" }
             - { name: PECAN_CONFIG,  value: "/etc/chacra/config.py" }
             - { name: POLLING_CYCLE, value: "60" }
-            # <<< UPDATED: prepend /etc/chacra-callbacks to PYTHONPATH
             - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
@@ -303,12 +312,19 @@ spec:
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
             - name: CHACRA_API_KEY
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }
+            - name: CHACRA_HEALTH_PING
+              value: "false"
+            - name: CHACRA_HEALTH_PING_URL
+              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api"
+            - name: CHACRA_HOSTNAME
+              value: "chacra-celery"  
+            - name: CHACRA_CALLBACK_VERIFY_SSL
+              value: "false"        
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
             - { name: run,    mountPath: /srv/chacra/run }
             - { name: log,    mountPath: /srv/chacra/log }
-            # <<< ADDED: mount the callbacks secret
             - name: callbacks
               mountPath: /etc/chacra-callbacks/prod_callbacks.py
               subPath: prod_callbacks.py

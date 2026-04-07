@@ -56,6 +56,7 @@ data:
     
     sqlalchemy = {
         'url': DB_URL,
+        'pool_pre_ping': True,
         'pool_recycle': _SQLA_POOL_RECYCLE,
         'echo': _SQLA_ECHO,
     }
@@ -144,117 +145,19 @@ data:
     # Nginx can serve downloads directly
     delegate_downloads = True
     
-    # Repo purge policy (unchanged)
-    purge_rotation = {
-        'ceph-medic': {
-            'ref': {
-                'main': {'keep_minimum': 5},
-            },
-        },
-        'kernel': {
-            'ref': {
-                'testing': {'keep_minimum': 10},
-                'main': {'keep_minimum': 5},
-                'for-linus': {'keep_minimum': 5},
-            },
-        },
-        'calamari': {
-            'ref': {
-                'main': {'keep_minimum': 5},
-                '1.5': {'keep_minimum': 5},
-            },
-        },
-        'ceph': {
-            'ref': {
-                'reef-nvmeof': {'keep_minimum': 2},
-                'squid-nvmeof': {'keep_minimum': 2},
-                'squid-nvmeof-8.0': {'keep_minimum': 2},
-                'wip-rbd-cgsm-base': {'keep_minimum': 2},
-                'hammer': {'days': 30, 'keep_minimum': 5},
-                'infernalis': {'days': 30, 'keep_minimum': 5},
-                'jewel': {'days': 14, 'keep_minimum': 10},
-                'kraken': {'days': 14, 'keep_minimum': 10},
-                'luminous': {'days': 14, 'keep_minimum': 10},
-                'mimic': {'days': 14, 'keep_minimum': 10},
-                'nautilus': {'days': 14, 'keep_minimum': 10},
-            },
-        },
-        'ceph-installer': {
-            'ref': {
-                'main': {'keep_minimum': 10},
-            },
-        },
-        'ceph-ansible': {
-            'ref': {
-                'main': {'keep_minimum': 5},
-                'stable-2.1': {'keep_minimum': 5},
-            },
-        },
-        'python-rtslib': {'ref': {'main': {'keep_minimum': 5}}},
-        'tcmu-runner': {'ref': {'main': {'keep_minimum': 5}}},
-        'ceph-iscsi': {'ref': {'main': {'keep_minimum': 5}}},
-        'ceph-iscsi-config': {'ref': {'main': {'keep_minimum': 5}}},
-        'ceph-iscsi-cli': {'ref': {'main': {'keep_minimum': 5}}},
-        'ceph-iscsi-tools': {'ref': {'main': {'keep_minimum': 5}}},
-        'nfs-ganesha': {
-            'flavor': {
-                'ceph_mimic': {'keep_minimum': 2},
-                'ceph_luminous': {'keep_minimum': 2},
-                'ceph_kraken': {'keep_minimum': 2},
-                'ceph_jewel': {'keep_minimum': 2},
-            },
-        },
-        '__force_dict__': True,
-    }
-    
     # Delay before creating repos after "create repo" task
     # (kept as env-driven value above)
     # quiet_time already set
-    
     repos = {
         'ceph': {
             'automatic': False,
-            'all': {'ceph-medic': ['main']},
-            'hammer': {'ceph-release': ['hammer'], 'ceph-deploy': ['1.5']},
-            'infernalis': {'ceph-release': ['infernalis'], 'ceph-deploy': ['1.5']},
-            'jewel': {'ceph-release': ['jewel'], 'ceph-deploy': ['1.5']},
-            'kraken': {'ceph-release': ['kraken'], 'ceph-deploy': ['1.5']},
-            'luminous': {'ceph-release': ['luminous'], 'ceph-deploy': ['main']},
-            'mimic': {'ceph-release': ['mimic'], 'ceph-deploy': ['main']},
-            'nautilus': {'ceph-release': ['nautilus'], 'ceph-deploy': ['main']},
-            'octopus': {'ceph-release': ['octopus'], 'ceph-deploy': ['main']},
-            'pacific': {'ceph-release': ['pacific'], 'ceph-deploy': ['main']},
-            'quincy': {'ceph-release': ['quincy'], 'ceph-deploy': ['main']},
-            'reef': {'ceph-release': ['reef'], 'ceph-deploy': ['main']},
-            'squid': {'ceph-release': ['squid'], 'ceph-deploy': ['main']},
-            'tentacle': {'ceph-release': ['tentacle'], 'ceph-deploy': ['main']},
-            'testing': {'ceph': ['jewel-rc']},
-        },
-        'cephmetrics': {
-            'main': {'cephmetrics-deps': ['main']},
-            'develop': {'cephmetrics-deps': ['main']},
-            '1.0': {'cephmetrics-deps': ['1.0']},
+
+            # allow plain 'main' refs
+            'main': {},
         },
         '__force_dict__': True,
     }
-    
-    # Distributions
-    distributions = {
-        "defaults": {
-            "DebIndices": "Packages Release . .gz .bz2",
-            "DscIndices": "Sources Release .gz .bz2",
-            "Contents": ".gz .bz2",
-            "Origin": "ceph.com",
-            "Description": "",
-            "Architectures": "amd64 arm64 armhf i386 source",
-            "Suite": "stable",
-            "Components": "main",
-        },
-        "ceph": {
-            "Description": "Ceph distributed file system",
-        },
-    }
-    
+ 
     # If this file exists the check at /health/ will fail
     fail_check_trigger_path = "/tmp/fail_check"
 ---
