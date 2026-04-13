@@ -1,17 +1,13 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: postgres
   namespace: chacra
-  labels: { app: postgres }
-
+  labels:
+    app: postgres
 spec:
+  serviceName: postgres
   replicas: 1
-
-  # FIX 1: Prevent multi-attach
-  strategy:
-    type: Recreate
-
   selector:
     matchLabels:
       app: postgres
@@ -25,7 +21,6 @@ spec:
       securityContext:
         runAsNonRoot: true
 
-      # FIX 2: Prevent scheduling conflicts (optional but recommended)
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -61,13 +56,11 @@ spec:
                 secretKeyRef:
                   name: chacra-secrets
                   key: CHACRA_DB_NAME
-            
-            
+
             - name: POSTGRESQL_PG_HBA_CONF
               value: |
                 host all all 172.30.0.0/16 md5
 
-          # FIX 3: Ensure DB fully starts before traffic
           startupProbe:
             tcpSocket:
               port: pg
@@ -101,16 +94,20 @@ spec:
         - name: pgdata
           persistentVolumeClaim:
             claimName: postgres-data
-
+            
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres
   namespace: chacra
-  labels: { app: postgres }
+  labels:
+    app: postgres
 spec:
-  selector: { app: postgres }
+  selector:
+    app: postgres
   ports:
-    - { name: pg, port: 5432, targetPort: pg }
+    - name: pg
+      port: 5432
+      targetPort: pg
   type: ClusterIP

@@ -61,6 +61,16 @@ spec:
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: SECRET_KEY } }
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
+            - name: CHACRA_DB_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_USER } }  
+            - name: CHACRA_DB_PASS
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_PASS } }  
+            - name: CHACRA_DB_HOST
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_HOST } }  
+            - name: CHACRA_DB_PORT
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_PORT } }
+            - name: CHACRA_DB_NAME
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_NAME } }
             - name: CELERY_BROKER_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_BROKER_URL } }
             - name: CELERY_RESULT_BACKEND
@@ -78,6 +88,12 @@ spec:
               value: "chacra-api"
             - name: CHACRA_CALLBACK_VERIFY_SSL
               value: "false"  
+            - name: CHACRA_CALLBACK_URL
+              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api/repos/"
+            - name: CHACRA_CALLBACK_USER
+              value: "admin"
+            - name: CHACRA_CALLBACK_KEY
+              value: "secret"  
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
@@ -179,6 +195,16 @@ spec:
             - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
+            - name: CHACRA_DB_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_USER } }  
+            - name: CHACRA_DB_PASS
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_PASS } }  
+            - name: CHACRA_DB_HOST
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_HOST } }  
+            - name: CHACRA_DB_PORT
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_PORT } }  
+            - name: CHACRA_DB_NAME
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_NAME } }  
             - name: CELERY_BROKER_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_BROKER_URL } }
             - name: CELERY_RESULT_BACKEND
@@ -195,6 +221,12 @@ spec:
               value: "chacra-beat"
             - name: CHACRA_CALLBACK_VERIFY_SSL
               value: "false"         
+            - name: CHACRA_CALLBACK_URL
+              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api/repos/"
+            - name: CHACRA_CALLBACK_USER
+              value: "admin"
+            - name: CHACRA_CALLBACK_KEY
+              value: "secret"    
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
@@ -302,6 +334,16 @@ spec:
             - { name: PYTHONPATH,    value: "/etc/chacra-callbacks:/opt/chacra:${PYTHONPATH}" }
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
+            - name: CHACRA_DB_USER
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_USER } }  
+            - name: CHACRA_DB_PASS
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_PASS } }  
+            - name: CHACRA_DB_HOST
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_HOST } }  
+            - name: CHACRA_DB_PORT
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_PORT } }  
+            - name: CHACRA_DB_NAME
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_DB_NAME } }  
             - name: CELERY_BROKER_URL
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_BROKER_URL } }
             - name: CELERY_RESULT_BACKEND
@@ -320,6 +362,12 @@ spec:
               value: "chacra-celery"  
             - name: CHACRA_CALLBACK_VERIFY_SSL
               value: "false"        
+            - name: CHACRA_CALLBACK_URL
+              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api/repos/"
+            - name: CHACRA_CALLBACK_USER
+              value: "admin"
+            - name: CHACRA_CALLBACK_KEY
+              value: "secret"    
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
