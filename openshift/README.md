@@ -46,7 +46,6 @@ oc -n chacra apply -f openshift/serviceaccount.yaml
 oc -n chacra apply -f openshift/deploy/postgres.yaml
 oc -n chacra apply -f openshift/deploy/rabbitmq.yaml
 oc -n chacra apply -f openshift/deploy/postgres-pvc.yaml
-oc -n chacra apply -f openshift/deploy/postgres-svc.yaml
 oc -n chacra apply -f openshift/deploy/chacra-data-rwx-pvc.yaml
 ```
 5. Run DB migrations
@@ -57,9 +56,10 @@ oc -n chacra apply -f openshift/deploy/db-bootstrap-job.yaml
 # Run only when a new release adds Alembic revisions
 oc -n chacra apply -f openshift/deploy/db-migration-job.yaml
 ```
-6. Deploy Chacra API, Celery and Beat
+6. Deploy Chacra API, Celery, Beat and Nginx pod
 ```
 oc -n chacra apply -f openshift/deploy/deployment.yaml
+oc -n chacra apply -f openshift/deploy/chacra-nginx.yaml
 oc -n chacra apply -f openshift/deploy/service.yaml
 oc -n chacra apply -f openshift/deploy/route.yaml
 ```
@@ -70,6 +70,7 @@ Wait for the Chacra API, Celery and Beat deployments to be ready
 oc -n chacra rollout status deploy/chacra-api
 oc -n chacra rollout status deploy/chacra-celery
 oc -n chacra rollout status deploy/chacra-beat
+oc -n chacra rollout status deploy/chacra-repos
 ```
 Get the public host
 ```
