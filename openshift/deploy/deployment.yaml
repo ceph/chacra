@@ -81,19 +81,19 @@ spec:
             - name: CHACRA_API_KEY
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }
             - name: CHACRA_HEALTH_PING
-              value: "false"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HEALTH_PING } }
             - name: CHACRA_HEALTH_PING_URL
-              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HEALTH_PING_URL } }
             - name: CHACRA_HOSTNAME
-              value: "chacra-api"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HOSTNAME } }
             - name: CHACRA_CALLBACK_VERIFY_SSL
-              value: "false"  
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_VERIFY_SSL } }  
             - name: CHACRA_CALLBACK_URL
-              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api/repos/"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_URL } } 
             - name: CHACRA_CALLBACK_USER
-              value: "admin"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_USER } } 
             - name: CHACRA_CALLBACK_KEY
-              value: "secret"  
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_KEY } }  
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
@@ -213,20 +213,22 @@ spec:
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
             - name: CHACRA_API_KEY                                                                                                                                                                                                              
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }  
-            - name: CHACRA_HEALTH_PING
-              value: "false"
+            - name: CHACRA_HEALTH_PING            
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HEALTH_PING } }
             - name: CHACRA_HEALTH_PING_URL
-              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HEALTH_PING_URL } }
+            - name: CHACRA_HEALTH_PING_INTERVAL
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HEALTH_PING_INTERVAL } }
             - name: CHACRA_HOSTNAME
-              value: "chacra-beat"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HOSTNAME } }
             - name: CHACRA_CALLBACK_VERIFY_SSL
-              value: "false"         
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_VERIFY_SSL } }  
             - name: CHACRA_CALLBACK_URL
-              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api/repos/"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_URL } } 
             - name: CHACRA_CALLBACK_USER
-              value: "admin"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_USER } } 
             - name: CHACRA_CALLBACK_KEY
-              value: "secret"    
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_KEY } }   
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
@@ -354,20 +356,20 @@ spec:
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
             - name: CHACRA_API_KEY
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_KEY } }
-            - name: CHACRA_HEALTH_PING
-              value: "false"
+            - name: CHACRA_HEALTH_PING            
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HEALTH_PING } }
             - name: CHACRA_HEALTH_PING_URL
-              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HEALTH_PING_URL } }
             - name: CHACRA_HOSTNAME
-              value: "chacra-celery"  
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_HOSTNAME } }
             - name: CHACRA_CALLBACK_VERIFY_SSL
-              value: "false"        
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_VERIFY_SSL } }  
             - name: CHACRA_CALLBACK_URL
-              value: "https://shaman-shaman.apps.pok.os.sepia.ceph.com/api/repos/"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_URL } } 
             - name: CHACRA_CALLBACK_USER
-              value: "admin"
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_USER } } 
             - name: CHACRA_CALLBACK_KEY
-              value: "secret"    
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_CALLBACK_KEY } }  
           volumeMounts:
             - { name: data,   mountPath: /data }
             - { name: config, mountPath: /etc/chacra }
