@@ -401,14 +401,13 @@ spec:
             capabilities: { drop: ["ALL"] }
       volumes:
         - name: data
-          persistentVolumeClaim: { claimName: chacra-shared-rwx }   # RWX claim
+          persistentVolumeClaim: { claimName: chacra-shared-rwx }
         - name: config
           configMap: { name: chacra-config }
         - name: run
           emptyDir: {}
         - name: log
           emptyDir: {}
-        # <<< ADDED: secret holding prod_callbacks.py
         - name: callbacks
           secret:
             secretName: chacra-callbacks
