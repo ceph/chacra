@@ -59,9 +59,9 @@ oc -n chacra apply -f openshift/deploy/db-migration-job.yaml
 6. Deploy Chacra API, Celery, Beat and Nginx pod
 ```
 oc -n chacra apply -f openshift/deploy/deployment.yaml
-oc -n chacra apply -f openshift/deploy/chacra-nginx.yaml
 oc -n chacra apply -f openshift/deploy/service.yaml
 oc -n chacra apply -f openshift/deploy/route.yaml
+oc -n chacra apply -f openshift/deploy/chacra-nginx.yaml
 ```
 7. Verify the rollout
 
