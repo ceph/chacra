@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: chacra-db-migrate
+  namespace: chacra
+  labels:
+    app: chacra
+    job: db-migrate
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app: chacra
+        job: db-migrate
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: alembic
+          image: image-registry.openshift-image-registry.svc:5000/chacra/chacra:latest
+          imagePullPolicy: Always
+          command: ["/bin/sh","-lc"]
+          args:
+            - |
+              set -euo pipefail
+              echo "==> Running Alembic upgrade head (programmatic sqlalchemy.url; stdin, no writes) ..."
+              /opt/venv/bin/python - <<'PY'
+              import os
+              from alembic.config import Config
+              from alembic import command
+              cfg = Config("/alembic/alembic.ini")  # script_location = /alembic
+              cfg.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+              command.upgrade(cfg, "head")
+              PY
+              echo "==> Alembic migration completed."
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: chacra-secrets
+                  key: DATABASE_URL
+          volumeMounts:
+            - name: alembic-ini
+              mountPath: /alembic/alembic.ini
+              subPath: alembic.ini
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits:   { cpu: "1",  memory: 512Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+      volumes:
+        - name: alembic-ini
+          configMap:
+            # This CM must contain an 'alembic.ini' key with:
+            # [alembic]
+            # script_location = /alembic
+            name: chacra-alembic
+            items:
+              - key: alembic.ini
+                path: alembic.ini

@@ -1,0 +1,241 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chacra-config
+  labels: { app: chacra }
+data:
+  config.py: |
+    # /etc/chacra/config.py
+    import os
+    from pecan.hooks import TransactionHook, RequestViewerHook
+    from chacra import models, hooks
+    
+    
+    # Server
+    server = {
+        'port': '8000',
+        'host': '0.0.0.0'
+    }
+    
+    
+    # Storage
+    STORAGE_ROOT = os.environ.get("STORAGE_ROOT", "/data")
+    
+    binary_root = os.path.join(STORAGE_ROOT, "binaries")
+    distributions_root = os.path.join(STORAGE_ROOT, "repos")
+    repos_root = os.path.join(STORAGE_ROOT, "repos")
+    
+    
+    # API credentials
+    api_user = os.environ.get("CHACRA_API_USER")
+    api_key = os.environ.get("CHACRA_API_KEY")
+    
+    
+    # Database
+    DB_URL = os.environ.get("DATABASE_URL")
+    
+    _SQLA_POOL_RECYCLE_RAW = os.environ.get("SQLA_POOL_RECYCLE", "3600")
+    try:
+        _SQLA_POOL_RECYCLE = int(_SQLA_POOL_RECYCLE_RAW)
+    except Exception:
+        _SQLA_POOL_RECYCLE = 3600
+    
+    _SQLA_ECHO = str(
+        os.environ.get("SQLA_ECHO", "false")
+    ).strip().lower() in ("1", "true", "yes", "on")
+    
+    sqlalchemy = {
+        'url': DB_URL,
+        'pool_pre_ping': True,
+        'pool_recycle': _SQLA_POOL_RECYCLE,
+        'echo': _SQLA_ECHO,
+    }
+    
+    
+    # Callbacks / health
+    callback_url = os.environ.get("CHACRA_CALLBACK_URL")
+    callback_user = os.environ.get("CHACRA_CALLBACK_USER")
+    callback_key = os.environ.get("CHACRA_CALLBACK_KEY")
+    callback_verify_ssl = str(
+        os.environ.get("CHACRA_CALLBACK_VERIFY_SSL", "true")
+    ).strip().lower() in ("1", "true", "yes", "on")
+    
+    hostname = os.environ.get("CHACRA_HOSTNAME")
+    health_ping = str(
+        os.environ.get("CHACRA_HEALTH_PING", "false")
+    ).strip().lower() in ("1", "true", "yes", "on")
+    health_ping_url = os.environ.get("CHACRA_HEALTH_PING_URL")
+    
+    
+    # Celery / maintenance
+    _PC_RAW = os.environ.get("CHACRA_POLLING_CYCLE", "120")
+    try:
+        polling_cycle = int(_PC_RAW)
+    except Exception:
+        polling_cycle = 120
+    
+    _QT_RAW = os.environ.get("CHACRA_QUIET_TIME", "20")
+    try:
+        quiet_time = int(_QT_RAW)
+    except Exception:
+        quiet_time = 20
+    
+    purge_repos = str(
+        os.environ.get("CHACRA_PURGE_REPOS", "true")
+    ).strip().lower() in ("1", "true", "yes", "on")
+    
+    
+    # Pecan application
+    app = {
+        'root': 'chacra.controllers.root.RootController',
+        'modules': ['chacra'],
+        'guess_content_type_from_ext': False,
+        'template_path': '%(confdir)s/chacra/templates',
+        'hooks': [
+            TransactionHook(
+                models.start,
+                models.start_read_only,
+                models.commit,
+                models.rollback,
+                models.clear
+            ),
+            hooks.CustomErrorHook(),
+            RequestViewerHook(),
+        ],
+        'debug': False,
+    }
+    
+    
+    # Logging
+    logging = {
+        'disable_existing_loggers': False,
+        'loggers': {
+            'root': {
+                'level': 'INFO',
+                'handlers': ['console'],
+            },
+            'chacra': {
+                'level': 'DEBUG',
+                'handlers': ['console'],
+                'propagate': False,
+            },
+            'pecan': {
+                'level': 'WARNING',
+                'handlers': ['console'],
+            },
+            'pecan.commands.serve': {
+                'level': 'INFO',
+                'handlers': ['console'],
+            },
+            'py.warnings': {
+                'handlers': ['console'],
+            },
+            '__force_dict__': True,
+        },
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple',
+            },
+        },
+        'formatters': {
+            'simple': {
+                'format': (
+                    '%(asctime)s %(levelname)-5.5s '
+                    '[%(name)s][%(threadName)s] %(message)s'
+                ),
+            },
+            'color': {
+                '()': 'pecan.log.ColorFormatter',
+                'format': (
+                    '%(asctime)s [%(padded_color_levelname)s] '
+                    '[%(name)s][%(threadName)s] %(message)s'
+                ),
+                '__force_dict__': True,
+            },
+        },
+    }
+    
+    
+    # Downloads served by nginx/router
+    delegate_downloads = True
+    
+    
+    # Repo configuration
+    repos = {
+        'ceph': {
+            'automatic': False,
+            'main': {
+              'ceph': ['main'],
+            } 
+        },
+        '__force_dict__': True,
+    }
+    
+    
+    # Health check fail trigger
+    fail_check_trigger_path = "/tmp/fail_check"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chacra-wsgi
+  labels: { app: chacra }
+data:
+  # This module will be imported as "wsgi_wrapper"
+  # and Gunicorn will run 'wsgi_wrapper:application'.
+  #
+  # It deploys the Pecan app using our config map at /etc/chacra/config.py
+  wsgi_wrapper.py: |
+    from pecan.deploy import deploy
+    application = deploy("/etc/chacra/config.py")
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chacra-proxy-nginx
+  namespace: chacra
+data:
+  nginx.conf: |
+    user root;
+    worker_processes auto;
+
+    error_log /var/log/nginx/error.log info;
+    pid /run/nginx.pid;
+
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        sendfile on;
+        keepalive_timeout 65;
+
+        server {
+            listen 8080;
+            location /r/ {
+                alias /data/repos/;
+                autoindex on;
+                try_files $uri $uri/ =404;
+            }
+            location / {
+                proxy_pass http://chacra;
+
+                proxy_http_version 1.1;
+                proxy_set_header Connection "";
+
+                proxy_set_header Host $host;
+                proxy_set_header X-Forwarded-Host $host;
+                proxy_set_header X-Forwarded-Proto https;
+                proxy_set_header X-Forwarded-Prefix "";
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+                proxy_connect_timeout 5s;
+                proxy_read_timeout 60s;
+            }
+        }
+    }
