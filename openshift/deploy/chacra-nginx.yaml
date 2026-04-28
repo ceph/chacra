@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chacra-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chacra-proxy
+  template:
+    metadata:
+      labels:
+        app: chacra-proxy
+    spec:
+      serviceAccountName: default
+      securityContext:
+        runAsNonRoot: true
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: nginx
+          image: registry.redhat.io/rhel9/nginx-120
+          ports:
+            - containerPort: 8080
+          command:
+            - /usr/sbin/nginx
+          args:
+            - "-g"
+            - "daemon off;"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: chacra-data
+              mountPath: /data
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: chacra-data
+          persistentVolumeClaim:
+            claimName: chacra-shared-rwx
+        - name: nginx-config
+          configMap:
+            name: chacra-proxy-nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chacra-proxy
+spec:
+  selector:
+    app: chacra-proxy
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: chacra
+spec:
+  to:
+    kind: Service
+    name: chacra-proxy
+  port:
+    targetPort: http
+  tls:
+    termination: edge

@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: chacra
+  labels: { app: chacra }
+spec:
+  to:
+    kind: Service
+    name: chacra
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+  # host: chacra.<your-apps-domain>   # optional
