@@ -6,9 +6,11 @@ metadata:
   labels:
     app: chacra
 spec:
-  storageClassName: cephfs-rwx
+  # REQUIRED: Replace with an RWX-capable StorageClass available in your cluster
+  # Examples: cephfs-rwx, ocs-storagecluster-cephfs, nfs-rwx
+  storageClassName: STORAGE_CLASS_NAME
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 200Gi
+      storage: STORAGE_SIZE
