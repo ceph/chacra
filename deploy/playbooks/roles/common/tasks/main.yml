@@ -48,7 +48,12 @@
     - packages
 
 - name: Create a virtualenv with latest pip.
-  pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade' virtualenv_python=python3
+  ansible.builtin.pip:
+    name: pip
+    state: latest
+    virtualenv: "{{ app_home }}"
+    virtualenv_command: python3 -m venv
+  tags: venv
 
 - name: "pip+git install {{ app_name }} into virtualenv."
   pip: name='git+https://github.com/ceph/chacra@{{ branch }}#egg=chacra' virtualenv={{ app_home }} editable=yes state=forcereinstall

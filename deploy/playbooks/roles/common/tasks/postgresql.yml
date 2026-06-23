@@ -30,10 +30,8 @@
 # exist but we failed to set the password in both postgresql and the python
 # config file then we will fail to reset it next time around. This would
 # leave the app without the access to the database.
-#
-# yes, I actually hit the 'base64 contains /' problem, hence the replace().
 - name: generate pseudo-random password for the database connection
-  shell: python3 -c "import os, base64; print(base64.b64encode(os.urandom(30)).decode().replace('/','-'))"
+  shell: python3 -c "import os, base64; print(base64.b64encode(os.urandom(30))[:${length}].decode())"
   register: db_password
   changed_when: false
 
