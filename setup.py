@@ -17,7 +17,7 @@ setup(
     install_requires=[
         "pecan",
         "sqlalchemy==1.3.0",
-        "psycopg2-binary==2.9.9",
+        "psycopg2-binary==2.9.10",
         "pecan-notario",
         "python-statsd",
         "requests",
