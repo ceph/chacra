@@ -13,10 +13,10 @@
 - name: allow users to connect locally
   become: true
   lineinfile:
-     dest: /etc/postgresql/{{ postgres_version.stdout }}/main/pg_hba.conf
-     regexp: '^host\s+all\s+all\s+127.0.0.1/32'
-     line: 'host    all             all             127.0.0.1/32            md5'
-     backrefs: yes
+    dest: /etc/postgresql/{{ postgres_version.stdout }}/main/pg_hba.conf
+    regexp: '^host\s+all\s+all\s+127.0.0.1/32'
+    line: 'host    all             all             127.0.0.1/32            md5'
+    backrefs: yes
   register: pg_hba_conf
 
 - service:
