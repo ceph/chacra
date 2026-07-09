@@ -25,76 +25,98 @@
   become: true
   when: pg_hba_conf.changed
 
-# FIXME: flag/option needed
-# this is a bit of chicken-or-egg problem. If the user for the app does
-# exist but we failed to set the password in both postgresql and the python
-# config file then we will fail to reset it next time around. This would
-# leave the app without the access to the database.
-#
-# yes, I actually hit the 'base64 contains /' problem, hence the replace().
-- name: generate pseudo-random password for the database connection
-  shell: python3 -c "import os, base64; print(base64.b64encode(os.urandom(30)).decode().replace('/','-'))"
-  register: db_password
-  changed_when: false
+- name: Get current db url (including user and password) if any
+  ansible.builtin.command: python3 -c 'import prod_db.py; print(sqlalchemy.url)'
+  register: raw_db_url
 
-- name: Make {{ app_name }} user
-  postgresql_user:
-    name: "{{ app_name }}"
-    password: "{{ db_password.stdout }}"
-    role_attr_flags: SUPERUSER
-    login_user: postgres
-  become_user: postgres
-  become: true
+# use the postgres: scheme for local, and escape any bad pw chars like /
+- name: test current db url against postgres
+  block:
+    - name: clean up db_url for use with psql
+      set_fact:
+        db_url: "{{ raw_db_url.stdout[0] | replace('postgresql+psycopg2', 'postgres') | urlencode }}"
 
-- name: Make {{ app_name }} database
-  postgresql_db:
-    name: "{{ app_name }}"
-    owner: "{{ app_name }}"
-    state: present
-    login_user: postgres
-  become_user: postgres
-  become: true
+    - name: try connecting to db
+      command: psql "{{ db_url }}" -c '\q'
+      become_user: postgres
+      register: psql_result
+      changed_when: false
+      failed_when: false
 
-- name: ensure database service is up
-  service:
-    name: postgresql
-    state: started
-  become: true
+    - debug: var=raw_db_url
 
-- name: create the prod_db config file with the db password
-  template:
-    src: ../templates/prod_db.py.j2
-    dest: "{{ app_home }}/src/{{ app_name }}/prod_db.py"
-  notify:
-    - restart app
+    - ansible.builtin.fail:
 
-- name: write a .pgpass file so we can back up the db
-  lineinfile:
-    path: "/home/{{ ansible_ssh_user }}/.pgpass"
-    owner: "{{ ansible_ssh_user }}"
-    group: "{{ ansible_ssh_user }}"
-    mode: 0600
-    create: yes
-    state: present
-    line: '127.0.0.1:5432:{{ app_name }}:{{ app_name }}:{{ db_password.stdout }}'
+  when: raw_db_url is defined
 
-# this needs to be here because it needs the new db password
-- name: create the prod alembic.ini file
-  template:
-    src: ../templates/alembic-prod.ini.j2
-    dest: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
+- name: set up new password, db, etc. if necessary
+  block:
+    - name: generate pseudo-random password for the database connection
+      shell: python3 -c "import os, base64; print(base64.b64encode(os.urandom(30))[:${length}].decode())"
+      register: db_password
+      changed_when: false
 
-- name: check if database for app needs populating
-  # this should be configurable/optional in the playbook
-  command: psql -t chacra -c "SELECT COUNT(*) FROM projects;"
-  become_user: postgres
-  become: true
-  register: database_is_populated
-  ignore_errors: true
-  changed_when: "database_is_populated.rc != 0"
+    - name: Make {{ app_name }} user
+      postgresql_user:
+        name: "{{ app_name }}"
+        password: "{{ db_password.stdout }}"
+        role_attr_flags: SUPERUSER
+        login_user: postgres
+      become_user: postgres
+      become: true
 
-- name: populate the database for {{ app_name }}
-  when: "database_is_populated.rc == 1"
-  command: "{{ app_home }}/bin/pecan populate {{ app_home }}/src/{{ app_name }}/prod.py"
-  environment:
-    ALEMBIC_CONFIG: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
+    - name: Make {{ app_name }} database
+      postgresql_db:
+        name: "{{ app_name }}"
+        owner: "{{ app_name }}"
+        state: present
+        login_user: postgres
+      become_user: postgres
+      become: true
+
+    - name: ensure database service is up
+      service:
+        name: postgresql
+        state: started
+      become: true
+
+    - name: create the prod_db config file with the db password
+      template:
+        src: ../templates/prod_db.py.j2
+        dest: "{{ app_home }}/src/{{ app_name }}/prod_db.py"
+      notify:
+        - restart app
+
+    - name: write a .pgpass file so we can back up the db
+      lineinfile:
+        path: "/home/{{ ansible_ssh_user }}/.pgpass"
+        owner: "{{ ansible_ssh_user }}"
+        group: "{{ ansible_ssh_user }}"
+        mode: 0600
+        create: yes
+        state: present
+        line: '127.0.0.1:5432:{{ app_name }}:{{ app_name }}:{{ db_password.stdout }}'
+
+
+    # this needs to be here because it needs the new db password
+    - name: create the prod alembic.ini file
+      template:
+        src: ../templates/alembic-prod.ini.j2
+        dest: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
+
+    - name: check if database for app needs populating
+      # this should be configurable/optional in the playbook
+      ansible.builtin.command: psql -t chacra -c "SELECT COUNT(*) FROM projects;"
+      become_user: postgres
+      become: true
+      register: database_is_populated
+      ignore_errors: true
+      changed_when: "database_is_populated.rc != 0"
+
+    - name: populate the database for {{ app_name }}
+      when: "database_is_populated.rc == 1"
+      command: "{{ app_home }}/bin/pecan populate {{ app_home }}/src/{{ app_name }}/prod.py"
+      environment:
+        ALEMBIC_CONFIG: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
+
+  when: psql_result.rc != 0
