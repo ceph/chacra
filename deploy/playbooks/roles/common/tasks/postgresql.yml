@@ -25,29 +25,34 @@
   become: true
   when: pg_hba_conf.changed
 
-- name: Get current db url (including user and password) if any
-  ansible.builtin.command: python3 -c 'import prod_db.py; print(sqlalchemy.url)'
+- name: Get current db url from prod_db.py
+  ansible.builtin.command:
+  args:
+    argv:
+      - /usr/bin/python3
+      - "-c"
+      - 'import prod_db; print(prod_db.sqlalchemy["url"])'
+    chdir: "{{ app_home }}/src/{{ app_name }}"
   register: raw_db_url
 
-# use the postgres: scheme for local, and escape any bad pw chars like /
-- name: test current db url against postgres
-  block:
-    - name: clean up db_url for use with psql
-      set_fact:
-        db_url: "{{ raw_db_url.stdout[0] | replace('postgresql+psycopg2', 'postgres') | urlencode }}"
+- name: check that db url still works
+  ansible.builtin.command:
+    cmd: |-
+      "{{ app_home }}"/bin/python3 -c "
+      import sys
+      from sqlalchemy import create_engine
+      from sqlalchemy.exc import OperationalError
 
-    - name: try connecting to db
-      command: psql "{{ db_url }}" -c '\q'
-      become_user: postgres
-      register: psql_result
-      changed_when: false
-      failed_when: false
-
-    - debug: var=raw_db_url
-
-    - ansible.builtin.fail:
-
-  when: raw_db_url is defined
+      try:
+          engine = create_engine('{{ raw_db_url.stdout_lines[0] }}')
+          with engine.connect():
+              pass
+      except OperationalError:
+          sys.exit(1)
+      "
+  register: connect_result
+  changed_when: false
+  failed_when: false
 
 - name: set up new password, db, etc. if necessary
   block:
@@ -119,4 +124,4 @@
       environment:
         ALEMBIC_CONFIG: "{{ app_home }}/src/{{ app_name }}/alembic-prod.ini"
 
-  when: psql_result.rc != 0
+  when: connect_result.rc != 0
