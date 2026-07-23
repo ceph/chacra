@@ -47,12 +47,13 @@ class Repo(Base):
 
     def __repr__(self):
         try:
-            return "<Repo {name}/{ref}/{sha1}/{distro}/{version}>".format(
+            return "<Repo {name}/{ref}/{sha1}/{distro}/{version}/{flavor}>".format(
                 name=self.project.name,
                 ref=self.ref,
                 sha1=self.sha1,
                 distro=self.distro,
                 version=self.distro_version,
+                flavor=self.flavor,
             )
         except DetachedInstanceError:
             return '<Repo detached>'
