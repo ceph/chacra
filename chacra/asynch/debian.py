@@ -84,6 +84,11 @@ def create_deb_repo(repo_id):
     # check for the option to 'combine' repositories with different
     # debian/ubuntu versions
     for distro_version in combined_versions:
+
+        if distro_version == repo.distro_version:
+            logger.info('combine skipping same distro %s', distro_version)
+            continue
+
         logger.info(
             'fetching distro_version %s for project: %s',
             distro_version,
