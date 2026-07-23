@@ -161,7 +161,7 @@ def get_extra_repos(project, ref=None, repo_config=None):
     return distinct_ref
 
 
-def get_extra_binaries(project_name, distro, distro_version, distro_versions=None, ref=None, sha1=None):
+def get_extra_binaries(project_name, distro, distro_version, distro_versions=None, ref=None, sha1=None, flavor=None):
     """
     Try to match a given repository with the distinctive  project/ref/distro
     information and return a list of associated binaries
@@ -189,6 +189,9 @@ def get_extra_binaries(project_name, distro, distro_version, distro_versions=Non
 
     if sha1 is not None:
         repo_query = repo_query.filter_by(sha1=sha1)
+
+    if flavor is not None:
+        repo_query = repo_query.filter_by(flavor=flavor)
 
     for r in repo_query.all():
         binaries += [b for b in r.binaries]
