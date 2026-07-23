@@ -103,7 +103,8 @@ def create_deb_repo(repo_id):
             None,
             distro_version,
             ref=repo.ref,
-            sha1=repo.sha1
+            sha1=repo.sha1,
+            flavor=repo.flavor,
         )
 
     # try to create the absolute path to the repository if it doesn't exist
@@ -114,6 +115,12 @@ def create_deb_repo(repo_id):
     logger.info('all_binaries: %s', [b.name for b in all_binaries])
 
     for binary in set(all_binaries):
+
+        # sanity check
+        for field in ['ref', 'sha1', 'distro', 'distro_version', 'flavor']:
+            if getattr(binary, field, None) != getattr(repo, field, None):
+                logger.warning('binary %s does not match repo %s', binary, repo)
+
         # XXX This is really not a good alternative but we are not going to be
         # using .changes for now although we can store it.
         if binary.extension == 'changes':
