@@ -90,9 +90,10 @@ def create_deb_repo(repo_id):
             continue
 
         logger.info(
-            'fetching distro_version %s for project: %s',
+            'fetching distro_version %s for project: %s into repo %s',
             distro_version,
-            repo.project.name
+            repo.project.name,
+            repo,
         )
         # When combining distro_versions we cannot filter by distribution as
         # well, otherwise it will be an impossible query. E.g. "get wheezy,
@@ -110,6 +111,7 @@ def create_deb_repo(repo_id):
 
     all_binaries = extra_binaries + [b for b in repo.binaries]
     timer.intermediate('collection')
+    logger.info('all_binaries: %s', [b.name for b in all_binaries])
 
     for binary in set(all_binaries):
         # XXX This is really not a good alternative but we are not going to be
