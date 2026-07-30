@@ -75,7 +75,7 @@ except AttributeError:
     seconds = pecan.conf.polling_cycle
 
 app.conf.update(
-    CELERYBEAT_SCHEDULE={
+    beat_schedule={
         'poll-repos': {
             'task': 'chacra.asynch.recurring.poll_repos',
             'schedule': timedelta(seconds=seconds),
@@ -86,6 +86,9 @@ app.conf.update(
             'schedule': timedelta(days=1),
         },
     },
+    control_queue_exclusive=True,
+    event_queue_exclusive=True,
+    worker_cancel_long_running_tasks_on_connection_loss=False,
 )
 
 
