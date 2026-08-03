@@ -8,6 +8,10 @@ from sqlalchemy.event import listen, remove
 from sqlalchemy.orm.exc import DetachedInstanceError
 from chacra.models import Base, update_timestamp
 from chacra.models.types import JSONType
+try:
+    from datetime import UTC
+except:
+    UTC=datetime.timezone.utc
 
 
 class Repo(Base):
@@ -37,18 +41,19 @@ class Repo(Base):
         self.ref = ref
         self.distro = distro
         self.distro_version = distro_version
-        self.modified = datetime.datetime.now(datetime.UTC)
+        self.modified = datetime.datetime.now(UTC)
         self.sha1 = kwargs.get('sha1', 'head')
         self.flavor = kwargs.get('flavor', 'default')
 
     def __repr__(self):
         try:
-            return "<Repo {name}/{ref}/{sha1}/{distro}/{version}>".format(
+            return "<Repo {name}/{ref}/{sha1}/{distro}/{version}/{flavor}>".format(
                 name=self.project.name,
                 ref=self.ref,
                 sha1=self.sha1,
                 distro=self.distro,
                 version=self.distro_version,
+                flavor=self.flavor,
             )
         except DetachedInstanceError:
             return '<Repo detached>'

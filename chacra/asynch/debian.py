@@ -84,10 +84,16 @@ def create_deb_repo(repo_id):
     # check for the option to 'combine' repositories with different
     # debian/ubuntu versions
     for distro_version in combined_versions:
+
+        if distro_version == repo.distro_version:
+            logger.info('combine skipping same distro %s', distro_version)
+            continue
+
         logger.info(
-            'fetching distro_version %s for project: %s',
+            'fetching distro_version %s for project: %s into repo %s',
             distro_version,
-            repo.project.name
+            repo.project.name,
+            repo,
         )
         # When combining distro_versions we cannot filter by distribution as
         # well, otherwise it will be an impossible query. E.g. "get wheezy,
@@ -97,7 +103,8 @@ def create_deb_repo(repo_id):
             None,
             distro_version,
             ref=repo.ref,
-            sha1=repo.sha1
+            sha1=repo.sha1,
+            flavor=repo.flavor,
         )
 
     # try to create the absolute path to the repository if it doesn't exist
@@ -105,8 +112,15 @@ def create_deb_repo(repo_id):
 
     all_binaries = extra_binaries + [b for b in repo.binaries]
     timer.intermediate('collection')
+    logger.info('all_binaries: %s', [b.name for b in all_binaries])
 
     for binary in set(all_binaries):
+
+        # sanity check
+        for field in ['ref', 'sha1', 'distro', 'distro_version', 'flavor']:
+            if getattr(binary, field, None) != getattr(repo, field, None):
+                logger.warning('binary %s does not match repo %s', binary, repo)
+
         # XXX This is really not a good alternative but we are not going to be
         # using .changes for now although we can store it.
         if binary.extension == 'changes':

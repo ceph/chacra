@@ -1,4 +1,10 @@
-from datetime import datetime, timedelta, UTC
+try:
+    from datetime import UTC
+except:
+    import datetime
+    UTC=datetime.timezone.utc
+from datetime import datetime, timedelta
+
 import logging
 from pecan import conf
 
