@@ -13,6 +13,7 @@
   gather_facts: true
   vars:
     path_to_playbooks: "~/src/chacra/deploy/playbooks"
+    purge_repos: true
   tasks:
 
     - name: "Touch /tmp/fail_check on {{ inventory_hostname }}"
