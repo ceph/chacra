@@ -47,6 +47,11 @@
   tags:
     - packages
 
+- include_tasks: unattended_upgrades.yml
+  tags:
+    - packages
+    - unattended-upgrades
+
 - name: Create a virtualenv with latest pip.
   pip: name=pip virtualenv={{ app_home }} extra_args='--upgrade' virtualenv_python=python3
 

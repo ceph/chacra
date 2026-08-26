@@ -1,0 +1,29 @@
+---
+# Keep automatic security patching enabled, but keep service-critical
+# packages (postgresql server) out of it: the postgresql postinst restarts
+# the cluster, which drops chacra's pooled DB connections mid-run.
+# See https://tracker.ceph.com/issues/79947
+
+- name: install unattended-upgrades
+  become: true
+  apt:
+    name: unattended-upgrades
+    state: present
+
+- name: enable daily package list updates and unattended upgrades
+  become: true
+  template:
+    src: apt/20auto-upgrades.j2
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: blacklist service-critical packages from unattended upgrades
+  become: true
+  template:
+    src: apt/51chacra-unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/51chacra-unattended-upgrades
+    owner: root
+    group: root
+    mode: "0644"
