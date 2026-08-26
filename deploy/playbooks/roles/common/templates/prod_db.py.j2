@@ -5,5 +5,8 @@ sqlalchemy = {
     'echo':          False,
     'echo_pool':     False,
     'pool_recycle':  3600,
+    # test pooled connections before handing them out so a postgres
+    # restart doesn't surface as a burst of 500s from stale connections
+    'pool_pre_ping': True,
     'encoding':      'utf-8'
 }
