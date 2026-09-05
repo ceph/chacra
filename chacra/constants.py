@@ -21,6 +21,7 @@ DISTRIBUTIONS = [
     'focal',
     'jammy',
     'noble',
+    'resolute',
 ]
 
 # These are reserved keys that will be ignored when processing repos. Otherwise
