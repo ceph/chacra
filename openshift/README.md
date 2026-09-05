@@ -158,3 +158,18 @@ Open the URL in your browser:
 ```
 https://<printed-host>/
 ```
+
+## Deploying to a different namespace
+
+Every document in `openshift/deploy/` carries an explicit
+`namespace: chacra` (a partially-namespaced set silently scatters the
+unnamespaced objects into whatever namespace your context points at).
+To deploy under another namespace, rewrite it first, e.g.:
+
+```
+sed -i 's/namespace: chacra$/namespace: my-chacra/' openshift/deploy/*.yaml*
+```
+
+and update the in-cluster image reference in `db-bootstrap-job.yaml` /
+`db-migration-job.yaml` (`image-registry.openshift-image-registry.svc:5000/chacra/chacra:latest`)
+to match.
