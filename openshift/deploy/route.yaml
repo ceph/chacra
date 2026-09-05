@@ -13,4 +13,5 @@ spec:
     targetPort: http
   tls:
     termination: edge
+    insecureEdgeTerminationPolicy: Redirect
   # host: chacra.<your-apps-domain>   # optional
