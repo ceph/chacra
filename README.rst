@@ -41,6 +41,18 @@ the service as follows::
     api_key = 'secret'
 
 
+storage_method
+^^^^^^^^^^^^^^
+The ``storage_method`` is a required configuration item, it defines where the
+binaries should be stored. The two available method values are ``local`` and
+``s3``.
+
+s3_bucket
+^^^^^^^^^
+The ``s3_bucket`` is required if the ``storage_method`` configuration is set to
+``s3``. This defines which bucket the binaries should be stored to.
+
+
 Self-discovery
 --------------
 The API provides informational JSON at every step of the URL about what is
