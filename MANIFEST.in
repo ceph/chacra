@@ -1,0 +1,4 @@
+# chacra/templates/* (repo.mako for the /repo endpoint, distributions for
+# reprepro) must ship in the wheel/sdist; include_package_data=True only
+# picks them up when they are listed here (no setuptools-scm in use).
+recursive-include chacra/templates *
