@@ -171,6 +171,16 @@ update binaries set path = regexp_replace(path, '^/opt/binaries/', '/data/binari
 update repos    set path = regexp_replace(path, '^/opt/repos/',    '/data/repos/')    where path like '/opt/repos/%';
 ```
 
+The repo trees themselves are symlinks into the binaries tree with absolute targets, so after
+rsyncing a VM's `/opt/repos` into `/data/repos` rewrite those too (`/r/` downloads 404 otherwise):
+
+```sh
+find /data/repos -type l -lname '/opt/*' -print0 | while IFS= read -r -d '' l; do
+  t=$(readlink "$l"); ln -sfn "/data/${t#/opt/}" "$l"
+done
+find /data/repos -xtype l | wc -l   # must be 0
+```
+
 ## Deploying to a different namespace
 
 Every document in `openshift/deploy/` carries an explicit
