@@ -35,6 +35,7 @@ setup(
     test_suite='chacra',
     zip_safe=False,
     include_package_data=True,
+    package_data={'chacra': ['templates/*']},
     packages=find_packages(exclude=['ez_setup']),
     classifiers = [
         'Development Status :: 4 - Beta',
