@@ -159,6 +159,28 @@ Open the URL in your browser:
 https://<printed-host>/
 ```
 
+## Migrating an existing (ansible/VM) chacra into OpenShift
+
+`binaries.path` and `repos.path` in the database are absolute on-disk paths. A VM install
+uses `/opt/binaries` and `/opt/repos`; the container uses `STORAGE_ROOT=/data`, so after restoring
+a `pg_dump` from a VM rewrite them, or every `/binaries/...` download 404s (chacra strips
+`binary_root` from the stored path to build its `X-Accel-Redirect`):
+
+```sql
+update binaries set path = regexp_replace(path, '^/opt/binaries/', '/data/binaries/') where path like '/opt/binaries/%';
+update repos    set path = regexp_replace(path, '^/opt/repos/',    '/data/repos/')    where path like '/opt/repos/%';
+```
+
+The repo trees themselves are symlinks into the binaries tree with absolute targets, so after
+rsyncing a VM's `/opt/repos` into `/data/repos` rewrite those too (`/r/` downloads 404 otherwise):
+
+```sh
+find /data/repos -type l -lname '/opt/*' -print0 | while IFS= read -r -d '' l; do
+  t=$(readlink "$l"); ln -sfn "/data/${t#/opt/}" "$l"
+done
+find /data/repos -xtype l | wc -l   # must be 0
+```
+
 ## Deploying to a different namespace
 
 Every document in `openshift/deploy/` carries an explicit

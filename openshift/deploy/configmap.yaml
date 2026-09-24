@@ -219,6 +219,13 @@ data:
 
         server {
             listen 8080;
+            # chacra answers /binaries/... downloads with X-Accel-Redirect: /b/<path under binary_root>
+            # (chacra/controllers/binaries); nginx must serve that internally, as the ansible
+            # nginx_site.conf template does. Without it every binary download is a 404.
+            location /b/ {
+                internal;
+                alias /data/binaries/;
+            }
             location /r/ {
                 alias /data/repos/;
                 autoindex on;
