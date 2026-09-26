@@ -36,6 +36,16 @@ spec:
           volumeMounts:
             - name: chacra-data
               mountPath: /data
+            # repo trees are symlinks into the binaries tree; a VM-era tree (or any rsync from one)
+            # carries absolute /opt/binaries targets, so expose the same data under /opt too
+            - name: chacra-data
+              mountPath: /opt/binaries
+              subPath: binaries
+              readOnly: true
+            - name: chacra-data
+              mountPath: /opt/repos
+              subPath: repos
+              readOnly: true
             - name: nginx-config
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
