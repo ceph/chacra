@@ -10,6 +10,7 @@ data:
     import os
     from pecan.hooks import TransactionHook, RequestViewerHook
     from chacra import models, hooks
+    import chacra
     
     
     # Server
@@ -91,7 +92,9 @@ data:
         'root': 'chacra.controllers.root.RootController',
         'modules': ['chacra'],
         'guess_content_type_from_ext': False,
-        'template_path': '%(confdir)s/chacra/templates',
+        # confdir is /etc/chacra in the container; the mako templates live in the installed
+        # package (chacra/templates), not under the config directory
+        'template_path': os.path.join(os.path.dirname(chacra.__file__), 'templates'),
         'hooks': [
             TransactionHook(
                 models.start,
