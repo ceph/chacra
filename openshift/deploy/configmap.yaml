@@ -24,7 +24,9 @@ data:
     STORAGE_ROOT = os.environ.get("STORAGE_ROOT", "/data")
     
     binary_root = os.path.join(STORAGE_ROOT, "binaries")
-    distributions_root = os.path.join(STORAGE_ROOT, "repos")
+    # reprepro conf dirs (one per project, recreated on every build); keep them out of
+    # STORAGE_ROOT/repos or they show up under /r/<project>/ as a bogus "distributions" ref
+    distributions_root = os.path.join(STORAGE_ROOT, ".reprepro")
     repos_root = os.path.join(STORAGE_ROOT, "repos")
     
     
@@ -87,6 +89,25 @@ data:
     ).strip().lower() in ("1", "true", "yes", "on")
     
     
+    # How reprepro "distributions" files are rendered per project (chacra.util); same values
+    # as the ansible deployment's prod.py.  Without this every deb repo build fails with
+    # "'pecan.conf' object has no attribute 'distributions'".
+    distributions = {
+        "defaults": {
+            "DebIndices": "Packages Release . .gz .bz2",
+            "DscIndices": "Sources Release .gz .bz2",
+            "Contents": ".gz .bz2",
+            "Origin": "ceph.com",
+            "Description": "",
+            "Architectures": "amd64 arm64 armhf i386 source",
+            "Suite": "stable",
+            "Components": "main",
+        },
+        "ceph": {
+            "Description": "Ceph distributed file system",
+        },
+    }
+
     # Pecan application
     app = {
         'root': 'chacra.controllers.root.RootController',
