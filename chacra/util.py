@@ -2,6 +2,7 @@ from collections import defaultdict
 import os
 import errno
 import logging
+import tempfile
 from pecan import conf
 from pecan.templating import MakoRenderer, ExtraNamespace
 
@@ -255,12 +256,20 @@ def create_distributions_file(project_name, distributions_path):
     data = get_distributions_file_context(project_name)
     contents = render_mako_template("distributions", data)
     contents = as_string(contents)
-    with open(distributions_path, "w") as f:
-        try:
+    # replaced, not written in place: reprepro processes for other
+    # repositories of the project may be reading it
+    try:
+        fd, temp_path = tempfile.mkstemp(
+            dir=os.path.dirname(distributions_path),
+            prefix='.distributions.',
+        )
+        with os.fdopen(fd, "w") as f:
             f.write(contents)
-        except (OSError, IOError):
-            logger.exception('Could not create %s' % distributions_path)
-            raise
+        os.chmod(temp_path, 0o644)
+        os.rename(temp_path, distributions_path)
+    except (OSError, IOError):
+        logger.exception('Could not create %s' % distributions_path)
+        raise
 
 
 def reprepro_confdir(project_name):
