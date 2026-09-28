@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 
-from pecan import expose, abort, request, response
+from pecan import expose, abort, request, response, conf
 from pecan.secure import secure
 from pecan_notario import validate
 
@@ -10,7 +10,7 @@ from chacra.models import Project
 from chacra.controllers import error
 from chacra.auth import basic_auth
 from chacra import schemas, asynch
-from chacra import util
+from chacra import locks, util
 
 
 logger = logging.getLogger(__name__)
@@ -113,12 +113,41 @@ class RepoController(object):
             asynch.post_ready(self.repo_obj)
         else:
             # Just mark the repo so that celery picks it up
-            self.repo_obj.needs_update = True
-            self.repo_obj.is_updating = False
-            self.repo_obj.is_queued = False
+            self.request_build()
             asynch.post_requested(self.repo_obj)
 
         return self.repo_obj
+
+    def request_build(self, lock=None):
+        """
+        Mark the repo as needing an update, which is all it takes for a build
+        that is queued or running: a queued build didn't start to collect
+        binaries yet, and when a running one completes the repo will get
+        queued again.
+
+        ``is_updating`` and ``is_queued`` are reset only if they are stale,
+        otherwise a second build for the same repo would get queued while the
+        first one is still working on it. They are stale when no build is
+        holding the lock for the repo (the worker died), or when the repo has
+        been queued for too long (the task got lost).
+
+        ``lock`` is the lock for the repo, if the caller is holding it.
+        """
+        repo = self.repo_obj
+        stale_after = getattr(conf, 'queued_stale_after', 3600)
+        # has to be checked before anything changes in the repo
+        queued_for = util.seconds_since_modified(repo) if repo.is_queued else None
+
+        repo.needs_update = True
+        if repo.is_updating and (lock or not locks.is_locked(repo.id)):
+            logger.warning('%s is not being built, resetting is_updating', repo)
+            repo.is_updating = False
+        if queued_for is not None and queued_for > stale_after:
+            logger.warning(
+                '%s was queued %s seconds ago, resetting is_queued',
+                repo, int(queued_for)
+            )
+            repo.is_queued = False
 
     @secure(basic_auth)
     @expose('json')
@@ -130,17 +159,25 @@ class RepoController(object):
                 '/errors/not_allowed',
                 'only POST request are accepted for this url'
             )
-        # completely remove the path to the repository
-        logger.info('removing repository path: %s', self.repo_obj.path)
-        try:
-            shutil.rmtree(self.repo_obj.path)
-        except OSError:
-            logger.warning("could not remove repo path: %s", self.repo_obj.path)
-
-        # mark the repo so that celery picks it up
-        self.repo_obj.needs_update = True
-        self.repo_obj.is_updating = False
-        self.repo_obj.is_queued = False
+        lock = locks.RepoLock(self.repo_obj.id)
+        if lock.acquire():
+            try:
+                # completely remove the path to the repository
+                logger.info('removing repository path: %s', self.repo_obj.path)
+                try:
+                    shutil.rmtree(self.repo_obj.path)
+                except OSError:
+                    logger.warning("could not remove repo path: %s", self.repo_obj.path)
+                # mark the repo so that celery picks it up
+                self.request_build(lock)
+            finally:
+                lock.release()
+        else:
+            # the path can't be removed while the repo is being built, the
+            # next build will do it
+            logger.info('%s is being built, will be recreated by the next build', self.repo_obj)
+            locks.request_recreate(self.repo_obj.id)
+            self.request_build()
 
         asynch.post_requested(self.repo_obj)
         return self.repo_obj
@@ -166,6 +203,7 @@ class RepoController(object):
                     msg = "Could not remove the binary path: %s" % binary_path
                     logger.exception(msg)
             binary.delete()
+        locks.forget(self.repo_obj.id)
         self.repo_obj.delete()
         if self.project.repos.count() == 0:
             self.project.delete()

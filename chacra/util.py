@@ -1,9 +1,11 @@
 from collections import defaultdict
+import datetime
 import os
 import errno
 import logging
 import tempfile
 from pecan import conf
+from sqlalchemy import func
 from pecan.templating import MakoRenderer, ExtraNamespace
 
 from chacra import models
@@ -199,6 +201,21 @@ def get_extra_binaries(project_name, distro, distro_version, distro_versions=Non
 
     logger.info('%d matched binaries found', len(binaries))
     return binaries
+
+
+def seconds_since_modified(repo):
+    """
+    How long ago was the last change to a repository. The database does the
+    math because ``modified`` gets stored in the time zone of the database.
+
+    Returns ``None`` if it is not possible to tell.
+    """
+    age = models.Session.query(
+        func.localtimestamp() - models.Repo.modified
+    ).filter(models.Repo.id == repo.id).scalar()
+    if isinstance(age, datetime.timedelta):
+        return age.total_seconds()
+    return None
 
 
 def makedirs(path):

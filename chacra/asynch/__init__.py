@@ -100,7 +100,8 @@ def post_status(status, repo_obj, _callback=None):
     Nicer interface to send a status report on repo creation if configured.
 
     :param state: Any useful (single-word) string to describe the current
-                  status of a repo. Like: 'queued', 'building', 'ready', 'requested'
+                  status of a repo. Like: 'queued', 'building', 'ready',
+                  'requested', 'failed'
     :param json: The actual ``json`` representing the Repo model object (or any subset of it)
     :param project_name: The name of the project the repository belongs to
     """
@@ -142,6 +143,10 @@ def post_building(repo):
 
 def post_ready(repo):
     post_status('ready', repo)
+
+
+def post_failed(repo):
+    post_status('failed', repo)
 
 
 def post_deleted(repo):

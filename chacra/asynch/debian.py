@@ -1,45 +1,48 @@
 from celery import shared_task
-from chacra import models
-from chacra.asynch import base, post_ready, post_building
+from pecan import conf
+from chacra.asynch import base
 from chacra import util
 from chacra.metrics import Counter, Timer
 import logging
+import re
 import subprocess
+import time
 
 logger = logging.getLogger(__name__)
 
+# another reprepro process is using the database of the repository
+lock_error = re.compile(r"lock file '.*' already exists")
 
-@shared_task(base=base.SQLATask)
-def create_deb_repo(repo_id):
+# Errors that reprepro reports when it refuses a file because of what the file
+# is, so trying again can't have a different result. These do not prevent
+# a repository from being reported as ready. They are regular expressions that
+# get matched against the error output, and can be overridden with the
+# ``reprepro_ignored_errors`` configuration option.
+ignored_errors = (
+    # the pool has a file with the same name and different contents, like the
+    # 'all' packages that get built (and uploaded) once per architecture
+    r"Already existing files can only be included again",
+    # a source package with a .dsc file that is not valid
+    r"Missing '\w+' field in",
+    # distro versions that are not in the distributions file
+    r"Cannot find definition of distribution",
+    # older reprepro versions can't handle ddeb files
+    r"Unknown action 'includeddeb'",
+)
+
+
+@shared_task(base=base.SQLATask, bind=True)
+def create_deb_repo(self, repo_id):
     """
     Go create or update repositories with specific IDs.
     """
-    # get the root path for storing repos
-    # TODO: Is it possible we can get an ID that doesn't exist anymore?
-    repo = models.Repo.get(repo_id)
+    base.build_repo(self, repo_id, build)
+
+
+def build(repo, paths):
     timer = Timer(__name__, suffix="create.deb.%s" % repo.metric_name)
     counter = Counter(__name__, suffix="create.deb.%s" % repo.metric_name)
     timer.start()
-    post_building(repo)
-    logger.info("processing repository: %s", repo)
-    if util.repository_is_disabled(repo.project.name):
-        logger.info("will not process repository: %s", repo)
-        repo.needs_update = False
-        repo.is_queued = False
-        models.commit()
-        return
-
-    # Determine paths for this repository
-    paths = util.repo_paths(repo)
-
-    # Before doing work that might take very long to complete, set the repo
-    # path in the object, mark needs_update as False, and mark it as being
-    # updated so we prevent piling up if other binaries are being posted
-    repo.path = paths['absolute']
-    repo.is_updating = True
-    repo.is_queued = False
-    repo.needs_update = False
-    models.commit()
 
     # determine if other repositories might need to be queried to add extra
     # binaries (repos are tied to binaries which are all related with  refs,
@@ -114,6 +117,7 @@ def create_deb_repo(repo_id):
     timer.intermediate('collection')
     logger.info('all_binaries: %s', [b.name for b in all_binaries])
 
+    failed = []
     for binary in set(all_binaries):
 
         # sanity check
@@ -135,21 +139,59 @@ def create_deb_repo(repo_id):
         except KeyError:  # probably a tar.gz or similar file that should not be added directly
             continue
         for command in commands:
-            logger.info('running command: %s', ' '.join(command))
-            result = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-            stdout, stderr = result.communicate()
-            if result.returncode > 0:
+            if not reprepro(command):
                 logger.error('failed to add binary %s', binary.name)
-            stdout = stdout.decode()
-            stderr = stderr.decode()
-            for line in stdout.split('\n'):
-                logger.info(line)
-            for line in stderr.split('\n'):
-                logger.warning(line)
+                failed.append(binary.name)
 
-    logger.info("finished processing repository: %s", repo)
-    repo.is_updating = False
-    models.commit()
     timer.stop()
+    if failed:
+        raise base.RepoBuildError(
+            '%s binaries could not be added to %s: %s' % (
+                len(failed), repo, ' '.join(sorted(set(failed))))
+        )
     counter += 1
-    post_ready(repo)
+
+
+def reprepro(command):
+    """
+    Run a reprepro command, trying again when it fails because another
+    reprepro process has the database of the repository locked. If it is
+    still locked after all the retries there is no point in trying to add
+    anything else, so that is an error.
+
+    Returns ``False`` if the command failed, unless it is one of the errors
+    that are configured to be ignored.
+    """
+    retries = getattr(conf, 'reprepro_lock_retries', 6)
+    delay = getattr(conf, 'reprepro_lock_retry_delay', 10)
+    attempt = 0
+    while True:
+        logger.info('running command: %s', ' '.join(command))
+        result = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        stdout, stderr = result.communicate()
+        stdout = stdout.decode('utf-8', 'replace')
+        stderr = stderr.decode('utf-8', 'replace')
+        for line in stdout.split('\n'):
+            logger.info(line)
+        for line in stderr.split('\n'):
+            logger.warning(line)
+        if result.returncode == 0:
+            return True
+        if not lock_error.search(stderr):
+            break
+        if attempt >= retries:
+            raise base.RepoBuildError(
+                'reprepro database is still locked after %s retries' % retries
+            )
+        attempt += 1
+        logger.warning(
+            'reprepro database is locked, trying again in %s seconds (retry %s of %s)',
+            delay, attempt, retries
+        )
+        time.sleep(delay)
+
+    for error in getattr(conf, 'reprepro_ignored_errors', ignored_errors):
+        if re.search(error, stderr):
+            logger.warning('reprepro refused the file, ignoring: %s', command[-1])
+            return True
+    return False
