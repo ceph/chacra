@@ -2,7 +2,9 @@
 [Unit]
 Description=chacra celerybeat service
 After=network.target rabbitmq-server.service
-Requires=rabbitmq-server.service
+# Wants allows a stop of rabbitmq without stopping chacra-celerybeat; see
+# chacra-celery.service
+Wants=rabbitmq-server.service
 
 [Service]
 Type=simple

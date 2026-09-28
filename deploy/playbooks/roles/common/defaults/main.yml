@@ -10,6 +10,9 @@ ssl_key_path: "files/ssl/dev/ssl.key"
 # on non-dev environments
 use_self_signed_ssl: False
 # packages unattended-upgrades must never touch (regexes anchored at the
-# start of the package name); postgresql server upgrades restart the cluster
+# start of the package name); postgresql server upgrades restart the cluster,
+# erlang and rabbitmq-server upgrades restart the broker
 unattended_upgrades_package_blacklist:
   - "postgresql-"
+  - "erlang-"
+  - "rabbitmq-server"

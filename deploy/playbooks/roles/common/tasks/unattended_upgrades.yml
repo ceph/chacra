@@ -1,7 +1,9 @@
 ---
 # Keep automatic security patching enabled, but keep service-critical
-# packages (postgresql server) out of it: the postgresql postinst restarts
-# the cluster, which drops chacra's pooled DB connections mid-run.
+# packages (postgresql server, rabbitmq and its erlang runtime) out of it:
+# the postgresql postinst restarts the cluster, which drops chacra's pooled
+# DB connections mid-run, and an erlang upgrade stops rabbitmq, which took
+# the chacra services down with it.
 # See https://tracker.ceph.com/issues/79947
 
 - name: install unattended-upgrades
