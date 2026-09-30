@@ -80,7 +80,7 @@ def disk_has_space(_popen=None):
         out = result.communicate()[0].decode()
         device, size, used, available, percent, mountpoint = \
             out.split('\n')[1].split()
-        if int(percent.strip().split('%')[0]) > 85:
+        if int(percent.strip().split('%')[0]) > 90:
             msg = 'disk %s almost full. Used: %s%%' % (device, percent)
             raise SystemCheckError(msg)
 
