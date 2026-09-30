@@ -5,7 +5,10 @@
 [Unit]
 Description=chacra celery service
 After=network.target rabbitmq-server.service
-Requires=rabbitmq-server.service
+# Wants, not Requires: a Requires= stop propagates here when a package
+# upgrade stops rabbitmq, but the following start does not, leaving chacra
+# down. celery reconnects to the broker on its own.
+Wants=rabbitmq-server.service
 
 [Service]
 Type=forking
