@@ -3,7 +3,9 @@ import pecan
 import pytest
 from chacra.models import Project, Repo, Binary
 from chacra.compat import b_
-from chacra import asynch
+from chacra import asynch, locks
+from chacra.asynch import recurring
+from chacra.tests import conftest
 
 
 class TestRepoApiController(object):
@@ -451,6 +453,10 @@ class TestRepoApiController(object):
 
 class TestRepoCRUDOperations(object):
 
+    def teardown_method(self):
+        # settings changed by the tests are "sticky"
+        conftest.reload_config()
+
     @pytest.mark.parametrize(
             'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/update',
@@ -611,6 +617,8 @@ class TestRepoCRUDOperations(object):
         repo = Repo.get(1)
         repo.is_queued = True
         session.commit()
+        # the task has been queued for so long that it must be lost
+        pecan.conf.queued_stale_after = -1
         result = session.app.post_json(url)
         assert os.path.exists(path) is False
         assert result.json['needs_update'] is True
@@ -682,3 +690,161 @@ class TestRepoCRUDOperations(object):
             expect_errors=True,
         )
         assert result.status_int == 404
+
+
+update_urls = [
+    '/repos/foobar/firefly/head/ubuntu/trusty/update',
+    '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/update',
+]
+
+recreate_urls = [
+    '/repos/foobar/firefly/head/ubuntu/trusty/recreate',
+    '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate',
+]
+
+
+class TestUpdateWhileBuilding(object):
+
+    def setup_method(self):
+        self.repo = Repo(
+            Project('foobar'),
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        self.repo.type = 'deb'
+
+    def teardown_method(self):
+        # settings changed by the tests are "sticky"
+        conftest.reload_config()
+
+    def building(self, session, tmpdir):
+        """
+        Leave the repo in the same state as when a task is building it
+        """
+        self.repo.path = str(tmpdir.mkdir('repo'))
+        self.repo.needs_update = False
+        self.repo.is_updating = True
+        session.commit()
+        lock = locks.RepoLock(1)
+        assert lock.acquire() is True
+        return lock
+
+    def queued_tasks(self, monkeypatch, recorder):
+        pecan.conf.quiet_time = 1
+        queued = recorder()
+        monkeypatch.setattr(recurring.debian.create_deb_repo, 'apply_async', queued)
+        monkeypatch.setattr(recurring.rpm.create_rpm_repo, 'apply_async', queued)
+        return queued.recorder_calls
+
+    @pytest.mark.parametrize('url', update_urls)
+    def test_update_does_not_reset_a_running_build(self, session, tmpdir, url):
+        lock = self.building(session, tmpdir)
+        try:
+            result = session.app.post_json(url, params={})
+        finally:
+            lock.release()
+        assert result.json['needs_update'] is True
+        assert result.json['is_updating'] is True
+
+    @pytest.mark.parametrize('url', update_urls)
+    def test_update_does_not_queue_a_concurrent_build(
+            self, session, tmpdir, monkeypatch, recorder, url):
+        queued = self.queued_tasks(monkeypatch, recorder)
+        lock = self.building(session, tmpdir)
+        try:
+            session.app.post_json(url, params={})
+            recurring.poll_repos()
+            assert queued == []
+            assert Repo.get(1).is_queued is False
+        finally:
+            lock.release()
+
+        # the build completes, now it can get queued
+        repo = Repo.get(1)
+        repo.is_updating = False
+        session.commit()
+        recurring.poll_repos()
+        assert len(queued) == 1
+        assert queued[0]['args'][0] == (1,)
+        assert Repo.get(1).is_queued is True
+
+    @pytest.mark.parametrize('url', update_urls)
+    def test_update_resets_stale_is_updating(self, session, tmpdir, url):
+        # a worker that died while building the repo
+        self.building(session, tmpdir).release()
+        result = session.app.post_json(url, params={})
+        assert result.json['needs_update'] is True
+        assert result.json['is_updating'] is False
+
+    @pytest.mark.parametrize('url', update_urls)
+    def test_update_does_not_reset_a_queued_build(
+            self, session, monkeypatch, recorder, url):
+        queued = self.queued_tasks(monkeypatch, recorder)
+        self.repo.is_queued = True
+        session.commit()
+        result = session.app.post_json(url, params={})
+        assert result.json['needs_update'] is True
+        assert result.json['is_queued'] is True
+        recurring.poll_repos()
+        assert queued == []
+
+    @pytest.mark.parametrize('url', update_urls)
+    def test_update_resets_stale_is_queued(self, session, url):
+        self.repo.is_queued = True
+        session.commit()
+        session.Session.execute(
+            "UPDATE repos SET modified = LOCALTIMESTAMP - interval '2 hours'"
+        )
+        session.commit()
+        result = session.app.post_json(url, params={})
+        assert result.json['needs_update'] is True
+        assert result.json['is_queued'] is False
+
+    @pytest.mark.parametrize('url', update_urls)
+    def test_stale_is_queued_is_configurable(self, session, url):
+        pecan.conf.queued_stale_after = 3 * 60 * 60
+        self.repo.is_queued = True
+        session.commit()
+        session.Session.execute(
+            "UPDATE repos SET modified = LOCALTIMESTAMP - interval '2 hours'"
+        )
+        session.commit()
+        result = session.app.post_json(url, params={})
+        assert result.json['is_queued'] is True
+
+    @pytest.mark.parametrize('url', recreate_urls)
+    def test_recreate_does_not_remove_a_running_build(self, session, tmpdir, url):
+        lock = self.building(session, tmpdir)
+        path = self.repo.path
+        try:
+            result = session.app.post_json(url, params={})
+            assert os.path.exists(path) is True
+            assert locks.recreate_requested(1) is True
+        finally:
+            lock.release()
+        assert result.json['needs_update'] is True
+        assert result.json['is_updating'] is True
+
+    @pytest.mark.parametrize('url', recreate_urls)
+    def test_recreate_resets_stale_is_updating(self, session, tmpdir, url):
+        self.building(session, tmpdir).release()
+        path = self.repo.path
+        result = session.app.post_json(url, params={})
+        assert os.path.exists(path) is False
+        assert locks.recreate_requested(1) is False
+        assert locks.is_locked(1) is False
+        assert result.json['needs_update'] is True
+        assert result.json['is_updating'] is False
+
+    @pytest.mark.parametrize('url', recreate_urls)
+    def test_recreate_does_not_reset_a_queued_build(self, session, tmpdir, url):
+        path = str(tmpdir.mkdir('repo'))
+        self.repo.path = path
+        self.repo.is_queued = True
+        session.commit()
+        result = session.app.post_json(url, params={})
+        assert os.path.exists(path) is False
+        assert result.json['needs_update'] is True
+        assert result.json['is_queued'] is True

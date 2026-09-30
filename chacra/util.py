@@ -1,8 +1,11 @@
 from collections import defaultdict
+import datetime
 import os
 import errno
 import logging
+import tempfile
 from pecan import conf
+from sqlalchemy import func
 from pecan.templating import MakoRenderer, ExtraNamespace
 
 from chacra import models
@@ -200,6 +203,21 @@ def get_extra_binaries(project_name, distro, distro_version, distro_versions=Non
     return binaries
 
 
+def seconds_since_modified(repo):
+    """
+    How long ago was the last change to a repository. The database does the
+    math because ``modified`` gets stored in the time zone of the database.
+
+    Returns ``None`` if it is not possible to tell.
+    """
+    age = models.Session.query(
+        func.localtimestamp() - models.Repo.modified
+    ).filter(models.Repo.id == repo.id).scalar()
+    if isinstance(age, datetime.timedelta):
+        return age.total_seconds()
+    return None
+
+
 def makedirs(path):
     """
     Check if ``path`` exists, if it does, then don't do anything, otherwise
@@ -255,12 +273,20 @@ def create_distributions_file(project_name, distributions_path):
     data = get_distributions_file_context(project_name)
     contents = render_mako_template("distributions", data)
     contents = as_string(contents)
-    with open(distributions_path, "w") as f:
-        try:
+    # replaced, not written in place: reprepro processes for other
+    # repositories of the project may be reading it
+    try:
+        fd, temp_path = tempfile.mkstemp(
+            dir=os.path.dirname(distributions_path),
+            prefix='.distributions.',
+        )
+        with os.fdopen(fd, "w") as f:
             f.write(contents)
-        except (OSError, IOError):
-            logger.exception('Could not create %s' % distributions_path)
-            raise
+        os.chmod(temp_path, 0o644)
+        os.rename(temp_path, distributions_path)
+    except (OSError, IOError):
+        logger.exception('Could not create %s' % distributions_path)
+        raise
 
 
 def reprepro_confdir(project_name):

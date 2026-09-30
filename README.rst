@@ -455,6 +455,64 @@ but it can be usueful when you have many projects with similar values in their d
 If you want to add keys or modify keys that exist in ``defaults`` for a specific project, add that project name as
 a key of ``distributions`` and define the keys you'd need to override or add there.
 
+Building repositories
+---------------------
+A repository that needs to be created (or updated) has ``needs_update`` set,
+which happens with a POST to its ``update`` or ``recreate`` url, or when
+a binary is added to it if the project has automatic repositories. It is then
+queued (``is_queued``) and built (``is_updating``) by one of the workers.
+
+Only one build at a time will work on a repository. If an update is requested
+while the repository is being built, the build is left alone and the repository
+gets queued again when that build completes, and if a ``recreate`` is
+requested, its files get removed by the next build. It will not be reported as
+``ready`` until there is nothing else to build.
+
+A lock file per repository is used for this, and these get stored in
+``repos_root`` in a ``.locks`` directory, unless configured to be somewhere
+else. All the workers and the API need to use the same directory::
+
+    locks_root = '/opt/locks'
+
+The ``update`` and ``recreate`` urls will reset ``is_updating`` if there is no
+build running for the repository (e.g. the worker died), and ``is_queued`` if
+it was queued over an hour ago and the build didn't start. The latter can be
+configured in seconds::
+
+    queued_stale_after = 3600
+
+A build that fails is tried again, 3 times and waiting for 2 minutes by
+default::
+
+    repo_build_retries = 3
+    repo_build_retry_delay = 120
+
+If it keeps failing the repository is reported as ``failed``. Just like with
+a build that got interrupted, ``needs_update`` and ``is_updating`` are left
+set: the repository is not complete and nothing will be done about it until
+a new ``update`` or ``recreate`` is requested.
+
+For DEB repositories a build fails if reprepro fails to add a binary. When the
+reason is that another reprepro process is using the database of the
+repository, the command is tried again, 6 times and waiting for 10 seconds by
+default::
+
+    reprepro_lock_retries = 6
+    reprepro_lock_retry_delay = 10
+
+There are files that reprepro will always refuse, like a binary with the same
+name as another binary that was added before and different contents. These
+errors are logged but they don't cause a build to fail. They are configured
+with a list of regular expressions to match against the error output of
+reprepro, by default::
+
+    reprepro_ignored_errors = [
+        "Already existing files can only be included again",
+        "Missing '\\w+' field in",
+        "Cannot find definition of distribution",
+        "Unknown action 'includeddeb'",
+    ]
+
 Purging old repos
 -----------------
 

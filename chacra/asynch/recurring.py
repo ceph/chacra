@@ -7,7 +7,7 @@ import requests
 import shutil
 from sqlalchemy import desc
 from celery import shared_task
-from chacra import models
+from chacra import locks, models
 from chacra.asynch import base, debian, rpm, post_queued, post_deleted
 import logging
 try:
@@ -199,6 +199,7 @@ def delete_repositories(repo_objects, lifespan, keep_minimum):
             else:
                 raise
         post_deleted(r)
+        locks.forget(r.id)
         r.delete()
         models.commit()
 

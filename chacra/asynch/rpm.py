@@ -1,7 +1,6 @@
 import os
 from celery import shared_task
-from chacra import models
-from chacra.asynch import base, post_ready, post_building
+from chacra.asynch import base
 from chacra import util
 from chacra.metrics import Counter, Timer
 import logging
@@ -10,37 +9,20 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 
-@shared_task(base=base.SQLATask)
-def create_rpm_repo(repo_id):
+@shared_task(base=base.SQLATask, bind=True)
+def create_rpm_repo(self, repo_id):
     """
     Go create or update repositories with specific IDs.
     """
+    base.build_repo(self, repo_id, build)
+
+
+def build(repo, paths):
     directories = ['SRPMS', 'noarch', 'x86_64', 'aarch64']
-    # get the root path for storing repos
-    # TODO: Is it possible we can get an ID that doesn't exist anymore?
-    repo = models.Repo.get(repo_id)
-    post_building(repo)
     timer = Timer(__name__, suffix="create.rpm.%s" % repo.metric_name)
     counter = Counter(__name__, suffix="create.rpm.%s" % repo.metric_name)
     timer.start()
-    logger.info("processing repository: %s", repo)
-    if util.repository_is_disabled(repo.project.name):
-        logger.info("will not process repository: %s", repo)
-        repo.needs_update = False
-        repo.is_queued = False
-        return
-
-    # Determine paths for this repository
-    paths = util.repo_paths(repo)
     repo_dirs = [os.path.join(paths['absolute'], d) for d in directories]
-
-    # Before doing work that might take very long to complete, set the repo
-    # path in the object and mark needs_update as False
-    repo.path = paths['absolute']
-    repo.is_updating = True
-    repo.is_queued = False
-    repo.needs_update = False
-    models.commit()
 
     # this is safe to do, behind the scenes it is just trying to create them if
     # they don't exist and it will include the 'absolute' path
@@ -75,12 +57,8 @@ def create_rpm_repo(repo_id):
 
     _createrepo(paths['absolute'], repo_dirs, repo.distro)
 
-    logger.info("finished processing repository: %s", repo)
-    repo.is_updating = False
-    models.commit()
     timer.stop()
     counter += 1
-    post_ready(repo)
 
 
 def _createrepo(base_path, repo_dirs, distro):

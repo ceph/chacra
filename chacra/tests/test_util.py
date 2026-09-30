@@ -325,6 +325,35 @@ class TestGetBinaries(object):
         assert len(result) == 1
 
 
+class TestRepreproConfdir(object):
+
+    def teardown_method(self):
+        conftest.reload_config()
+
+    def test_creates_distributions_file(self, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
+        result = util.reprepro_confdir('ceph')
+        assert result == str(tmpdir.join('ceph'))
+        assert 'Origin: ceph.com' in tmpdir.join('ceph', 'distributions').read()
+
+    def test_distributions_file_is_replaced(self, tmpdir):
+        # a reprepro process reading the file must never get a partial one
+        pecan.conf.distributions_root = str(tmpdir)
+        util.reprepro_confdir('ceph')
+        distributions = tmpdir.join('ceph', 'distributions')
+        with open(str(distributions)) as reader:
+            pecan.conf.distributions.defaults.Origin = 'example.com'
+            util.reprepro_confdir('ceph')
+            assert 'Origin: ceph.com' in reader.read()
+        assert 'Origin: example.com' in distributions.read()
+
+    def test_no_temporary_files_are_left(self, tmpdir):
+        pecan.conf.distributions_root = str(tmpdir)
+        util.reprepro_confdir('ceph')
+        util.reprepro_confdir('ceph')
+        assert os.listdir(str(tmpdir.join('ceph'))) == ['distributions']
+
+
 class TestRepreproCommand(object):
 
     def setup_method(self):

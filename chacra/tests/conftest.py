@@ -45,6 +45,16 @@ def reload_config():
     _db.init_model()
 
 
+@pytest.fixture(autouse=True)
+def locks_root(tmpdir):
+    """
+    Keep the locks for repositories in a directory that is unique to each test
+    """
+    path = str(tmpdir.join('locks'))
+    conf.locks_root = path
+    return path
+
+
 @pytest.fixture
 def fake():
     class Fake(object):
