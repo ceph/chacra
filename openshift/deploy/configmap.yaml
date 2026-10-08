@@ -219,6 +219,10 @@ data:
 
         server {
             listen 8080;
+            # package uploads are multi-hundred-MB; nginx's 1m default 413'd
+            # every chacractl push of a release (the ansible nginx template
+            # raises this too — see #346)
+            client_max_body_size 0;
             # chacra answers /binaries/... downloads with X-Accel-Redirect: /b/<path under binary_root>
             # (chacra/controllers/binaries); nginx must serve that internally, as the ansible
             # nginx_site.conf template does. Without it every binary download is a 404.
