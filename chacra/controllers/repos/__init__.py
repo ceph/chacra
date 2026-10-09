@@ -77,6 +77,8 @@ class RepoController(object):
     @index.when(method='POST', template='json')
     @validate(schemas.repo_schema, handler='/errors/schema')
     def index_post(self):
+        if self.repo_obj is None:
+            abort(404)
         data = request.json
         self.repo_obj.update_from_json(data)
         return self.repo_obj
@@ -91,6 +93,8 @@ class RepoController(object):
                 '/errors/not_allowed',
                 'only POST request are accepted for this url'
             )
+        if self.repo_obj is None:
+            abort(404)
         if self.repo_obj.type == 'raw':
             # raw repos need no asynch construction.  Create
             # the paths, symlink the binaries, mark them ready.
@@ -159,15 +163,19 @@ class RepoController(object):
                 '/errors/not_allowed',
                 'only POST request are accepted for this url'
             )
+        if self.repo_obj is None:
+            abort(404)
         lock = locks.RepoLock(self.repo_obj.id)
         if lock.acquire():
             try:
-                # completely remove the path to the repository
-                logger.info('removing repository path: %s', self.repo_obj.path)
-                try:
-                    shutil.rmtree(self.repo_obj.path)
-                except OSError:
-                    logger.warning("could not remove repo path: %s", self.repo_obj.path)
+                # completely remove the path to the repository, unless the
+                # repo was never built and has no path yet
+                if self.repo_obj.path:
+                    logger.info('removing repository path: %s', self.repo_obj.path)
+                    try:
+                        shutil.rmtree(self.repo_obj.path)
+                    except OSError:
+                        logger.warning("could not remove repo path: %s", self.repo_obj.path)
                 # mark the repo so that celery picks it up
                 self.request_build(lock)
             finally:
@@ -186,14 +194,17 @@ class RepoController(object):
     @index.when(method='DELETE', template='json')
     @validate(schemas.repo_schema, handler='/errors/schema')
     def index_delete(self):
+        if self.repo_obj is None:
+            abort(404)
         repo_path = self.repo_obj.path
-        logger.info('nuke repository path: %s', repo_path)
-        try:
-            shutil.rmtree(repo_path)
-        except OSError:
-            msg = "could not remove repo path: {}".format(repo_path)
-            logger.exception(msg)
-            error('/errors/error/', msg)
+        if repo_path:
+            logger.info('nuke repository path: %s', repo_path)
+            try:
+                shutil.rmtree(repo_path)
+            except OSError:
+                msg = "could not remove repo path: {}".format(repo_path)
+                logger.exception(msg)
+                error('/errors/error/', msg)
         for binary in self.repo_obj.binaries:
             binary_path = binary.binary.path
             if binary_path:
@@ -218,11 +229,15 @@ class RepoController(object):
                 '/errors/not_allowed',
                 'only POST request are accepted for this url'
             )
+        if self.repo_obj is None:
+            abort(404)
         self.repo_obj.extra = request.json
         return self.repo_obj
 
     @expose('mako:repo.mako', content_type="text/plain")
     def repo(self):
+        if self.repo_obj is None:
+            abort(404)
         return dict(
             project_name=self.project.name,
             base_url=self.repo_obj.base_url,

@@ -680,6 +680,86 @@ class TestRepoCRUDOperations(object):
 
     @pytest.mark.parametrize(
             'url',
+            ['/repos/foobar/firefly/head/centos/7/recreate',
+             '/repos/foobar/firefly/head/centos/7/flavors/default/recreate']
+    )
+    def test_recreate_repo_not_found(self, session, url):
+        # the project exists, but has no repo for this distro
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.post_json(url, params={}, expect_errors=True)
+        assert result.status_int == 404
+
+    @pytest.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/ubuntu/trusty/recreate',
+             '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate']
+    )
+    def test_recreate_no_path(self, session, url):
+        # the repo exists but was never built, so it has no path
+        p = Project('foobar')
+        Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        session.commit()
+        result = session.app.post_json(url, params={})
+        assert result.status_int == 200
+        assert result.json['needs_update'] is True
+
+    @pytest.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/centos/7/update',
+             '/repos/foobar/firefly/head/centos/7/flavors/default/update']
+    )
+    def test_update_repo_not_found(self, session, url):
+        # the project exists, but has no repo for this distro
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.post_json(url, params={}, expect_errors=True)
+        assert result.status_int == 404
+
+    @pytest.mark.parametrize(
+            'url',
+            ['/repos/foobar/firefly/head/centos/7/extra/',
+             '/repos/foobar/firefly/head/centos/7/flavors/default/extra/']
+    )
+    def test_extra_repo_not_found(self, session, url):
+        # the project exists, but has no repo for this distro
+        p = Project('foobar')
+        repo = Repo(
+            p,
+            "firefly",
+            "ubuntu",
+            "trusty",
+            sha1="head",
+        )
+        repo.path = "some_path"
+        session.commit()
+        result = session.app.post_json(url, params={}, expect_errors=True)
+        assert result.status_int == 404
+
+    @pytest.mark.parametrize(
+            'url',
             ['/repos/foobar/firefly/head/ubuntu/trusty/recreate',
              '/repos/foobar/firefly/head/ubuntu/trusty/flavors/default/recreate']
     )
