@@ -2,7 +2,8 @@
 [Unit]
 Description=chacra celerybeat service
 After=network.target rabbitmq-server.service
-Requires=rabbitmq-server.service
+# Wants, not Requires: see chacra-celery.service
+Wants=rabbitmq-server.service
 
 [Service]
 Type=simple

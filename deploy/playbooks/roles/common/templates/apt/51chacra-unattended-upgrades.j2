@@ -3,8 +3,9 @@
 // Packages excluded from unattended upgrades. Entries are python regexes
 // matched against the start of the package name.
 //
-// postgresql server upgrades restart the cluster; apply those manually
-// during a maintenance window instead.
+// postgresql server upgrades restart the cluster, and erlang/rabbitmq-server
+// upgrades restart the broker; apply those manually during a maintenance
+// window instead.
 Unattended-Upgrade::Package-Blacklist {
 {% for pkg in unattended_upgrades_package_blacklist %}
     "{{ pkg }}";

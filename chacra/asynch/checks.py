@@ -36,9 +36,16 @@ def rabbitmq_is_running():
     """
     If checking for worker stats, an ``IOError`` may be raised depending on the
     problem for the RabbitMQ connection.
+
+    After RabbitMQ is restarted the pooled connection held by this process is
+    stale, and the first use of it fails with a connection reset. That attempt
+    discards the stale connection, so try once more before reporting a failure.
     """
     try:
-        celery_has_workers()
+        try:
+            celery_has_workers()
+        except IOError:
+            celery_has_workers()
     except IOError as e:
         msg = "Error connecting to RabbitMQ: " + str(e)
         if len(e.args):
