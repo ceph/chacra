@@ -638,3 +638,93 @@ class TestAutomaticRepos(object):
         project = Project.filter_by(name='ceph-deploy').first()
         repo = Repo.filter_by(project=project).first()
         assert repo.needs_update is False
+
+
+class TestConditionalPut(object):
+
+    url = '/binaries/ceph/giant/head/ceph/el6/x86_64/ceph-9.0.0-0.el6.x86_64.rpm/'
+    flavored_url = (
+        '/binaries/ceph/giant/head/ceph/el6/x86_64/flavors/debug/'
+        'ceph-9.0.0-0.el6.x86_64.rpm/')
+
+    def put(self, session, content, url=None, headers=None, status=None):
+        headers = dict(headers or {}, Authorization=util.make_credentials())
+        return session.app.put(
+            url or self.url,
+            headers=headers,
+            upload_files=[('file', 'ceph-9.0.0-0.el6.x86_64.rpm', b_(content))],
+            status=status,
+        )
+
+    def test_put_creates_a_binary(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        result = self.put(session, 'hello', status=201)
+        assert result.status_int == 201
+        binary = Binary.filter_by(name='ceph-9.0.0-0.el6.x86_64.rpm').one()
+        assert binary.project.name == 'ceph'
+        assert binary.size == 5
+        assert binary.checksum
+        assert binary.repo is not None
+
+    def test_put_creates_a_flavored_binary(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        self.put(session, 'hello', url=self.flavored_url, status=201)
+        binary = Binary.filter_by(name='ceph-9.0.0-0.el6.x86_64.rpm').one()
+        assert binary.flavor == 'debug'
+
+    def test_put_replaces_a_binary(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        self.put(session, 'hello', status=201)
+        result = self.put(session, 'hello, again', status=200)
+        assert result.status_int == 200
+        binary = Binary.filter_by(name='ceph-9.0.0-0.el6.x86_64.rpm').one()
+        assert binary.size == 12
+
+    def test_get_sends_the_checksum_as_etag(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        self.put(session, 'hello', status=201)
+        binary = Binary.filter_by(name='ceph-9.0.0-0.el6.x86_64.rpm').one()
+        assert session.app.get(self.url).etag == binary.checksum
+        assert session.app.head(self.url).etag == binary.checksum
+
+    def test_if_none_match_any_creates(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        self.put(session, 'hello', headers={'If-None-Match': '*'}, status=201)
+
+    def test_if_none_match_any_does_not_replace(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        self.put(session, 'hello', status=201)
+        self.put(session, 'other', headers={'If-None-Match': '*'}, status=412)
+        binary = Binary.filter_by(name='ceph-9.0.0-0.el6.x86_64.rpm').one()
+        with open(binary.path, 'rb') as f:
+            assert f.read() == b'hello'
+
+    def test_if_match_replaces_the_expected_binary(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        self.put(session, 'hello', status=201)
+        etag = session.app.head(self.url).etag
+        self.put(session, 'other', headers={'If-Match': '"%s"' % etag},
+                 status=200)
+        self.put(session, 'third', headers={'If-Match': '"%s"' % etag},
+                 status=412)
+
+    def test_if_match_does_not_create(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        self.put(session, 'hello', headers={'If-Match': '*'}, status=412)
+        assert Binary.query.count() == 0
+
+    def test_put_replacing_marks_related_repos(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        pecan.conf.repos = {
+            'ceph-deploy': {
+                'all': {'ceph': ['giant']}
+            },
+            '__force_dict__': True,
+        }
+        self.put(session, 'hello', status=201)
+        repo = Repo.filter_by(project=Project.filter_by(name='ceph-deploy').one()).one()
+        repo.needs_update = False
+        session.commit()
+        self.put(session, 'hello, again', status=200)
+        repo = Repo.filter_by(project=Project.filter_by(name='ceph-deploy').one()).one()
+        assert repo.needs_update is True

@@ -229,6 +229,7 @@ data:
             location /b/ {
                 internal;
                 alias /data/binaries/;
+                etag off;
             }
             location /r/ {
                 alias /data/repos/;

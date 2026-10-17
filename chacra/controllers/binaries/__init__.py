@@ -107,6 +107,8 @@ class BinaryController(object):
         """
         if not self.binary:
             abort(404)
+        if self.binary.checksum:
+            response.etag = self.binary.checksum
         # we need to slap some headers so Nginx can serve this
         # TODO: maybe disable this for testing?
         # XXX Maybe we don't need to set Content-Disposition here?
@@ -165,17 +167,44 @@ class BinaryController(object):
 
         return {}
 
+    def check_preconditions(self):
+        """
+        Evaluate If-Match and If-None-Match against the stored binary, as
+        RFC 9110 section 13.2.2 asks for, aborting with 412 if one fails.
+        The ETag of a binary is its checksum.
+        """
+        etag = self.binary.checksum if self.binary else None
+        if 'If-Match' in request.headers:
+            if self.binary is None or etag not in request.if_match:
+                abort(412)
+        if 'If-None-Match' in request.headers:
+            if self.binary is not None and etag in request.if_none_match:
+                abort(412)
+
     @secure(basic_auth)
     @index.when(method='PUT', template='json')
     def index_put(self):
+        self.check_preconditions()
         contents = request.POST.get('file', False)
         if contents is False:
-            error('/errors/invalid/', 'no file object found in "file" param in POST request')
-        file_obj = contents.file
-        # this looks odd, path is not changing, but we need to 'ping' the object by
-        # re-saving the attribute so that the listener can update the checksum and modified
-        # timestamps
-        self.binary.path = self.save_file(file_obj)
+            error('/errors/invalid/', 'no file object found in "file" param in PUT request')
+        path = self.save_file(contents.file)
+        if self.binary is None:
+            self.binary = Binary(
+                self.binary_name, self.project, arch=self.arch,
+                distro=self.distro, distro_version=self.distro_version,
+                ref=self.ref, sha1=self.sha1, flavor=self.flavor,
+                path=path, size=os.path.getsize(path)
+            )
+            response.status = 201
+        else:
+            # this looks odd, path is not changing, but we need to 'ping' the object by
+            # re-saving the attribute so that the listener can update the checksum and modified
+            # timestamps
+            self.binary.path = path
+            self.binary.size = os.path.getsize(path)
+            response.status = 200
+        mark_related_repos(self.binary)
         return dict()
 
     @secure(basic_auth)
@@ -222,15 +251,6 @@ class BinaryController(object):
     def save_file(self, file_obj):
         # TODO: we should just use self.binary.path for this
         dir_path = self.create_directory()
-        if self.binary_name in os.listdir(dir_path):
-            # resource exists so we will update it
-            response.status = 200
-        else:
-            # TODO: enforce this.
-            # we will create a resource, but this SHOULD NOT HAPPEN
-            # because we are PUT not POST
-            response.status = 201
-
         destination = os.path.join(dir_path, self.binary_name)
 
         write_file(file_obj, destination)

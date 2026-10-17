@@ -10,10 +10,9 @@ class ProjectController(object):
         self.project_name = project_name
         self.project = Project.query.filter_by(name=project_name).first()
         if not self.project:
-            if request.method != 'POST':
+            if request.method not in ('POST', 'PUT'):
                 abort(404)
-            elif request.method == 'POST':
-                self.project = models.get_or_create(Project, name=project_name)
+            self.project = models.get_or_create(Project, name=project_name)
         request.context['project_id'] = self.project.id
 
     @expose('json')
