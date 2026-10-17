@@ -46,7 +46,7 @@ spec:
               exec /opt/venv/bin/gunicorn
               --bind 0.0.0.0:${PORT:-8000}
               --workers ${GUNICORN_WORKERS:-4}
-              --timeout ${GUNICORN_TIMEOUT:-120}
+              --timeout ${GUNICORN_TIMEOUT:-600}
               --log-level ${LOG_LEVEL:-info}
               'wsgi_wrapper:application'
           ports: [ { name: http, containerPort: 8000 } ]

@@ -65,6 +65,8 @@ kind: Route
 metadata:
   name: chacra
   namespace: chacra
+  annotations:
+    haproxy.router.openshift.io/timeout: 660s
 spec:
   to:
     kind: Service
