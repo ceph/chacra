@@ -87,7 +87,7 @@ class FlavorController(object):
         if self.binary is not None:
             if os.path.exists(self.binary.path):
                 if request.POST.get('force', False) is False:
-                    error('/errors/invalid', 'resource already exists and "force" key was not used')
+                    error('/errors/conflict', 'resource already exists and "force" key was not used')
 
         full_path = self.save_file(file_obj)
 

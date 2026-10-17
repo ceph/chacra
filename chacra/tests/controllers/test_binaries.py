@@ -312,7 +312,7 @@ class TestBinaryController(object):
             expect_errors=True
         )
 
-        assert result.status_int == 400
+        assert result.status_int == 409
 
     @pytest.mark.parametrize(
             'url_post, url_post_2',

@@ -136,7 +136,7 @@ class BinaryController(object):
         # updates the binary only if explicitly told to do so
         if self.binary:
             if not data.get('force'):
-                error('/errors/invalid/', 'file already exists and "force" flag was not used')
+                error('/errors/conflict/', 'file already exists and "force" flag was not used')
             else:
                 # FIXME this looks like we need to implement PUT
                 path = data.get('path')

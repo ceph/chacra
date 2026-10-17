@@ -195,7 +195,7 @@ the metadata parts including the filename *when uploading files*. For example::
 Note how a trailing slash is required as well as the full name of the binary.
 
 If the binary exists **it will not get overwritten** unless the ``force`` value
-is set. Otherwise a 400 is returned.
+is set. Otherwise a 409 is returned.
 
 If the ``force`` flag is set and the binary is overwritten a 200 is returned.
 If the resource does not exist, a 201 is returned.
@@ -224,7 +224,7 @@ HTTP Responses:
 
 * *200*: Resource was updated
 * *201*: Resource was created
-* *400*: Invalid request. Body::
+* *409*: The resource exists. Body::
 
     { "msg": "resource already exists and 'force' flag was not set" }
 
@@ -280,7 +280,7 @@ Note the need for a trailing slash.
 Force a rewrite of a binary metadata
 ------------------------------------
 If a POST is done to a binary URL that already exists, the API will return
-a 400 with a message indicating that the binary is already there.
+a 409 with a message indicating that the binary is already there.
 
 But sometimes, rewriting a binary is needed and the API allows that with a flag
 in the JSON object when doing a POST::
@@ -302,7 +302,7 @@ Note the need for a trailing slash.
 HTTP Responses:
 
 * *200*: Success.
-* *400*: Invalid request. Body::
+* *409*: The resource exists. Body::
 
     { "msg": "resource already exists and 'force' flag was not set" }
 
