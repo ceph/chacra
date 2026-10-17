@@ -4,13 +4,57 @@ import pecan
 from pecan import expose, abort, request, response, conf
 from pecan.secure import secure
 from webob.static import FileIter
+from chacra import models, util
 from chacra.models import Binary, Project
 from chacra.controllers import error
-from chacra.controllers.util import write_file
+from chacra.controllers.util import repository_is_automatic, write_file
 from chacra.auth import basic_auth
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+def mark_related_repos(binary):
+    """
+    Mark the repos that are interesting for ``binary`` so that they get
+    re-built, creating them if needed.
+    """
+    related_projects = util.get_related_projects(binary.project.name)
+    repos = []
+    projects = []
+    for project_name, refs in related_projects.items():
+        p = models.projects.get_or_create(name=project_name)
+        projects.append(p)
+        repo_query = []
+        if refs == ['all']:
+            # we need all the repos available
+            repo_query = models.Repo.filter_by(project=p).all()
+        else:
+            for ref in refs:
+                repo_query = models.Repo.filter_by(project=p, ref=ref).all()
+        if repo_query:
+            for r in repo_query:
+                repos.append(r)
+
+    if not repos:
+        # there are no repositories associated with this project, so go ahead
+        # and create one so that it can be queried by the celery task later
+        for project in projects:
+            repo = models.Repo(
+                project,
+                binary.ref,
+                binary.distro,
+                binary.distro_version,
+                sha1=binary.sha1,
+            )
+            repo.needs_update = repository_is_automatic(project.name)
+            repo.type = binary._get_repo_type()
+
+    else:
+        for repo in repos:
+            repo.needs_update = repository_is_automatic(repo.project.name)
+            if repo.type is None:
+                repo.type = binary._get_repo_type()
 
 
 class BinaryController(object):

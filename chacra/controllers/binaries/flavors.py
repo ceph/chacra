@@ -3,10 +3,10 @@ import logging
 import pecan
 from pecan import expose, abort, request, response
 from pecan.secure import secure
-from chacra import models, util
+from chacra import models
 from chacra.controllers import error
-from chacra.controllers.util import repository_is_automatic, write_file
-from chacra.controllers.binaries import BinaryController
+from chacra.controllers.util import write_file
+from chacra.controllers.binaries import BinaryController, mark_related_repos
 from chacra.auth import basic_auth
 from pathlib import Path
 
@@ -110,47 +110,10 @@ class FlavorController(object):
 
         # check if this binary is interesting for other configured projects,
         # and if so, then mark those other repos so that they can be re-built
-        self.mark_related_repos()
+        mark_related_repos(self.binary)
 
         return dict()
 
-    def mark_related_repos(self):
-        related_projects = util.get_related_projects(self.project.name)
-        repos = []
-        projects = []
-        for project_name, refs in related_projects.items():
-            p = models.projects.get_or_create(name=project_name)
-            projects.append(p)
-            repo_query = []
-            if refs == ['all']:
-                # we need all the repos available
-                repo_query = models.Repo.filter_by(project=p).all()
-            else:
-                for ref in refs:
-                    repo_query = models.Repo.filter_by(project=p, ref=ref).all()
-            if repo_query:
-                for r in repo_query:
-                    repos.append(r)
-
-        if not repos:
-            # there are no repositories associated with this project, so go ahead
-            # and create one so that it can be queried by the celery task later
-            for project in projects:
-                repo = models.Repo(
-                    project,
-                    self.ref,
-                    self.distro,
-                    self.distro_version,
-                    sha1=self.sha1,
-                )
-                repo.needs_update = repository_is_automatic(project.name)
-                repo.type = self.binary._get_repo_type()
-
-        else:
-            for repo in repos:
-                repo.needs_update = repository_is_automatic(repo.project.name)
-                if repo.type is None:
-                    repo.type = self.binary._get_repo_type()
 
     def create_directory(self):
         urlpath = Path(request.url)
