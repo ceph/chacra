@@ -2,6 +2,7 @@ import os
 import pecan
 import pytest
 
+from chacra.controllers.binaries import BinaryController
 from chacra.models import Binary, Project, Repo
 from chacra.tests import util
 from chacra.compat import b_
@@ -712,6 +713,28 @@ class TestConditionalPut(object):
         pecan.conf.binary_root = str(tmpdir)
         self.put(session, 'hello', headers={'If-Match': '*'}, status=412)
         assert Binary.query.count() == 0
+
+    @pytest.mark.parametrize('headers, status', [
+        ({'If-None-Match': '*'}, 412),
+        ({}, 409),
+    ])
+    def test_concurrent_create(self, session, tmpdir, monkeypatch, headers, status):
+        pecan.conf.binary_root = str(tmpdir)
+        self.put(session, 'hello', status=201)
+        init = BinaryController.__init__
+
+        def init_before_the_other_request_commits(self, *args):
+            init(self, *args)
+            self.binary = None
+
+        monkeypatch.setattr(BinaryController, '__init__',
+                            init_before_the_other_request_commits)
+        self.put(session, 'other', headers=headers, status=status)
+        session.rollback()
+        binary = Binary.filter_by(name='ceph-9.0.0-0.el6.x86_64.rpm').one()
+        with open(binary.path, 'rb') as f:
+            assert f.read() == b'hello'
+        assert os.listdir(os.path.dirname(binary.path)) == [binary.name]
 
     def test_put_replacing_marks_related_repos(self, session, tmpdir):
         pecan.conf.binary_root = str(tmpdir)

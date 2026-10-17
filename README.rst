@@ -242,6 +242,7 @@ HTTP Responses:
 
 * *200*: Resource was updated
 * *201*: Resource was created
+* *409*: Another request created the resource at the same time
 * *412*: A precondition in ``If-None-Match`` or ``If-Match`` failed
 
 

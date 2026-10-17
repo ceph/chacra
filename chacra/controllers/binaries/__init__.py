@@ -3,11 +3,12 @@ import logging
 import pecan
 from pecan import expose, abort, request, response, conf
 from pecan.secure import secure
+from sqlalchemy.exc import IntegrityError
 from webob.static import FileIter
 from chacra import models, util
 from chacra.models import Binary, Project
 from chacra.controllers import error
-from chacra.controllers.util import repository_is_automatic, write_file
+from chacra.controllers.util import repository_is_automatic, remove_file, write_temp_file
 from chacra.auth import basic_auth
 from pathlib import Path
 
@@ -188,22 +189,31 @@ class BinaryController(object):
         contents = request.POST.get('file', False)
         if contents is False:
             error('/errors/invalid/', 'no file object found in "file" param in PUT request')
-        path = self.save_file(contents.file)
-        if self.binary is None:
-            self.binary = Binary(
-                self.binary_name, self.project, arch=self.arch,
-                distro=self.distro, distro_version=self.distro_version,
-                ref=self.ref, sha1=self.sha1, flavor=self.flavor,
-                path=path, size=os.path.getsize(path)
-            )
-            response.status = 201
-        else:
-            # this looks odd, path is not changing, but we need to 'ping' the object by
-            # re-saving the attribute so that the listener can update the checksum and modified
-            # timestamps
-            self.binary.path = path
-            self.binary.size = os.path.getsize(path)
-            response.status = 200
+        path = os.path.join(self.create_directory(), self.binary_name)
+        tmp_path = write_temp_file(contents.file, path)
+        try:
+            if self.binary is None:
+                try:
+                    self.binary = Binary(
+                        self.binary_name, self.project, arch=self.arch,
+                        distro=self.distro, distro_version=self.distro_version,
+                        ref=self.ref, sha1=self.sha1, flavor=self.flavor
+                    )
+                    models.flush()
+                except IntegrityError:
+                    models.rollback()
+                    abort(412 if 'If-None-Match' in request.headers else 409)
+                response.status = 201
+            else:
+                response.status = 200
+            os.replace(tmp_path, path)
+        finally:
+            remove_file(tmp_path)
+        # this looks odd if path is not changing, but we need to 'ping' the object by
+        # re-saving the attribute so that the listener can update the checksum and modified
+        # timestamps
+        self.binary.path = path
+        self.binary.size = os.path.getsize(path)
         mark_related_repos(self.binary)
         return dict()
 
@@ -247,13 +257,3 @@ class BinaryController(object):
         if not os.path.isdir(path):
             os.makedirs(path)
         return path
-
-    def save_file(self, file_obj):
-        # TODO: we should just use self.binary.path for this
-        dir_path = self.create_directory()
-        destination = os.path.join(dir_path, self.binary_name)
-
-        write_file(file_obj, destination)
-
-        # return the full path to the saved object:
-        return destination
