@@ -33,7 +33,7 @@ project specific distributions files will be stored when creating debian reposit
 
 credentials
 ^^^^^^^^^^^
-The POST and DELETE HTTP methods are protected by default using basic HTTP
+The POST, PUT and DELETE HTTP methods are protected by default using basic HTTP
 authentication. The credentials must be defined in the configuration file for
 the service as follows::
 
@@ -227,6 +227,22 @@ HTTP Responses:
 * *409*: The resource exists. Body::
 
     { "msg": "resource already exists and 'force' flag was not set" }
+
+
+``PUT`` requests to the url of the binary itself will create it, or overwrite
+it if it exists. For example::
+
+    curl -X PUT -F "file=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" https://chacra.ceph.com/binaries/ceph/firefly/head/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm/
+
+If the ``If-None-Match: *`` header is set, an existing binary is not
+overwritten, and if ``If-Match`` is set, the binary is only overwritten if its
+checksum matches. Otherwise a 412 is returned.
+
+HTTP Responses:
+
+* *200*: Resource was updated
+* *201*: Resource was created
+* *412*: A precondition in ``If-None-Match`` or ``If-Match`` failed
 
 
 ``POST`` will create new items at given parts of the URL. For example, to
