@@ -1,6 +1,6 @@
 import hashlib
 import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, BigInteger
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime, BigInteger, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.event import listen
 from sqlalchemy.orm.exc import DetachedInstanceError
@@ -17,6 +17,11 @@ except:
 class Binary(Base):
 
     __tablename__ = 'binaries'
+    __table_args__ = (
+        UniqueConstraint(
+            'project_id', 'name', 'ref', 'sha1', 'distro', 'distro_version',
+            'arch', 'flavor', name='uq_binaries_identity'),
+    )
     id = Column(Integer, primary_key=True)
     name = Column(String(256), nullable=False, index=True)
     path = Column(String(256))

@@ -18,6 +18,15 @@ class ErrorsController(object):
         return dict(message=msg)
 
     @expose('json')
+    def conflict(self, **kw):
+        msg = kw.get(
+            'error_message',
+            'resource already exists'
+        )
+        response.status = 409
+        return dict(message=msg)
+
+    @expose('json')
     def not_allowed(self, **kw):
         msg = kw.get(
             'error_message',

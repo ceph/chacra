@@ -229,6 +229,7 @@ data:
             location /b/ {
                 internal;
                 alias /data/binaries/;
+                etag off;
             }
             location /r/ {
                 alias /data/repos/;
@@ -248,7 +249,7 @@ data:
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
                 proxy_connect_timeout 5s;
-                proxy_read_timeout 60s;
+                proxy_read_timeout 660s;
             }
         }
     }

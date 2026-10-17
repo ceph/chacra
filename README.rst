@@ -33,7 +33,7 @@ project specific distributions files will be stored when creating debian reposit
 
 credentials
 ^^^^^^^^^^^
-The POST and DELETE HTTP methods are protected by default using basic HTTP
+The POST, PUT and DELETE HTTP methods are protected by default using basic HTTP
 authentication. The credentials must be defined in the configuration file for
 the service as follows::
 
@@ -195,7 +195,7 @@ the metadata parts including the filename *when uploading files*. For example::
 Note how a trailing slash is required as well as the full name of the binary.
 
 If the binary exists **it will not get overwritten** unless the ``force`` value
-is set. Otherwise a 400 is returned.
+is set. Otherwise a 409 is returned.
 
 If the ``force`` flag is set and the binary is overwritten a 200 is returned.
 If the resource does not exist, a 201 is returned.
@@ -224,9 +224,26 @@ HTTP Responses:
 
 * *200*: Resource was updated
 * *201*: Resource was created
-* *400*: Invalid request. Body::
+* *409*: The resource exists. Body::
 
     { "msg": "resource already exists and 'force' flag was not set" }
+
+
+``PUT`` requests to the url of the binary itself will create it, or overwrite
+it if it exists. For example::
+
+    curl -X PUT -F "file=@/home/user/repos/ceph-0.87.2-0.el10.centos.x86_64.rpm" https://chacra.ceph.com/binaries/ceph/firefly/head/centos/10/x86_64/ceph-0.87.2-0.el10.centos.x86_64.rpm/
+
+If the ``If-None-Match: *`` header is set, an existing binary is not
+overwritten, and if ``If-Match`` is set, the binary is only overwritten if its
+checksum matches. Otherwise a 412 is returned.
+
+HTTP Responses:
+
+* *200*: Resource was updated
+* *201*: Resource was created
+* *409*: Another request created the resource at the same time
+* *412*: A precondition in ``If-None-Match`` or ``If-Match`` failed
 
 
 ``POST`` will create new items at given parts of the URL. For example, to
@@ -280,7 +297,7 @@ Note the need for a trailing slash.
 Force a rewrite of a binary metadata
 ------------------------------------
 If a POST is done to a binary URL that already exists, the API will return
-a 400 with a message indicating that the binary is already there.
+a 409 with a message indicating that the binary is already there.
 
 But sometimes, rewriting a binary is needed and the API allows that with a flag
 in the JSON object when doing a POST::
@@ -302,7 +319,7 @@ Note the need for a trailing slash.
 HTTP Responses:
 
 * *200*: Success.
-* *400*: Invalid request. Body::
+* *409*: The resource exists. Body::
 
     { "msg": "resource already exists and 'force' flag was not set" }
 

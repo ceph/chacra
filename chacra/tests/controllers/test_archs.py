@@ -117,7 +117,7 @@ class TestArchController(object):
                 path='/'),
             expect_errors=True)
 
-        assert result.status_int == 400
+        assert result.status_int == 409
         assert result.json['message'] == 'file already exists and "force" flag was not used'
 
     def ensure_file(self, tmpdir, name=None):

@@ -3,13 +3,59 @@ import logging
 import pecan
 from pecan import expose, abort, request, response, conf
 from pecan.secure import secure
+from sqlalchemy.exc import IntegrityError
 from webob.static import FileIter
+from chacra import models, util
 from chacra.models import Binary, Project
 from chacra.controllers import error
+from chacra.controllers.util import repository_is_automatic, remove_file, write_temp_file
 from chacra.auth import basic_auth
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+
+def mark_related_repos(binary):
+    """
+    Mark the repos that are interesting for ``binary`` so that they get
+    re-built, creating them if needed.
+    """
+    related_projects = util.get_related_projects(binary.project.name)
+    repos = []
+    projects = []
+    for project_name, refs in related_projects.items():
+        p = models.projects.get_or_create(name=project_name)
+        projects.append(p)
+        repo_query = []
+        if refs == ['all']:
+            # we need all the repos available
+            repo_query = models.Repo.filter_by(project=p).all()
+        else:
+            for ref in refs:
+                repo_query.extend(models.Repo.filter_by(project=p, ref=ref).all())
+        if repo_query:
+            for r in repo_query:
+                repos.append(r)
+
+    if not repos:
+        # there are no repositories associated with this project, so go ahead
+        # and create one so that it can be queried by the celery task later
+        for project in projects:
+            repo = models.Repo(
+                project,
+                binary.ref,
+                binary.distro,
+                binary.distro_version,
+                sha1=binary.sha1,
+            )
+            repo.needs_update = repository_is_automatic(project.name)
+            repo.type = binary._get_repo_type()
+
+    else:
+        for repo in repos:
+            repo.needs_update = repository_is_automatic(repo.project.name)
+            if repo.type is None:
+                repo.type = binary._get_repo_type()
 
 
 class BinaryController(object):
@@ -62,6 +108,8 @@ class BinaryController(object):
         """
         if not self.binary:
             abort(404)
+        if self.binary.checksum:
+            response.etag = self.binary.checksum
         # we need to slap some headers so Nginx can serve this
         # TODO: maybe disable this for testing?
         # XXX Maybe we don't need to set Content-Disposition here?
@@ -89,7 +137,7 @@ class BinaryController(object):
         # updates the binary only if explicitly told to do so
         if self.binary:
             if not data.get('force'):
-                error('/errors/invalid/', 'file already exists and "force" flag was not used')
+                error('/errors/conflict/', 'file already exists and "force" flag was not used')
             else:
                 # FIXME this looks like we need to implement PUT
                 path = data.get('path')
@@ -120,17 +168,53 @@ class BinaryController(object):
 
         return {}
 
+    def check_preconditions(self):
+        """
+        Evaluate If-Match and If-None-Match against the stored binary, as
+        RFC 9110 section 13.2.2 asks for, aborting with 412 if one fails.
+        The ETag of a binary is its checksum.
+        """
+        etag = self.binary.checksum if self.binary else None
+        if 'If-Match' in request.headers:
+            if self.binary is None or etag not in request.if_match:
+                abort(412)
+        if 'If-None-Match' in request.headers:
+            if self.binary is not None and etag in request.if_none_match:
+                abort(412)
+
     @secure(basic_auth)
     @index.when(method='PUT', template='json')
     def index_put(self):
+        self.check_preconditions()
         contents = request.POST.get('file', False)
         if contents is False:
-            error('/errors/invalid/', 'no file object found in "file" param in POST request')
-        file_obj = contents.file
-        # this looks odd, path is not changing, but we need to 'ping' the object by
+            error('/errors/invalid/', 'no file object found in "file" param in PUT request')
+        path = os.path.join(self.create_directory(), self.binary_name)
+        tmp_path = write_temp_file(contents.file, path)
+        try:
+            if self.binary is None:
+                try:
+                    self.binary = Binary(
+                        self.binary_name, self.project, arch=self.arch,
+                        distro=self.distro, distro_version=self.distro_version,
+                        ref=self.ref, sha1=self.sha1, flavor=self.flavor
+                    )
+                    models.flush()
+                except IntegrityError:
+                    models.rollback()
+                    abort(412 if 'If-None-Match' in request.headers else 409)
+                response.status = 201
+            else:
+                response.status = 200
+            os.replace(tmp_path, path)
+        finally:
+            remove_file(tmp_path)
+        # this looks odd if path is not changing, but we need to 'ping' the object by
         # re-saving the attribute so that the listener can update the checksum and modified
         # timestamps
-        self.binary.path = self.save_file(file_obj)
+        self.binary.path = path
+        self.binary.size = os.path.getsize(path)
+        mark_related_repos(self.binary)
         return dict()
 
     @secure(basic_auth)
@@ -173,25 +257,3 @@ class BinaryController(object):
         if not os.path.isdir(path):
             os.makedirs(path)
         return path
-
-    def save_file(self, file_obj):
-        # TODO: we should just use self.binary.path for this
-        dir_path = self.create_directory()
-        if self.binary_name in os.listdir(dir_path):
-            # resource exists so we will update it
-            response.status = 200
-        else:
-            # TODO: enforce this.
-            # we will create a resource, but this SHOULD NOT HAPPEN
-            # because we are PUT not POST
-            response.status = 201
-
-        destination = os.path.join(dir_path, self.binary_name)
-
-        with open(destination, 'wb') as f:
-            file_iterable = FileIter(file_obj)
-            for chunk in file_iterable:
-                f.write(chunk)
-
-        # return the full path to the saved object:
-        return destination
