@@ -31,7 +31,7 @@ def mark_related_repos(binary):
             repo_query = models.Repo.filter_by(project=p).all()
         else:
             for ref in refs:
-                repo_query = models.Repo.filter_by(project=p, ref=ref).all()
+                repo_query.extend(models.Repo.filter_by(project=p, ref=ref).all())
         if repo_query:
             for r in repo_query:
                 repos.append(r)

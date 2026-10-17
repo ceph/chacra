@@ -478,6 +478,27 @@ class TestRelatedProjects(object):
         repo = Repo.filter_by(project=project).first()
         assert repo.needs_update is True
 
+    def test_marks_related_repos_of_every_ref(self, session, tmpdir):
+        pecan.conf.binary_root = str(tmpdir)
+        pecan.conf.repos = {
+            'ceph': {
+                'hammer': {'ceph-deploy': ['main']},
+                'firefly': {'ceph-deploy': ['main']},
+            },
+            '__force_dict__': True,
+        }
+        ceph = Project(name='ceph')
+        for ref in ('hammer', 'firefly'):
+            Repo(ceph, ref, 'centos', '6', sha1='head').needs_update = False
+        session.commit()
+        session.app.post(
+            '/binaries/ceph-deploy/main/head/centos/6/x86_64/',
+            upload_files=[('file', 'ceph-deploy_9.0.0-0.el6.x86_64.rpm', b_('hello tharrrr'))]
+        )
+        ceph = Project.filter_by(name='ceph').one()
+        repos = Repo.filter_by(project=ceph).all()
+        assert sorted(r.ref for r in repos if r.needs_update) == ['firefly', 'hammer']
+
     @pytest.mark.parametrize(
             'url',
             ['/binaries/ceph-deploy/main/head/centos/6/x86_64/',
