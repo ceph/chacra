@@ -1,3 +1,5 @@
+import pytest
+
 from chacra.models import Project, Binary
 
 
@@ -63,3 +65,16 @@ class TestProjectController(object):
         session.commit()
         result = session.app.get('/binaries/foobar/')
         assert result.json == {'firefly': ['HEAD'], 'main': ['HEAD']}
+
+
+class TestProjectCreation(object):
+
+    @pytest.mark.parametrize('method', ['post', 'put'])
+    def test_unauthenticated_request_does_not_create_it(self, session, method):
+        url = '/binaries/foobar/firefly/head/centos/7/x86_64/foo.rpm/'
+        result = getattr(session.app, method)(
+            url, params={}, headers={'X-Not-Authorized': 'yes'},
+            expect_errors=True)
+        assert result.status_int == 401
+        session.rollback()
+        assert Project.filter_by(name='foobar').first() is None

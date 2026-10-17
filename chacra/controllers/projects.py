@@ -12,7 +12,8 @@ class ProjectController(object):
         if not self.project:
             if request.method not in ('POST', 'PUT'):
                 abort(404)
-            self.project = models.get_or_create(Project, name=project_name)
+            self.project = Project(name=project_name)
+            models.flush()
         request.context['project_id'] = self.project.id
 
     @expose('json')
