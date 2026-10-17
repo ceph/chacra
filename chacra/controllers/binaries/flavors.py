@@ -3,10 +3,9 @@ import logging
 import pecan
 from pecan import expose, abort, request, response
 from pecan.secure import secure
-from webob.static import FileIter
 from chacra import models, util
 from chacra.controllers import error
-from chacra.controllers.util import repository_is_automatic
+from chacra.controllers.util import repository_is_automatic, write_file
 from chacra.controllers.binaries import BinaryController
 from chacra.auth import basic_auth
 from pathlib import Path
@@ -176,10 +175,7 @@ class FlavorController(object):
 
         destination = os.path.join(dir_path, self.binary_name)
 
-        with open(destination, 'wb') as f:
-            file_iterable = FileIter(file_obj)
-            for chunk in file_iterable:
-                f.write(chunk)
+        write_file(file_obj, destination)
 
         # return the full path to the saved object:
         return destination

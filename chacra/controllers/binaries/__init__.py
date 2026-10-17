@@ -6,6 +6,7 @@ from pecan.secure import secure
 from webob.static import FileIter
 from chacra.models import Binary, Project
 from chacra.controllers import error
+from chacra.controllers.util import write_file
 from chacra.auth import basic_auth
 from pathlib import Path
 
@@ -188,10 +189,7 @@ class BinaryController(object):
 
         destination = os.path.join(dir_path, self.binary_name)
 
-        with open(destination, 'wb') as f:
-            file_iterable = FileIter(file_obj)
-            for chunk in file_iterable:
-                f.write(chunk)
+        write_file(file_obj, destination)
 
         # return the full path to the saved object:
         return destination

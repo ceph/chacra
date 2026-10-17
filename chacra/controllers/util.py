@@ -6,7 +6,10 @@ except:
 from datetime import datetime, timedelta
 
 import logging
+import os
+import uuid
 from pecan import conf
+from webob.static import FileIter
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +23,25 @@ def repository_is_automatic(project_name, repo_config=None):
         return True
     logger.info('project: %s has automatic repository feature disabled', project_name)
     return False
+
+
+def write_file(file_obj, destination):
+    """
+    Write ``file_obj`` to a temporary file next to ``destination`` and
+    rename it into place, so ``destination`` is never half written.
+    """
+    tmp_path = '%s.%s.tmp' % (destination, uuid.uuid4().hex)
+    try:
+        with open(tmp_path, 'xb') as f:
+            for chunk in FileIter(file_obj):
+                f.write(chunk)
+        os.replace(tmp_path, destination)
+    except BaseException:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def last_seen(timestamp):
