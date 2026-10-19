@@ -10,6 +10,10 @@ metadata:
         {
           "from": { "kind": "ImageStreamTag", "name": "chacra:latest" },
           "fieldPath": "spec.template.spec.containers[?(@.name==\"api\")].image"
+        },
+        {
+          "from": { "kind": "ImageStreamTag", "name": "chacra:latest" },
+          "fieldPath": "spec.template.spec.initContainers[?(@.name==\"db-migrate\")].image"
         }
       ]
 spec:
@@ -36,6 +40,51 @@ spec:
               exit 0
           volumeMounts:
             - { name: data, mountPath: /mnt/data }
+        # Upgrade the schema before the new api starts. Same image, secret
+        # and alembic.ini mount as db-migration-job.yaml, which stays for
+        # manual runs. Both replicas run this at the same time during a
+        # rollout; a session-level advisory lock serialises them.
+        - name: db-migrate
+          image: chacra:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-lc"]
+          args:
+            - |
+              set -euo pipefail
+              echo "==> Running Alembic upgrade head ..."
+              /opt/venv/bin/python - <<'PY'
+              import os
+              from alembic.config import Config
+              from alembic import command
+              from sqlalchemy import create_engine
+              url = os.environ["DATABASE_URL"]
+              engine = create_engine(url)
+              if engine.dialect.name == "postgresql":
+                  # pg_advisory_lock() blocks until the lock is free, so the
+                  # second replica waits here until the first has finished
+                  # upgrading, then finds nothing to do. The lock belongs to
+                  # this session (no transaction needed, hence autocommit)
+                  # and goes away when the process exits, however it exits.
+                  lock = engine.connect().execution_options(isolation_level="AUTOCOMMIT")
+                  lock.execute("SELECT pg_advisory_lock(hashtext('chacra-alembic'))")
+              cfg = Config("/alembic/alembic.ini")  # script_location = /alembic
+              # a literal % in the URL must be doubled for the ini interpolation
+              cfg.set_main_option("sqlalchemy.url", url.replace("%", "%%"))
+              command.upgrade(cfg, "head")
+              PY
+              echo "==> Alembic migration completed."
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: chacra-secrets, key: DATABASE_URL } }
+          volumeMounts:
+            - { name: alembic-ini, mountPath: /alembic/alembic.ini, subPath: alembic.ini }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits:   { cpu: "1",  memory: 512Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
       containers:
         - name: api
           image: chacra:latest
@@ -75,7 +124,6 @@ spec:
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_BROKER_URL } }
             - name: CELERY_RESULT_BACKEND
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CELERY_RESULT_BACKEND } }
-            - { name: MIGRATE_ON_START, value: "false" }
             - name: CHACRA_API_USER
               valueFrom: { secretKeyRef: { name: chacra-secrets, key: CHACRA_API_USER } }
             - name: CHACRA_API_KEY
@@ -135,6 +183,10 @@ spec:
             items:
               - key: prod_callbacks.py
                 path: prod_callbacks.py
+        - name: alembic-ini
+          configMap:
+            name: chacra-alembic
+            items: [ { key: alembic.ini, path: alembic.ini } ]
 
 ---
 apiVersion: apps/v1

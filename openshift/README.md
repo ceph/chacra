@@ -126,14 +126,12 @@ oc -n chacra apply -f openshift/deploy/rabbitmq.yaml
 oc -n chacra apply -f openshift/deploy/postgres-pvc.yaml
 oc -n chacra apply -f openshift/deploy/chacra-data-rwx-pvc.yaml
 ```
-5. Run DB migrations
+5. Create the schema (once per brand‑new database)
 ```bash
-# Run once per brand‑new database
 oc -n chacra apply -f openshift/deploy/db-bootstrap-job.yaml
-
-# Run only when a new release adds Alembic revisions
-oc -n chacra apply -f openshift/deploy/db-migration-job.yaml
 ```
+Later schema changes need no manual step: every `chacra-api` pod runs
+`alembic upgrade head` before it starts, see [Upgrading](#upgrading).
 6. Deploy Chacra API, Celery, Beat and Nginx pod
 ```
 oc -n chacra apply -f openshift/deploy/deployment.yaml
@@ -157,6 +155,46 @@ oc -n chacra get route chacra -o jsonpath='{.spec.host}{"\n"}'
 Open the URL in your browser:
 ```
 https://<printed-host>/
+```
+
+## Upgrading
+
+Build a new image (step 3); the image trigger on each Deployment rolls
+`chacra-api`, `chacra-celery` and `chacra-beat` onto it.
+
+Rollouts migrate themselves: the `db-migrate` init container of
+`chacra-api` runs `alembic upgrade head` with the api's own image,
+`DATABASE_URL` and the `chacra-alembic` ConfigMap before the api
+container starts, so a release that adds Alembic revisions is applied
+by the rollout that ships it. The two api replicas start their init
+containers at the same time; they serialise on a PostgreSQL
+session-level advisory lock (`pg_advisory_lock(hashtext('chacra-alembic'))`),
+so the second one waits until the first has finished and then finds
+nothing to do. The lock is tied to the init container's connection and
+disappears when it exits, whichever way it exits.
+
+Watch it with:
+```bash
+oc -n chacra rollout status deploy/chacra-api
+oc -n chacra logs deploy/chacra-api -c db-migrate
+```
+
+If a migration fails, the pod stays in `Init:Error`/`Init:CrashLoopBackOff`
+and the old replicas keep serving; the kubelet restarts the init
+container with backoff until the upgrade succeeds, because the migration
+runs in one transaction and leaves nothing half-applied. A migration
+that needs an exclusive lock on a busy table (e.g. `7a3c1e9d2b4f`, which
+adds a constraint to `binaries`) gives up after 10 seconds rather than
+queueing behind in-flight uploads, so under constant upload traffic it
+can take a few restarts to get through.
+
+`openshift/deploy/db-migration-job.yaml` still exists for running the
+same upgrade by hand, e.g. against a restored dump before deploying.
+Delete the previous Job before re-applying it:
+```bash
+oc -n chacra delete job chacra-db-migrate --ignore-not-found
+oc -n chacra apply -f openshift/deploy/db-migration-job.yaml
+oc -n chacra logs -f job/chacra-db-migrate
 ```
 
 ## Migrating an existing (ansible/VM) chacra into OpenShift
