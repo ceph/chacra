@@ -8,9 +8,12 @@ On PostgreSQL the ADD CONSTRAINT needs an ACCESS EXCLUSIVE lock on
 binaries. Every in-flight upload holds a share lock on the table for the
 whole request, so on a live node the ALTER queues behind them and, while
 it waits, blocks every other query on the table. The migration therefore
-sets lock_timeout to 10 seconds: if the lock cannot be taken in time the
-migration fails and rolls back (including the dedup), and it can simply
-be run again when the node is quieter.
+takes that lock itself, up front, with lock_timeout set to 10 seconds:
+if the lock cannot be taken in time the migration fails before it has
+done anything, and it can simply be run again when the node is quieter.
+Holding the lock from the start also means no upload can store a new
+duplicate between the dedup and the constraint, which would make the
+ADD CONSTRAINT fail.
 
 """
 
@@ -31,6 +34,7 @@ def upgrade():
     if op.get_bind().dialect.name == 'postgresql':
         # fail fast instead of queueing behind uploads, see the docstring
         op.execute("SET LOCAL lock_timeout = '10s'")
+        op.execute('LOCK TABLE binaries IN ACCESS EXCLUSIVE MODE')
     # keep the newest row of the binaries that were stored more than once.
     # PARTITION BY groups NULLs together like GROUP BY does. Unlike
     # "id NOT IN (SELECT MAX(id) ... GROUP BY ...)", which PostgreSQL
